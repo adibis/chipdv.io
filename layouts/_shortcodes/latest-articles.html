@@ -1,0 +1,31 @@
+{{- /*
+  Shows the N most recently published articles across every series, sorted
+  by date, newest first. Single-line rows: title left, date right. Pages
+  under sections marked excludeFromStats (e.g. /projects) are left out,
+  matching how site-stats.html treats the same flag.
+
+  @example {{< latest-articles limit="5" >}}
+*/ -}}
+
+{{- $limit := .Get "limit" | default 5 | int -}}
+
+{{- $allPages := slice -}}
+{{- range .Page.Site.Sections -}}
+  {{- if not .Params.excludeFromStats -}}
+    {{- range .RegularPages -}}
+      {{- $allPages = $allPages | append . -}}
+    {{- end -}}
+  {{- end -}}
+{{- end -}}
+
+{{- $sorted := sort $allPages "Date" "desc" -}}
+{{- $recent := first $limit $sorted -}}
+
+<div class="chipdv-latest-grid">
+  {{- range $recent -}}
+  <a href="{{ .RelPermalink }}" class="chipdv-latest-row">
+    <span class="chipdv-latest-row-title">{{ .Title }}</span>
+    <span class="chipdv-latest-row-meta">{{ .Date.Format "Jan 2" }}</span>
+  </a>
+  {{- end -}}
+</div>

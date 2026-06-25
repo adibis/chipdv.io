@@ -1,0 +1,30 @@
+{{- /*
+  Auto-generated grid of every top-level article series (each directory
+  under content/ with its own _index.md), sorted by weight, numbered
+  sequentially, colored by position. Sections with hideFromSeriesGrid: true
+  in front matter (e.g. /projects, which isn't an article series) are
+  skipped. Adding a new series means adding content/<name>/_index.md with
+  title, description, and article files - this shortcode picks it up
+  automatically, nothing on the homepage needs editing.
+
+  @example {{< series-cards >}}
+*/ -}}
+
+{{- $colors := slice "#df8e1d" "#0369a1" "#059669" "#c2410c" "#a21caf" -}}
+{{- $sections := where .Page.Site.Sections.ByWeight "Params.hideFromSeriesGrid" "!=" true -}}
+
+<div class="chipdv-series-grid">
+  {{- range $i, $s := $sections -}}
+    {{- $color := index $colors (mod $i (len $colors)) -}}
+    <a class="chipdv-series-card" href="{{ $s.RelPermalink }}" style="--card-color: {{ $color }}">
+      <div class="chipdv-series-badge">{{ printf "%02d" (add $i 1) }}</div>
+      <div class="chipdv-series-title">{{ $s.Title }}</div>
+      <div class="chipdv-series-desc">{{ $s.Params.description }}</div>
+      <div class="chipdv-series-count">{{ len $s.RegularPages }} ARTICLES</div>
+    </a>
+  {{- end -}}
+  <div class="chipdv-series-card chipdv-series-placeholder">
+    <div class="chipdv-series-title">More series, over time</div>
+    <div class="chipdv-series-desc">This grid grows as new topics get written up.</div>
+  </div>
+</div>

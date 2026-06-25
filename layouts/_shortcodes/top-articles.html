@@ -1,0 +1,22 @@
+{{- /*
+  Shows the first article of each series, as a stand-in for real popularity
+  data until there's enough GA traffic history to rank by. Swap this for a
+  GA-ranked list once that data exists. Single-line rows: title left,
+  series name right.
+
+  @example {{< top-articles >}}
+*/ -}}
+
+{{- $sections := where .Page.Site.Sections.ByWeight "Params.hideFromSeriesGrid" "!=" true -}}
+
+<div class="chipdv-latest-grid">
+  {{- range $sections -}}
+    {{- $first := index .RegularPages.ByWeight 0 -}}
+    {{- with $first -}}
+    <a href="{{ .RelPermalink }}" class="chipdv-latest-row">
+      <span class="chipdv-latest-row-title">{{ .Title }}</span>
+      <span class="chipdv-latest-row-meta">{{ .CurrentSection.Title }}</span>
+    </a>
+    {{- end -}}
+  {{- end -}}
+</div>

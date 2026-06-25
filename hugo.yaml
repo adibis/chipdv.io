@@ -1,0 +1,77 @@
+baseURL: https://chipdv.io/
+locale: en-us
+title: chipDV
+theme: hextra
+
+enableRobotsTXT: true
+enableGitInfo: true
+
+params:
+  description: "AI-native chip design verification and the classical UVM engineering underneath it: register verification, memory allocation, testbench architecture, firmware verification, and knowledge graphs for chip design."
+  images:
+    - "images/og-card.png"
+
+  author:
+    name: Aditya Shevade
+
+  navbar:
+    displayTitle: true
+    displayLogo: false
+    width: wide
+
+  page:
+    width: wide
+
+  theme:
+    default: light
+    displayToggle: true
+
+  footer:
+    displayCopyright: false
+    displayPoweredBy: false
+
+  displayUpdatedDate: true
+  dateFormat: "January 2, 2006"
+
+
+menu:
+  main:
+    - name: CSR Verification
+      pageRef: /csr
+      weight: 1
+    - name: Memory Allocation
+      pageRef: /mam
+      weight: 2
+    - name: SoC Reuse
+      pageRef: /reuse
+      weight: 3
+    - name: Firmware
+      pageRef: /fw
+      weight: 4
+    - name: Projects
+      pageRef: /projects
+      weight: 5
+    - name: About
+      pageRef: /about
+      weight: 6
+    - name: search
+      weight: 7
+      params:
+        type: search
+    - name: theme-toggle
+      weight: 8
+      params:
+        type: theme-toggle
+    - name: RSS
+      url: /index.xml
+      weight: 9
+      params:
+        icon: rss
+
+markup:
+  highlight:
+    noClasses: false
+    style: monokai
+  goldmark:
+    renderer:
+      unsafe: true

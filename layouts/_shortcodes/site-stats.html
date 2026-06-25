@@ -1,0 +1,18 @@
+{{- /*
+  Computes "N articles across M series" from actual site content, so the
+  homepage badge never needs manual updates when an article or series is added.
+  Sections marked excludeFromStats (e.g. /projects, which isn't an article
+  series) don't count toward either number.
+
+  @example {{< site-stats >}}
+*/ -}}
+
+{{- $seriesCount := 0 -}}
+{{- $articleCount := 0 -}}
+{{- range .Page.Site.Sections -}}
+  {{- if not .Params.excludeFromStats -}}
+    {{- $seriesCount = add $seriesCount 1 -}}
+    {{- $articleCount = add $articleCount (len .RegularPages) -}}
+  {{- end -}}
+{{- end -}}
+{{- printf "%d articles across %d series" $articleCount $seriesCount -}}
