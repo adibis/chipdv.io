@@ -2,7 +2,7 @@ name: Deploy chipDV to GitHub Pages
 
 on:
   push:
-    branches: [main]
+    branches: [master]
   schedule:
     # Runs daily so articles with a publishDate that has just arrived go
     # live without needing a manual commit that day. GitHub Pages only
