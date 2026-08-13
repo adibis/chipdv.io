@@ -117,4 +117,4 @@ The alternative to this whole chain is a sequence that manually calls `scoreboar
 
 ---
 
-*Next: Config Object Plumbing at SoC Scale*
+*Next: [Config Object Plumbing at SoC Scale](../config-object-plumbing)*

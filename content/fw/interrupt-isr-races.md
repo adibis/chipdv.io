@@ -53,4 +53,4 @@ Neither flavor of this bug shows up in the message-ID logging this series builds
 
 ---
 
-*Next: When Hardware Sleeps but Firmware Is Awake — a third flavor of timing bug, this time between a hardware state machine and firmware's own execution latency.*
+*Next: [When Hardware Sleeps but Firmware Is Awake](../power-gating-vs-fw-latency) — a third flavor of timing bug, this time between a hardware state machine and firmware's own execution latency.*
