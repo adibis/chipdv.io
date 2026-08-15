@@ -53,4 +53,4 @@ The durable fix isn't faster firmware, a gap of that size is not one firmware ca
 
 ---
 
-*Next: Your Debug Infrastructure Is Part of the Bug — why naive logging perturbs all three of these races the same way.*
+*Next: [Your Debug Infrastructure Is Part of the Bug](../debug-infrastructure-is-part-of-the-bug) — why naive logging perturbs all three of these races the same way.*
