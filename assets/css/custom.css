@@ -332,11 +332,11 @@ nav button {
 .dark .chipdv-series-card {
   border-color: #262626;
 }
-a.chipdv-series-card:hover {
+.chipdv-series-card:not(.chipdv-series-placeholder):hover {
   border-color: #a3a3a3;
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.06);
 }
-.dark a.chipdv-series-card:hover {
+.dark .chipdv-series-card:not(.chipdv-series-placeholder):hover {
   border-color: #525252;
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3);
 }
@@ -378,6 +378,22 @@ a.chipdv-series-card:hover {
 .dark .chipdv-series-count {
   color: #a3a3a3;
 }
+.chipdv-series-cta {
+  display: inline-flex;
+  align-items: center;
+  font: 700 0.7rem var(--font-mono);
+  letter-spacing: 0.02em;
+  color: var(--card-color);
+  background: color-mix(in srgb, var(--card-color) 15%, transparent);
+  padding: 0.4rem 0.75rem;
+  border-radius: 0.4rem;
+  margin-top: 0.85rem;
+  text-decoration: none;
+  transition: background 0.15s ease;
+}
+.chipdv-series-cta:hover {
+  background: color-mix(in srgb, var(--card-color) 28%, transparent);
+}
 .chipdv-series-placeholder {
   border-style: dashed;
   border-color: #d4d4d4;
@@ -398,6 +414,79 @@ a.chipdv-series-card:hover {
 }
 .chipdv-series-placeholder .chipdv-series-desc {
   margin-top: 0.35rem;
+}
+
+/* ── Project hero: contained-width, theme-aware (unlike the homepage's
+   fixed-dark full-bleed hero, this sits inside a normal docs page's content
+   column and has to work with the reader's own light/dark choice) ───── */
+.chipdv-project-hero {
+  border: 1px solid #e5e7eb;
+  border-radius: 0.75rem;
+  padding: 2rem 2.25rem;
+  margin: 1.5rem 0 2rem;
+}
+.dark .chipdv-project-hero {
+  border-color: #262626;
+}
+.chipdv-project-hero-badge {
+  display: inline-flex;
+  font: 600 0.6875rem var(--font-mono);
+  color: #df8e1d;
+  background: rgba(223, 142, 29, 0.12);
+  border: 1px solid rgba(223, 142, 29, 0.35);
+  padding: 0.3rem 0.6rem;
+  border-radius: 20px;
+  letter-spacing: 0.03em;
+}
+.chipdv-project-hero-title {
+  font: 700 clamp(1.5rem, 3vw, 2rem) var(--font-sans);
+  letter-spacing: -0.01em;
+  margin: 1rem 0 0;
+  color: #171717;
+}
+.dark .chipdv-project-hero-title {
+  color: #f5f5f5;
+}
+.chipdv-project-hero-desc {
+  font: 400 1rem/1.6 var(--font-sans);
+  color: #525252;
+  max-width: 640px;
+  margin: 0.75rem 0 0;
+}
+.dark .chipdv-project-hero-desc {
+  color: #a3a3a3;
+}
+.chipdv-project-hero-links {
+  display: flex;
+  align-items: center;
+  gap: 1.1rem;
+  flex-wrap: wrap;
+  margin-top: 1.5rem;
+}
+.chipdv-project-hero-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font: 600 0.875rem var(--font-sans);
+  background: #df8e1d;
+  color: #18181b;
+  padding: 0.65rem 1.25rem;
+  border-radius: 0.4rem;
+  text-decoration: none;
+}
+.chipdv-project-hero-secondary {
+  font: 500 0.8125rem var(--font-sans);
+  color: #737373;
+  text-decoration: none;
+}
+.chipdv-project-hero-secondary:hover {
+  color: #171717;
+}
+.dark .chipdv-project-hero-secondary {
+  color: #a3a3a3;
+}
+.dark .chipdv-project-hero-secondary:hover {
+  color: #f5f5f5;
 }
 
 /* ── Homepage: top/latest articles, equal two-column layout ── */

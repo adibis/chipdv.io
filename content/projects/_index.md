@@ -1,7 +1,7 @@
 ---
 title: "Projects"
 weight: 6
-description: "Working code, not just writing: reusable UVM components and scripts pulled out of real testbenches."
+description: "Real, runnable code that goes with the writing above -- starting with brokenbench, a growing set of interview and practice problems across SystemVerilog, UVM, and CSR verification."
 icon: cube
 hideFromSeriesGrid: true
 excludeFromStats: true
@@ -9,6 +9,14 @@ cascade:
   type: docs
 ---
 
-Nothing published here yet. The first project, `mam-registry`, a singleton wrapper around `uvm_mem_mam` for block/subsystem/SoC reuse (the pattern [article 03 of the Memory Allocation series](/mam/singleton-wrapper) covers), is on the way.
+Real, runnable code that goes with the writing above, not just articles.
 
-Reusable UVM components and scripts will land here as the writing in the series above produces something worth extracting into its own package.
+<div class="chipdv-project-hero">
+  <span class="chipdv-project-hero-badge">SV TODAY · UVM &amp; CSR NEXT</span>
+  <div class="chipdv-project-hero-title">brokenbench</div>
+  <p class="chipdv-project-hero-desc">A growing set of real interview and practice problems across SystemVerilog, UVM, and register-map (CSR) verification, ziglings/rustlings-style. Fix the class or write it from scratch, a checker tells you unambiguously whether you got it right -- including several genuine, currently-open Verilator bugs found and confirmed while building it.</p>
+  <div class="chipdv-project-hero-links">
+    <a class="chipdv-project-hero-cta" href="/projects/brokenbench/">Read more &rarr;</a>
+    <a class="chipdv-project-hero-secondary" href="https://github.com/adibis/brokenBench" target="_blank" rel="noopener noreferrer">View on GitHub</a>
+  </div>
+</div>

@@ -1,0 +1,35 @@
+{{- /*
+  Auto-generated grid of every project under content/projects/ (each .md
+  file besides _index.md itself), sorted by weight. Same self-updating
+  pattern as series-cards.html: adding a new project means adding
+  content/projects/<slug>.md with title, weight, and description -- this
+  shortcode picks it up automatically, nothing on the homepage needs
+  editing.
+
+  Unlike series cards, each card here is not itself one big link: the
+  title/description area links to the on-site project page, and a
+  separate "VIEW ON GITHUB" link (only shown when `github` front matter
+  is set) is the sole way to leave the site from this card.
+
+  @example {{< project-cards >}}
+*/ -}}
+
+{{- $projectsSection := .Page.Site.GetPage "/projects" -}}
+{{- $projects := slice -}}
+{{- if $projectsSection -}}
+  {{- $projects = $projectsSection.RegularPages.ByWeight -}}
+{{- end -}}
+
+<div class="chipdv-series-grid">
+  {{- range $projects -}}
+    <div class="chipdv-series-card" style="--card-color: #df8e1d">
+      <a href="{{ .RelPermalink }}" style="display: block; text-decoration: none; color: inherit;">
+        <div class="chipdv-series-title">{{ .Title }}</div>
+        <div class="chipdv-series-desc">{{ .Params.description }}</div>
+      </a>
+      {{- with .Params.github }}
+        <a class="chipdv-series-cta" href="{{ . }}" target="_blank" rel="noopener noreferrer">VIEW ON GITHUB &rarr;</a>
+      {{- end }}
+    </div>
+  {{- end -}}
+</div>
