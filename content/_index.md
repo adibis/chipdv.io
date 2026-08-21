@@ -56,7 +56,7 @@ layout: hextra-home
     <h1 style="font: 700 clamp(2rem, 4.5vw, 3.125rem)/1.08 var(--font-sans); letter-spacing: -0.02em; margin: 1.25rem 0 0; max-width: 800px; color: #fff;">Real DV engineering, worked all the way through.</h1>
     <p style="font: 400 1.0625rem/1.55 var(--font-sans); color: #c4c4c4; max-width: 620px; margin: 1rem 0 0;">Not tutorials. Not prompting tips. Register verification, memory allocation, testbench architecture, firmware, and knowledge graphs for chip design, opinions and issues from real work, written up as they happen.</p>
     <div style="display: flex; gap: 0.9rem; margin-top: 1.6rem; align-items: center; flex-wrap: wrap;">
-      <a href="/ai-dv/why-llms-fail/" style="font: 600 0.875rem var(--font-sans); background: #df8e1d; color: #18181b; padding: 0.75rem 1.5rem; border-radius: 0.4rem; text-decoration: none;">Start with Why LLMs Fail &rarr;</a>
+      <a href="/csr" style="font: 600 0.875rem var(--font-sans); background: #df8e1d; color: #18181b; padding: 0.75rem 1.5rem; border-radius: 0.4rem; text-decoration: none;">Start with CSR Verification &rarr;</a>
       <a href="/projects/brokenbench/" style="font: 600 0.875rem var(--font-sans); color: #fff; border: 1px solid rgba(255, 255, 255, 0.3); padding: 0.7rem 1.4rem; border-radius: 0.4rem; text-decoration: none;">Try brokenbench &rarr;</a>
       <a href="https://github.com/adibis/brokenBench" target="_blank" rel="noopener noreferrer" style="font: 500 0.8125rem var(--font-sans); color: #a3a3a3; text-decoration: none;">View on GitHub</a>
       <a href="/about" style="font: 500 0.8125rem var(--font-sans); color: #a3a3a3; text-decoration: none;">by Aditya Shevade, a working DV engineer</a>
