@@ -56,4 +56,4 @@ Generation gets the structure right: offsets, widths, access strings, reset valu
 
 ---
 
-*Next: What the Built-in Sequences Actually Test*
+*Next: [What the Built-in Sequences Actually Test](../builtin-sequence-limits)*
