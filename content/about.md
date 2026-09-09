@@ -8,7 +8,7 @@ This site is where I write that part down: the CSR patterns that actually catch 
 
 ## Who's writing this
 
-**chipDV** is written by Aditya Shevade, a design verification engineer with 15 years in the field, currently at Meta. His background spans FPGA prototyping through ASIC and SoC verification methodology, with graduate work at USC in computer architecture and VLSI design. Before DV, he wrote technical articles for Linux Format, Linux Magazine, and Open Source For U.
+**chipDV** is written by Aditya Shevade, a design verification engineer with 15 years in the field, currently at Meta. His background spans Google's TPUs and Qualcomm's AI and Snapdragon chips, from unit-level verification through SoC, post-silicon, and emulation.
 
 Get in touch: [aditya.shevade@gmail.com](mailto:aditya.shevade@gmail.com) · [github.com/adibis](https://github.com/adibis) · [LinkedIn](https://www.linkedin.com/in/adityashevade)
 

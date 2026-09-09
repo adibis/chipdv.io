@@ -7,7 +7,7 @@ enableRobotsTXT: true
 enableGitInfo: true
 
 params:
-  description: "AI-native chip design verification and the classical UVM engineering underneath it: register verification, memory allocation, testbench architecture, firmware verification, and knowledge graphs for chip design."
+  description: "UVM chip design verification, worked through in full: register verification, memory allocation, SoC reuse patterns, and firmware verification."
   images:
     - "images/og-card.png"
 
