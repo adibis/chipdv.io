@@ -12,7 +12,7 @@ cascade:
 Real, runnable code that goes with the writing above, not just articles.
 
 <div class="chipdv-project-hero">
-  <span class="chipdv-project-hero-badge">SV TODAY · UVM &amp; CSR NEXT</span>
+  <span class="chipdv-project-hero-badge">SV &amp; UVM TODAY · CSR NEXT</span>
   <div class="chipdv-project-hero-title">brokenbench</div>
   <p class="chipdv-project-hero-desc">A growing set of real interview and practice problems across SystemVerilog, UVM, and register-map (CSR) verification, ziglings/rustlings-style. Fix the class or write it from scratch, a checker tells you unambiguously whether you got it right -- including several genuine, currently-open Verilator bugs found and confirmed while building it.</p>
   <div class="chipdv-project-hero-links">

@@ -8,7 +8,7 @@ description: "A growing set of real interview and practice problems across Syste
 github: "https://github.com/adibis/brokenBench"
 ---
 
-**brokenbench** is a growing set of real interview and practice problems across SystemVerilog, UVM, and register-map (CSR) verification. SV is what's there today; UVM and CSR are next.
+**brokenbench** is a growing set of real interview and practice problems across SystemVerilog, UVM, and register-map (CSR) verification. SV and UVM are here today; CSR is next.
 
 It's a [ziglings](https://codeberg.org/ziglings/exercises)/[rustlings](https://github.com/rust-lang/rustlings)-style exercise repo: every exercise is a single self-contained `.sv` file with a checker at the bottom that tells you, unambiguously, whether you got it right. No tutorials, no multiple choice. Most exercises hand you a spec in a comment and an empty stub -- get the constraint logic right against a checker built to catch partial credit, not just crashes. A handful hand you working code with a real bug already sitting in it, the kind that compiles clean and looks fine until you read the actual compiler output or runtime failure and find what's wrong.
 
