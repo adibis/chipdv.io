@@ -84,4 +84,4 @@ One assumption baked into `register_pool()` as shown here: the name being regist
 
 ---
 
-*Next: Keeping Allocations Out of the RAL Address Map*
+*Next: [Keeping Allocations Out of the RAL Address Map](../ral-address-map-collisions)*

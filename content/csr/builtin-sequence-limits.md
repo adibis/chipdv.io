@@ -66,8 +66,8 @@ task directed_w1c_seq::body();
 endtask
 ```
 
-Registers with a value that changes on its own, independent of any software write, need the volatility handling in a later article on volatile registers. And registers that shouldn't be swept at all, because sweeping them causes a side effect elsewhere in the design, need explicit exclusion, which is what a later article on the waiver mechanism covers. Running the built-ins against those registers without exclusion doesn't just fail to test them correctly. It can corrupt DUT state for every test that runs afterward.
+Registers with a value that changes on its own, independent of any software write, need the volatility handling in [article 05](../volatile-registers). And registers that shouldn't be swept at all, because sweeping them causes a side effect elsewhere in the design, need explicit exclusion, which is what the waiver mechanism in a later article on waivers is for. Running the built-ins against those registers without exclusion doesn't just fail to test them correctly. It can corrupt DUT state for every test that runs afterward.
 
 ---
 
-*Next: Volatile Registers and the Predictor Problem*
+*Next: [Volatile Registers and the Predictor Problem](../volatile-registers)*

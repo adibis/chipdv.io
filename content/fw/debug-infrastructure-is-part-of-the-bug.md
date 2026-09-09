@@ -40,7 +40,7 @@ The instinct at this point is usually "make the UART faster" or "give each core 
 
 ## Quantifying it, not just describing it
 
-Independent of the race-perturbation problem, character streaming is simply slow at the volumes a real debug session needs, using a single shared memory-mapped print location, the best case, not the contended-UART worst case this article has been describing. Exactly how slow is worth measuring precisely rather than asserting, and article 06 does that measurement in full once the fixed-width alternative below actually exists to compare against. The shape of the result is enough to motivate what comes next: streaming spends cycles proportional to message length, one write per character, the identifier scheme spends a small, fixed number of writes no matter how long the message would have been.
+Independent of the race-perturbation problem, character streaming is simply slow at the volumes a real debug session needs, using a single shared memory-mapped print location, the best case, not the contended-UART worst case this article has been describing. Exactly how slow is worth measuring precisely rather than asserting, and a later article does that measurement in full once the fixed-width alternative below actually exists to compare against. The shape of the result is enough to motivate what comes next: streaming spends cycles proportional to message length, one write per character, the identifier scheme spends a small, fixed number of writes no matter how long the message would have been.
 
 At single-test scale that difference is an annoyance. At regression scale, hundreds of tests each logging on the order of hundreds of messages while chasing exactly the kind of race article 01 describes, even a moderate per-message gap compounds into the difference between a debug session that finishes overnight and one that doesn't finish before the next regression needs the same machines.
 
@@ -52,4 +52,4 @@ What's needed is a logging primitive that doesn't force cross-core serialization
 
 ---
 
-*Next: Turning a Debug Message Into 32 Bits — the identifier scheme and the macros that generate it.*
+*Next: [Turning a Debug Message Into 32 Bits](../encoding-messages-as-data) — the identifier scheme and the macros that generate it.*

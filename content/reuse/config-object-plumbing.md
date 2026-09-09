@@ -6,6 +6,7 @@ publishDate: 2026-07-30
 draft: false
 description: "uvm_config_db works fine at block level and gets quietly fragile the moment a block is reused more than once in the same SoC."
 prev: /reuse/register-triggered-reset-worked-example
+next: /reuse/hierarchical-reset-dispatch
 ---
 
 `uvm_config_db` feels bulletproof the first time anyone uses it, because a block-level environment usually has one instance of everything, a flat hierarchy, and paths simple enough that a wildcard like `"*"` matches exactly what it was supposed to and nothing else. None of those three properties survive a block being reused at subsystem or SoC level, where the same environment gets instantiated more than once under different instance names, nested several levels deeper than it was at block level, and configured by a parent that doesn't necessarily know every field the block's internals care about. The failure mode that results is a specific kind of dangerous: `config_db::get()` doesn't error when it can't find a matching `set()`. It silently returns whatever default the caller supplied, and the test keeps running against a component that's quietly misconfigured.
@@ -95,3 +96,7 @@ if (!uvm_config_db#(periph_env_cfg)::get(this, "", "cfg", cfg))
 ```
 
 A block-level environment that always sets its own default before children run never hits this fatal. An SoC-level integration that renamed an instance, or a sibling-ordering race that fired too late, hits it immediately, at the point of the actual mistake, with a message that says exactly what's missing, instead of surfacing forty minutes into a regression as a data mismatch that traces back to a driver silently running with the wrong delay.
+
+---
+
+*Next: [Hierarchical Reset Dispatch: Cold, Warm, Analog, Digital](../hierarchical-reset-dispatch)*
