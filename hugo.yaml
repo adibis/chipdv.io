@@ -30,6 +30,13 @@ params:
     displayCopyright: false
     displayPoweredBy: false
 
+  imageZoom:
+    enable: true
+
+  reportIssue:
+    enable: true
+    repo: "https://github.com/adibis/chipdv.io"
+
   displayUpdatedDate: true
   dateFormat: "January 2, 2006"
 
