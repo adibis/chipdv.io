@@ -39,15 +39,23 @@ menu:
     - name: CSR Verification
       pageRef: /csr
       weight: 1
+      params:
+        tab: true
     - name: Memory Allocation
       pageRef: /mam
       weight: 2
+      params:
+        tab: true
     - name: SoC Reuse
       pageRef: /reuse
       weight: 3
+      params:
+        tab: true
     - name: Firmware
       pageRef: /fw
       weight: 4
+      params:
+        tab: true
     - name: Projects
       pageRef: /projects
       weight: 5
@@ -72,6 +80,8 @@ markup:
   highlight:
     noClasses: false
     style: monokai
+    lineNos: true
+    lineNumbersInTable: false
   goldmark:
     renderer:
       unsafe: true

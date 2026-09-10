@@ -1,0 +1,10 @@
+{{- /* Site-level override: inline SVG icon (currentColor, adapts to theme)
+  instead of the theme's default <img>-based light/dark logo pair. */ -}}
+<a class="hx:flex hx:items-center hx:gap-2 hx:hover:opacity-75" href="{{ .Site.Home.RelPermalink }}">
+  <span class="hx:text-[#df8e1d]">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M2 15h3l2-6 3 10 2-8 2 4h8" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </span>
+  <span class="hx:font-extrabold hx:inline hx:select-none">{{- .Site.Title -}}</span>
+</a>

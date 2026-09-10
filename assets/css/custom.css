@@ -1,17 +1,46 @@
 /* ── Fonts ───────────────────────────────────────────────── */
 :root {
-  --font-sans: 'IBM Plex Sans', system-ui, sans-serif;
-  --font-mono: 'IBM Plex Mono', 'Menlo', monospace;
+  --font-sans: 'Alegreya', Georgia, 'Times New Roman', serif;
+  --font-mono: 'Iosevka Charon Mono', 'Menlo', monospace;
 }
 
 body {
   font-family: var(--font-sans);
   font-size: 1.25rem;
-  line-height: 1.75;
+  line-height: 1.6;
 }
 
 code, pre, kbd {
   font-family: var(--font-mono);
+}
+
+/* ── Nav tab row ─────────────────────────────────────────── */
+.chipdv-tab-row {
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.chipdv-tab-row::-webkit-scrollbar {
+  display: none;
+}
+
+.chipdv-tab-link {
+  white-space: nowrap;
+}
+
+.chipdv-tab-active {
+  color: var(--color-primary-600);
+  border-color: var(--color-primary-600) !important;
+}
+
+/* ── Search input ────────────────────────────────────────── */
+.hextra-search-input {
+  background-color: transparent !important;
+  border: 1px solid #e5e7eb;
+}
+
+.dark .hextra-search-input {
+  border-color: #333;
 }
 
 /* ── Color palette (light) ───────────────────────────────── */
@@ -44,9 +73,22 @@ code, pre, kbd {
   margin-top: 2rem;
 }
 
+.content h4 {
+  font-size: 1.375rem;
+}
+
 /* ── Paragraph rhythm ────────────────────────────────────── */
 .content p {
-  margin-bottom: 1.25rem;
+  margin-bottom: 1.5rem;
+}
+
+/* ── Reading measure ─────────────────────────────────────── */
+.content {
+  max-width: 46rem;
+}
+
+.content .hextra-code-block {
+  max-width: none;
 }
 
 /* ── Inline code ─────────────────────────────────────────── */
@@ -54,7 +96,8 @@ code, pre, kbd {
   background-color: #dbeafe;
   border-color: #93c5fd;
   color: #1e3a5f;
-  font-size: 0.82em;
+  font-size: 0.78em;
+  letter-spacing: 0.01em;
   padding: 0.15em 0.4em;
   border-radius: 4px;
 }
@@ -69,6 +112,7 @@ code, pre, kbd {
 .hextra-code-block pre,
 .hextra-code-block code {
   font-size: 0.95rem !important;
+  line-height: 1.5 !important;
 }
 
 .hextra-code-block pre {
