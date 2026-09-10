@@ -39,7 +39,7 @@ This is the same shape as the fault-injection example in the extensions article:
 
 ## Step 2: a callback turns the write into a coordinator event
 
-A `uvm_reg_cbs` registered on `domain_ctrl` catches the write once it's actually landed, and hands off to the coordinator from article 01:
+A `uvm_reg_cbs` registered on `domain_ctrl` catches the write once it's actually landed, and hands off to the coordinator from [article 01](../mid-sim-reset-plumbing):
 
 ```systemverilog
 class domain_reset_callback extends uvm_reg_cbs;
@@ -57,13 +57,13 @@ class domain_reset_callback extends uvm_reg_cbs;
 endclass
 ```
 
-`post_write` rather than `pre_write` matters here: the coordinator should only fire once the write has actually gone out over the bus, not before. Firing it in `fork`/`join_none` matters too: `post_write` runs synchronously as part of the same call chain as the `write()` that triggered it, so the sequence that issued the write is still parked inside that call, waiting for it to return, for as long as `post_write` keeps running. `announce_reset()` runs the full two-pass hook sequence from article 01 across every registered component, real work that takes real simulation time, and blocking inside `post_write` for all of it would stall the sequence's register access call for exactly as long. `join_none` lets `announce_reset()` run as its own process instead, so `post_write` returns immediately and the write() call the sequence issued completes on schedule.
+`post_write` rather than `pre_write` matters here: the coordinator should only fire once the write has actually gone out over the bus, not before. Firing it in `fork`/`join_none` matters too: `post_write` runs synchronously as part of the same call chain as the `write()` that triggered it, so the sequence that issued the write is still parked inside that call, waiting for it to return, for as long as `post_write` keeps running. `announce_reset()` runs the full two-pass hook sequence from [article 01](../mid-sim-reset-plumbing) across every registered component, real work that takes real simulation time, and blocking inside `post_write` for all of it would stall the sequence's register access call for exactly as long. `join_none` lets `announce_reset()` run as its own process instead, so `post_write` returns immediately and the write() call the sequence issued completes on schedule.
 
 That immediacy has a cost worth naming: nothing here raises a phase objection while the detached `announce_reset()` is still settling, and nothing serializes two overlapping resets against the same domain. A production version needs one or both, an objection held until the coordinator finishes, and a per-domain guard against re-entering `announce_reset()` before a prior call's settle window has drained.
 
 ## Step 3: the coordinator's two passes run
 
-The per-component reactions are article 01's mechanism, unmodified: monitors for domain A stop sampling and discard partial transactions, the scoreboard clears its outstanding-expectation table for domain A specifically, not the whole environment, and the predictor invalidates mirrored values for every register in that domain so the next access re-establishes them from a live read rather than trusting a value that reset just made stale. What does change, covered next, is the coordinator's own `announce_reset()`, extended with a settle window between the two passes.
+The per-component reactions are [article 01](../mid-sim-reset-plumbing)'s mechanism, unmodified: monitors for domain A stop sampling and discard partial transactions, the scoreboard clears its outstanding-expectation table for domain A specifically, not the whole environment, and the predictor invalidates mirrored values for every register in that domain so the next access re-establishes them from a live read rather than trusting a value that reset just made stale. What does change, covered next, is the coordinator's own `announce_reset()`, extended with a settle window between the two passes.
 
 ```systemverilog
 class domain_scoreboard extends reset_aware_comp;
@@ -86,7 +86,7 @@ endclass
 
 `settle_cycles` from the extension is what tells the coordinator, or more precisely whatever's waiting to call `post_reset()`, how long the domain needs before it's safe to check again. This is where a naive version of this pattern goes wrong: firing `post_reset()` immediately after `pre_reset()` re-arms checking before the domain has actually finished resetting in the DUT, and the first access after re-arming compares against a domain that hasn't settled yet.
 
-This is the one real change to article 01's coordinator: `announce_reset()` there took a single `domain` argument and ran both passes back to back. Here it gains a second, defaulted argument so every existing single-argument call site keeps compiling unchanged, while a caller that actually has a settle time to report can pass it. The two-role-pass ordering from article 01, every observer's `pre_reset()` before any consumer's, carries over unchanged; only the settle window between the pre- and post-reset hooks is new:
+This is the one real change to [article 01](../mid-sim-reset-plumbing)'s coordinator: `announce_reset()` there took a single `domain` argument and ran both passes back to back. Here it gains a second, defaulted argument so every existing single-argument call site keeps compiling unchanged, while a caller that actually has a settle time to report can pass it. The two-role-pass ordering from [article 01](../mid-sim-reset-plumbing), every observer's `pre_reset()` before any consumer's, carries over unchanged; only the settle window between the pre- and post-reset hooks is new:
 
 ```systemverilog
 task reset_coordinator::announce_reset(string domain, int settle_cycles = 0);

@@ -56,7 +56,7 @@ The translation, deciding that `CHIPLET_WARM` means `SUB_ENV1_DIGITAL_RESET` rat
 
 The sub-environment dispatch handles state that belongs to `sub_env0` and `sub_env1`. It says nothing about the chiplet environment's own state: its own regmodels, its own protocol checkers watching the chiplet-level interfaces, its own sequencers that might have a virtual sequence in flight when the reset fires, and its own scoreboard. All four are the chiplet environment's direct responsibility, independent of which reset kind fired or what either sub-environment does in response, and all four need to happen in a specific order for the same reason [article 01](../mid-sim-reset-plumbing) requires ordered passes: a checker that hasn't quiesced yet can flag a transaction the reset itself is about to abort as a protocol violation, and a scoreboard that clears before a monitor stops sampling can receive one more observation into a table that's already been reset out from under it.
 
-This is the same `reset_coordinator` from article 01, registered with the chiplet's own components instead of a single domain's:
+This is the same `reset_coordinator` from [article 01](../mid-sim-reset-plumbing), registered with the chiplet's own components instead of a single domain's:
 
 ```systemverilog
 function void chiplet_env::connect_phase(uvm_phase phase);
@@ -71,7 +71,7 @@ endfunction
 
 Each registrant implements `pre_reset()`/`post_reset()` for exactly the piece of state it owns:
 
-Every registrant extends the same `reset_aware_comp` base from article 01, whose `pre_reset()`/`post_reset()`/`watches_domain()` are all typed to the `string domain` the coordinator hands out, so the chiplet-level reset kind gets converted to a string once at the dispatch call site (`reset_kind.name()`, above) and every registrant checks it as a string like any other domain name:
+Every registrant extends the same `reset_aware_comp` base from [article 01](../mid-sim-reset-plumbing), whose `pre_reset()`/`post_reset()`/`watches_domain()` are all typed to the `string domain` the coordinator hands out, so the chiplet-level reset kind gets converted to a string once at the dispatch call site (`reset_kind.name()`, above) and every registrant checks it as a string like any other domain name:
 
 ```systemverilog
 // protocol checkers: stop checking once the dispatch below has fired,
@@ -134,4 +134,4 @@ A package or SoC-level environment instantiating several chiplets doesn't need t
 
 ---
 
-*Next: Reset Dispatch End to End: Virtual Sequence to Per-Core Reset*
+*Next: [Reset Dispatch End to End: Virtual Sequence to Per-Core Reset](../reset-dispatch-end-to-end)*
