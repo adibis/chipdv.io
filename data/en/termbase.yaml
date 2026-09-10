@@ -1,0 +1,49 @@
+---
+# Terminology glossary for chipdv.io.
+#
+# Usage: {{< term "RAL" >}} or {{< term entry="RAL" >}}
+# Renders as an inline <abbr> with the definition as a hover tooltip.
+# Match is case-insensitive against either `abbr` or `term`.
+
+- term: register abstraction layer
+  abbr: RAL
+  definition: "UVM's model-based approach to register access -- uvm_reg, uvm_reg_block, and uvm_reg_map stand in for the real hardware registers."
+- term: device under test
+  abbr: DUT
+  definition: "The RTL block, subsystem, or SoC actually being verified."
+- term: hardware description language
+  abbr: HDL
+  definition: "The RTL source language -- Verilog, VHDL, or SystemVerilog -- that describes the DUT's hardware."
+- term: universal verification methodology
+  abbr: UVM
+  definition: "The standardized SystemVerilog class library and methodology for building constrained-random testbenches."
+- term: control and status register
+  abbr: CSR
+  definition: "A memory-mapped register that controls hardware behavior or reports hardware state back to software."
+- term: memory allocation manager
+  abbr: MAM
+  definition: "UVM's uvm_mem_mam class -- allocates non-overlapping address regions out of a shared memory address space."
+- term: system on chip
+  abbr: SoC
+  definition: "An integrated design combining multiple IP blocks, processor cores, and interconnect on a single die."
+- term: error-correcting code
+  abbr: ECC
+  definition: "Extra bits stored alongside data that let hardware detect, and often correct, memory errors."
+- term: phase-locked loop
+  abbr: PLL
+  definition: "An analog clock-generation circuit that locks its output frequency to a reference clock."
+- term: first in, first out
+  abbr: FIFO
+  definition: "A queue-structured buffer where the oldest entry written is the first one read back out."
+- term: interrupt service routine
+  abbr: ISR
+  definition: "The firmware handler that runs when a hardware interrupt fires, interrupting whatever the core was doing."
+- term: direct memory access
+  abbr: DMA
+  definition: "Hardware that moves data between memory and peripherals without the CPU executing the transfer itself."
+- term: advanced peripheral bus
+  abbr: APB
+  definition: "A low-complexity AMBA bus protocol typically used for peripheral register access, not high-bandwidth data movement."
+- term: advanced extensible interface
+  abbr: AXI
+  definition: "A high-performance AMBA bus protocol supporting burst transfers and multiple outstanding transactions."

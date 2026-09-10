@@ -8,13 +8,21 @@ description: "The register model, frontdoor vs backdoor access, mirrored vs desi
 next: /csr/register-access-types
 ---
 
-Every UVM testbench past a certain size ends up with a register abstraction layer. The interesting question isn't whether to use RAL. It's whether the team understands what it's actually modeling, or whether it's being used as a black box that happens to generate `write()` and `read()` calls. This article covers the pieces that matter: what the model represents, how a value gets from a sequence to the DUT and back, and where the abstraction leaks.
+Every UVM testbench past a certain size ends up with a {{< term "register abstraction layer" >}}. The interesting question isn't whether to use RAL. It's whether the team understands what it's actually modeling, or whether it's being used as a black box that happens to generate `write()` and `read()` calls. This article covers the pieces that matter: what the model represents, how a value gets from a sequence to the {{< term "DUT" >}} and back, and where the abstraction leaks.
 
 ![RAL data flow: desired/mirrored value, frontdoor and backdoor paths, adapter, and predictor](/images/csr/01-ral-dataflow.svg)
 
 ## What the register model actually is
 
-A `uvm_reg` is not a register. It's a software-side model of one, holding a *mirrored value* (what the testbench believes the hardware currently holds) and a *desired value* (what the testbench wants the hardware to hold, before the write has actually happened). These two values are allowed to disagree, and the disagreement is the entire point of having both. `set()` changes the desired value with no bus activity at all. `update()` compares desired against mirrored and issues a bus write only if they differ. `write()` does both in one call: set, then issue the transaction.
+A `uvm_reg` is not a register. It's a software-side model of one.
+
+{{< callout type="info" emoji="📘" >}}
+**Mirrored value** -- what the testbench believes the hardware currently holds.
+**Desired value** -- what the testbench wants the hardware to hold, before the write has actually happened.
+These are allowed to disagree, and the disagreement is the entire point of having both.
+{{< /callout >}}
+
+`set()` changes the desired value with no bus activity at all. `update()` compares desired against mirrored and issues a bus write only if they differ. `write()` does both in one call: set, then issue the transaction.
 
 ```systemverilog
 // set() + update(): stage several field changes, one bus write
@@ -32,7 +40,7 @@ The model organizes into `uvm_reg_block` for a functional grouping of registers,
 
 ## Frontdoor vs. backdoor
 
-A frontdoor access goes through the actual protocol path: an AXI write, an APB transfer, whatever the bus happens to be. It exercises the real hardware path, including the interconnect, the register's decode logic, and any protocol-level timing. A backdoor access bypasses all of that and pokes the register's storage directly via an HDL path (`add_hdl_path`), using `hdl_read`/`hdl_write` under the hood. It's instantaneous, and it never touches the decode logic at all.
+A frontdoor access goes through the actual protocol path: an AXI write, an APB transfer, whatever the bus happens to be. It exercises the real hardware path, including the interconnect, the register's decode logic, and any protocol-level timing. A backdoor access bypasses all of that and pokes the register's storage directly via an {{< term "HDL" >}} path (`add_hdl_path`), using `hdl_read`/`hdl_write` under the hood. It's instantaneous, and it never touches the decode logic at all.
 
 ```systemverilog
 // frontdoor: goes through the adapter and the real bus
@@ -45,11 +53,19 @@ csr.write(status, 32'h1, UVM_BACKDOOR);
 csr.mode.add_hdl_path_slice("u_dut.u_ctrl.mode_reg", 0, 8);
 ```
 
-The temptation is to use backdoor everywhere, because simulation time is expensive and backdoor is free. That's a mistake for anything where the access path itself matters. A bit-bash sequence run entirely backdoor never touches the address decoder, the bus protocol adapter, or anything else between the sequencer and the storage element. Backdoor is for setup, preloading a register to a known state before a test that isn't about that register, or for checking storage frontdoor genuinely can't reach cheaply. It shouldn't be a default substitute for frontdoor testing just because it's faster.
+{{< callout type="error" emoji="⚠️" >}}
+The temptation is to use backdoor everywhere, because simulation time is expensive and backdoor is free. That's a mistake for anything where the access path itself matters: a bit-bash sequence run entirely backdoor never touches the address decoder, the bus protocol adapter, or anything else between the sequencer and the storage element.
+{{< /callout >}}
+
+Backdoor is for setup, preloading a register to a known state before a test that isn't about that register, or for checking storage frontdoor genuinely can't reach cheaply. It shouldn't be a default substitute for frontdoor testing just because it's faster.
 
 ## Mirrored value, desired value, and why the distinction survives
 
-The mirrored value tracks the testbench's belief about hardware state, updated automatically after a successful frontdoor access (via the predictor, more on that below) or explicitly via `predict()`. The desired value works as a staging area. Call `set()` on five fields of a register and the desired value accumulates all five changes before a single `update()` issues one bus write with the combined result. That's what makes RAL usable for wide registers: build up the value field by field in software, then commit it in one transaction, which matches how a real driver would behave anyway.
+The mirrored value tracks the testbench's belief about hardware state, updated automatically after a successful frontdoor access (via the predictor, more on that below) or explicitly via `predict()`. The desired value works as a staging area. Call `set()` on five fields of a register and the desired value accumulates all five changes before a single `update()` issues one bus write with the combined result.
+
+{{< callout type="default" emoji="🎯" >}}
+That's what makes RAL usable for wide registers: build up the value field by field in software, then commit it in one transaction, which matches how a real driver would behave anyway.
+{{< /callout >}}
 
 The distinction breaks down if a test writes via `write()` and then reads the desired value expecting it to reflect what hardware now holds after some side effect, a write-1-to-clear bit, say. Desired reflects intent at the moment of the call. It doesn't track what happens to the value afterward inside the hardware. Mirrored is supposed to do that, and even mirrored only gets it right if the model knows about the side effect in the first place, which is what access types ([article 02](../register-access-types)) and volatility, covered later in this series, are for.
 
@@ -91,7 +107,9 @@ predictor.adapter = axi_adapter;
 monitor.ap.connect(predictor.bus_in);
 ```
 
+{{< callout type="important" emoji="❓" >}}
 Worth checking explicitly in any new register environment: is the predictor connected to the actual bus monitor, or only exercised by tests that happen to go exclusively through RAL? The gap stays invisible until a test mixes access styles, and by then it looks like a hardware bug rather than a wiring gap.
+{{< /callout >}}
 
 ## Where this is going
 
