@@ -172,8 +172,8 @@ This doesn't replace the null check inside each individual sequence, fragmentati
 
 ## What this adds up to
 
-The shift across these five articles has been from "hardcode an address and hope" to treating memory allocation as infrastructure with the same rigor register verification gets: a real allocator instead of a convention, a shared instance instead of duplicated state per testbench level, an exclusion mechanism tied to the same address map the registers already use, and release discipline that survives the test not finishing the way it was supposed to. None of it is exotic. `uvm_mem_mam` has been part of UVM the entire time. The gap on most projects isn't the tooling. It's that nobody wired it up past the first block that needed it, which is exactly the scale a later article works through concretely.
+The shift across these five articles has been from "hardcode an address and hope" to treating memory allocation as infrastructure with the same rigor register verification gets: a real allocator instead of a convention, a shared instance instead of duplicated state per testbench level, an exclusion mechanism tied to the same address map the registers already use, and release discipline that survives the test not finishing the way it was supposed to. None of it is exotic. `uvm_mem_mam` has been part of UVM the entire time. The gap on most projects isn't the tooling. It's that nobody wired it up past the first block that needed it, which is exactly the scale [the next article](../block-chiplet-soc-worked-example) works through concretely.
 
 ---
 
-*Next: Block to Chiplet to SoC: A DMA and Ethernet Worked Example*
+*Next: [Block to Chiplet to SoC: A DMA and Ethernet Worked Example](../block-chiplet-soc-worked-example)*
