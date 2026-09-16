@@ -9,7 +9,7 @@ prev: /reuse/hierarchical-reset-dispatch
 next: /reuse/reset-driver-override
 ---
 
-[Article 04](../hierarchical-reset-dispatch) established the shape: `chiplet_env.reset(kind)` translates its own vocabulary into each sub-environment's, and that translation is chiplet-level knowledge the sub-environments never see. What it didn't show is where the call comes from in the first place, or what happens when one of those sub-environments isn't a single block but a set of identical, repeated instances, cores, lanes, channels, whatever the DUT happens to replicate. Both gaps matter in practice: something has to actually trigger `chiplet_env.reset()`, and "fan out to N identical children" is a genuinely different problem from "fan out to two differently-typed children," with its own failure modes that a two-sub-environment example never has to confront.
+[Hierarchical Reset Dispatch](../hierarchical-reset-dispatch) established the shape: `chiplet_env.reset(kind)` translates its own vocabulary into each sub-environment's, and that translation is chiplet-level knowledge the sub-environments never see. What it didn't show is where the call comes from in the first place, or what happens when one of those sub-environments isn't a single block but a set of identical, repeated instances, cores, lanes, channels, whatever the DUT happens to replicate. Both gaps matter in practice: something has to actually trigger `chiplet_env.reset()`, and "fan out to N identical children" is a genuinely different problem from "fan out to two differently-typed children," with its own failure modes that a two-sub-environment example never has to confront.
 
 ## Where the call comes from
 
@@ -32,7 +32,7 @@ endclass
 
 ## The cascade, one level deeper
 
-[Article 04](../hierarchical-reset-dispatch) stopped at `sub_env0` and `sub_env1`. A real chiplet usually has more than two children, and at least one of them is rarely a single instance:
+[Hierarchical Reset Dispatch](../hierarchical-reset-dispatch) stopped at `sub_env0` and `sub_env1`. A real chiplet usually has more than two children, and at least one of them is rarely a single instance:
 
 ```systemverilog
 task chiplet_env::reset(chiplet_reset_kind_e reset_kind);
@@ -53,11 +53,11 @@ task chiplet_env::reset(chiplet_reset_kind_e reset_kind);
 endtask
 ```
 
-`sub_env2` owns the chiplet's core cluster. Its own reset-kind enum has exactly one value today, `typedef enum { SUB_ENV2_CORE_RESET } sub_env2_reset_kind_e;`, because this chiplet has no scenario yet where a core-level reset needs to distinguish anything finer, the same reasoning [article 04](../hierarchical-reset-dispatch) uses for `sub_env0`. What's different is what `sub_env2.reset()` actually has to do once it's called.
+`sub_env2` owns the chiplet's core cluster. Its own reset-kind enum has exactly one value today, `typedef enum { SUB_ENV2_CORE_RESET } sub_env2_reset_kind_e;`, because this chiplet has no scenario yet where a core-level reset needs to distinguish anything finer, the same reasoning [Hierarchical Reset Dispatch](../hierarchical-reset-dispatch) uses for `sub_env0`. What's different is what `sub_env2.reset()` actually has to do once it's called.
 
 ## Where it bottoms out: fan-out to identical children, not a translation
 
-`sub_env0` and `sub_env1` each own one thing. `sub_env2` owns `MAX_CORE_ID` identical cores, and "identical" is doing real work in that sentence: there's no per-core vocabulary to translate, because every core means the same thing by "reset." The decisions that matter here are different from anything [article 04](../hierarchical-reset-dispatch) had to make.
+`sub_env0` and `sub_env1` each own one thing. `sub_env2` owns `MAX_CORE_ID` identical cores, and "identical" is doing real work in that sentence: there's no per-core vocabulary to translate, because every core means the same thing by "reset." The decisions that matter here are different from anything [Hierarchical Reset Dispatch](../hierarchical-reset-dispatch) had to make.
 
 `join_none` is what makes the per-core resets actually run in parallel: the `foreach` loop only starts each one and moves on to the next, rather than blocking on it. A `fork ... join` inside the same loop would still be launching N processes, but it would wait for each one to finish before starting the next, serializing exactly what this branch exists to parallelize.
 

@@ -54,7 +54,7 @@ class reset_coordinator extends uvm_component;
 endclass
 ```
 
-This first cut fires `post_reset()` immediately after `pre_reset()` completes, with nothing in between. That's fine as long as nothing downstream needs time to actually settle after the two passes run, which [article 02](../register-triggered-reset-worked-example) shows isn't always true, and extends `announce_reset()` with a defaulted settle-cycle argument to cover it, without breaking the single-argument call this section shows.
+This first cut fires `post_reset()` immediately after `pre_reset()` completes, with nothing in between. That's fine as long as nothing downstream needs time to actually settle after the two passes run, which [Wiring a Register-Triggered Domain Reset End to End](../register-triggered-reset-worked-example) shows isn't always true, and extends `announce_reset()` with a defaulted settle-cycle argument to cover it, without breaking the single-argument call this section shows.
 
 ```systemverilog
 virtual class reset_aware_comp extends uvm_component;

@@ -67,7 +67,7 @@ The mirrored value tracks the testbench's belief about hardware state, updated a
 That's what makes RAL usable for wide registers: build up the value field by field in software, then commit it in one transaction, which matches how a real driver would behave anyway.
 {{< /callout >}}
 
-The distinction breaks down if a test writes via `write()` and then reads the desired value expecting it to reflect what hardware now holds after some side effect, a write-1-to-clear bit, say. Desired reflects intent at the moment of the call. It doesn't track what happens to the value afterward inside the hardware. Mirrored is supposed to do that, and even mirrored only gets it right if the model knows about the side effect in the first place, which is what access types ([article 02](../register-access-types)) and volatility, covered later in this series, are for.
+The distinction breaks down if a test writes via `write()` and then reads the desired value expecting it to reflect what hardware now holds after some side effect, a write-1-to-clear bit, say. Desired reflects intent at the moment of the call. It doesn't track what happens to the value afterward inside the hardware. Mirrored is supposed to do that, and even mirrored only gets it right if the model knows about the side effect in the first place, which is what access types ([Register Access Types Aren't Symmetric](../register-access-types)) and volatility, covered later in this series, are for.
 
 ## Adapters: translating between RAL and the bus
 

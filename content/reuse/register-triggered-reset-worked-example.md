@@ -9,11 +9,11 @@ prev: /reuse/mid-sim-reset-plumbing
 next: /reuse/config-object-plumbing
 ---
 
-[Article 01](../mid-sim-reset-plumbing) built the general mechanism: a coordinator, ordered `pre_reset()`/`post_reset()` hooks, and a set of components that register with it. That mechanism doesn't do anything on its own until something tells the coordinator a reset actually happened. This article is the missing piece: a real soft-reset register write, and everything that has to fire between that write landing and the domain being safe to check again.
+[Mid-Sim Reset](../mid-sim-reset-plumbing) built the general mechanism: a coordinator, ordered `pre_reset()`/`post_reset()` hooks, and a set of components that register with it. That mechanism doesn't do anything on its own until something tells the coordinator a reset actually happened. This article is the missing piece: a real soft-reset register write, and everything that has to fire between that write landing and the domain being safe to check again.
 
 ## The scenario
 
-A power-management block exposes a `domain_ctrl` register. Writing a specific bit soft-resets domain A: every register in that domain reverts to its hardware reset value, any in-flight transaction targeting the domain gets aborted at the protocol level, and the domain needs a fixed number of cycles before it's safe to touch again. Nothing about the register write itself is unusual, it's an ordinary RAL `write()` call, exactly as [article 01 of the CSR series](/csr/ral-fundamentals) describes. What's unusual is everything downstream of it.
+A power-management block exposes a `domain_ctrl` register. Writing a specific bit soft-resets domain A: every register in that domain reverts to its hardware reset value, any in-flight transaction targeting the domain gets aborted at the protocol level, and the domain needs a fixed number of cycles before it's safe to touch again. Nothing about the register write itself is unusual, it's an ordinary RAL `write()` call, exactly as the CSR series' [UVM RAL Fundamentals](/csr/ral-fundamentals) describes. What's unusual is everything downstream of it.
 
 ## Step 1: the intent rides with the write
 
@@ -39,7 +39,7 @@ This is the same shape as the fault-injection example in the extensions article:
 
 ## Step 2: a callback turns the write into a coordinator event
 
-A `uvm_reg_cbs` registered on `domain_ctrl` catches the write once it's actually landed, and hands off to the coordinator from [article 01](../mid-sim-reset-plumbing):
+A `uvm_reg_cbs` registered on `domain_ctrl` catches the write once it's actually landed, and hands off to the coordinator from [Mid-Sim Reset](../mid-sim-reset-plumbing):
 
 ```systemverilog
 class domain_reset_callback extends uvm_reg_cbs;
@@ -57,13 +57,13 @@ class domain_reset_callback extends uvm_reg_cbs;
 endclass
 ```
 
-`post_write` rather than `pre_write` matters here: the coordinator should only fire once the write has actually gone out over the bus, not before. Firing it in `fork`/`join_none` matters too: `post_write` runs synchronously as part of the same call chain as the `write()` that triggered it, so the sequence that issued the write is still parked inside that call, waiting for it to return, for as long as `post_write` keeps running. `announce_reset()` runs the full two-pass hook sequence from [article 01](../mid-sim-reset-plumbing) across every registered component, real work that takes real simulation time, and blocking inside `post_write` for all of it would stall the sequence's register access call for exactly as long. `join_none` lets `announce_reset()` run as its own process instead, so `post_write` returns immediately and the write() call the sequence issued completes on schedule.
+`post_write` rather than `pre_write` matters here: the coordinator should only fire once the write has actually gone out over the bus, not before. Firing it in `fork`/`join_none` matters too: `post_write` runs synchronously as part of the same call chain as the `write()` that triggered it, so the sequence that issued the write is still parked inside that call, waiting for it to return, for as long as `post_write` keeps running. `announce_reset()` runs the full two-pass hook sequence from [Mid-Sim Reset](../mid-sim-reset-plumbing) across every registered component, real work that takes real simulation time, and blocking inside `post_write` for all of it would stall the sequence's register access call for exactly as long. `join_none` lets `announce_reset()` run as its own process instead, so `post_write` returns immediately and the write() call the sequence issued completes on schedule.
 
 That immediacy has a cost worth naming: nothing here raises a phase objection while the detached `announce_reset()` is still settling, and nothing serializes two overlapping resets against the same domain. A production version needs one or both, an objection held until the coordinator finishes, and a per-domain guard against re-entering `announce_reset()` before a prior call's settle window has drained.
 
 ## Step 3: the coordinator's two passes run
 
-The per-component reactions are [article 01](../mid-sim-reset-plumbing)'s mechanism, unmodified: monitors for domain A stop sampling and discard partial transactions, the scoreboard clears its outstanding-expectation table for domain A specifically, not the whole environment, and the predictor invalidates mirrored values for every register in that domain so the next access re-establishes them from a live read rather than trusting a value that reset just made stale. What does change, covered next, is the coordinator's own `announce_reset()`, extended with a settle window between the two passes.
+The per-component reactions are [Mid-Sim Reset](../mid-sim-reset-plumbing)'s mechanism, unmodified: monitors for domain A stop sampling and discard partial transactions, the scoreboard clears its outstanding-expectation table for domain A specifically, not the whole environment, and the predictor invalidates mirrored values for every register in that domain so the next access re-establishes them from a live read rather than trusting a value that reset just made stale. What does change, covered next, is the coordinator's own `announce_reset()`, extended with a settle window between the two passes.
 
 ```systemverilog
 class domain_scoreboard extends reset_aware_comp;
@@ -86,7 +86,7 @@ endclass
 
 `settle_cycles` from the extension is what tells the coordinator, or more precisely whatever's waiting to call `post_reset()`, how long the domain needs before it's safe to check again. This is where a naive version of this pattern goes wrong: firing `post_reset()` immediately after `pre_reset()` re-arms checking before the domain has actually finished resetting in the DUT, and the first access after re-arming compares against a domain that hasn't settled yet.
 
-This is the one real change to [article 01](../mid-sim-reset-plumbing)'s coordinator: `announce_reset()` there took a single `domain` argument and ran both passes back to back. Here it gains a second, defaulted argument so every existing single-argument call site keeps compiling unchanged, while a caller that actually has a settle time to report can pass it. The two-role-pass ordering from [article 01](../mid-sim-reset-plumbing), every observer's `pre_reset()` before any consumer's, carries over unchanged; only the settle window between the pre- and post-reset hooks is new:
+This is the one real change to [Mid-Sim Reset](../mid-sim-reset-plumbing)'s coordinator: `announce_reset()` there took a single `domain` argument and ran both passes back to back. Here it gains a second, defaulted argument so every existing single-argument call site keeps compiling unchanged, while a caller that actually has a settle time to report can pass it. The two-role-pass ordering from [Mid-Sim Reset](../mid-sim-reset-plumbing), every observer's `pre_reset()` before any consumer's, carries over unchanged; only the settle window between the pre- and post-reset hooks is new:
 
 ```systemverilog
 task reset_coordinator::announce_reset(string domain, int settle_cycles = 0);

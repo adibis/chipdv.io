@@ -9,7 +9,7 @@ prev: /fw/debug-infrastructure-is-part-of-the-bug
 next: /fw/uvm-decode-and-payoff
 ---
 
-[Article 04](../debug-infrastructure-is-part-of-the-bug) ended on a requirement: a debug message needs to become a fixed-size piece of data a core can write in one unsynchronized store, not a string that has to physically move somewhere character by character. This article and the next one build that scheme end to end, adapted from a technique first presented at SNUG Silicon Valley 2025. This one covers the encoding and the C-side macros that generate it; a later article covers decoding it back into `uvm_info`/`uvm_error` on the UVM side.
+[Your Debug Infrastructure Is Part of the Bug](../debug-infrastructure-is-part-of-the-bug) ended on a requirement: a debug message needs to become a fixed-size piece of data a core can write in one unsynchronized store, not a string that has to physically move somewhere character by character. This article and the next one build that scheme end to end, adapted from a technique first presented at SNUG Silicon Valley 2025. This one covers the encoding and the C-side macros that generate it; a later article covers decoding it back into `uvm_info`/`uvm_error` on the UVM side.
 
 ## What has to survive the round trip
 
@@ -127,7 +127,7 @@ function void handle_reset(int core_id);
 endfunction
 ```
 
-This is the same discipline [reuse article 01](/reuse/mid-sim-reset-plumbing) argues for generally, state that describes DUT history has to clear on reset rather than survive it, applied here to a monitor's own bookkeeping instead of a scoreboard's. A message truly lost to a watchdog mid-write, the one describing state right before the reset fired, can't be recovered after the fact; discarding the partial decode cleanly just keeps that loss from also corrupting whatever message comes after it.
+This is the same discipline the reuse series' [Mid-Sim Reset](/reuse/mid-sim-reset-plumbing) argues for generally, state that describes DUT history has to clear on reset rather than survive it, applied here to a monitor's own bookkeeping instead of a scoreboard's. A message truly lost to a watchdog mid-write, the one describing state right before the reset fired, can't be recovered after the fact; discarding the partial decode cleanly just keeps that loss from also corrupting whatever message comes after it.
 
 ## Recovering the string at compile time, not at runtime
 

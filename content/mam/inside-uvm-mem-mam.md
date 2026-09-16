@@ -25,7 +25,7 @@ cfg.locality     = uvm_mem_mam::BROAD;
 uvm_mem_mam mam = new("dma_pool", cfg, backing_mem /* uvm_mem, or null for address-only */);
 ```
 
-That range doesn't have to cover an entire physical memory. Scoping a `uvm_mem_mam` instance to a sub-range, a DMA scratch pool carved out of a larger address space, for instance, is a normal way to keep one allocator's responsibility bounded to what a particular test or subsystem is actually supposed to own, which is worth keeping in mind before reaching for the shared-instance pattern in [article 03](../singleton-wrapper).
+That range doesn't have to cover an entire physical memory. Scoping a `uvm_mem_mam` instance to a sub-range, a DMA scratch pool carved out of a larger address space, for instance, is a normal way to keep one allocator's responsibility bounded to what a particular test or subsystem is actually supposed to own, which is worth keeping in mind before reaching for the shared-instance pattern in [A Singleton Wrapper for Block, Subsystem, and SoC Reuse](../singleton-wrapper).
 
 The `backing_mem` argument ties the allocator to an actual `uvm_mem` model when one exists, letting region handles participate in the same frontdoor/backdoor access machinery a register model uses. Passing `null` gives you an allocator that hands out addresses without checking any backing storage model at all, useful when the "memory" being modeled doesn't correspond to a single contiguous `uvm_mem` object, a DMA target that's actually scattered across several physical memories addressed through one logical range, for example, where no single `uvm_mem` could represent it anyway.
 

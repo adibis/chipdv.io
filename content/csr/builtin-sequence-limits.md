@@ -30,7 +30,7 @@ access_seq.start(null);
 
 ## reg_hw_reset_seq: does the register come up right
 
-This one checks that every register's value after reset matches its declared reset value. It's the simplest of the three and has the fewest caveats: it reads every register after a reset event and compares against the reset value from the model. The main way it misses bugs is if the reset value declared in the model doesn't match the spec in the first place, which is a generation problem ([article 03](../ral-generation)) rather than a sequence problem. Assuming the model is correct, this sequence does what it says on the label.
+This one checks that every register's value after reset matches its declared reset value. It's the simplest of the three and has the fewest caveats: it reads every register after a reset event and compares against the reset value from the model. The main way it misses bugs is if the reset value declared in the model doesn't match the spec in the first place, which is a generation problem ([RAL Generation in Practice](../ral-generation)) rather than a sequence problem. Assuming the model is correct, this sequence does what it says on the label.
 
 ## reg_bit_bash_seq: exercising every bit independently
 
@@ -66,7 +66,7 @@ task directed_w1c_seq::body();
 endtask
 ```
 
-Registers with a value that changes on its own, independent of any software write, need the volatility handling in [article 05](../volatile-registers). And registers that shouldn't be swept at all, because sweeping them causes a side effect elsewhere in the design, need explicit exclusion, which is what the waiver mechanism in a later article on waivers is for. Running the built-ins against those registers without exclusion doesn't just fail to test them correctly. It can corrupt DUT state for every test that runs afterward.
+Registers with a value that changes on its own, independent of any software write, need the volatility handling in [Volatile Registers and the Predictor Problem](../volatile-registers). And registers that shouldn't be swept at all, because sweeping them causes a side effect elsewhere in the design, need explicit exclusion, which is what the waiver mechanism in a later article on waivers is for. Running the built-ins against those registers without exclusion doesn't just fail to test them correctly. It can corrupt DUT state for every test that runs afterward.
 
 ---
 

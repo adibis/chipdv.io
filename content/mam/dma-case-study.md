@@ -15,7 +15,7 @@ The previous four articles built up the pieces: `uvm_mem_mam` as the allocator, 
 
 ## Requesting the regions
 
-The sequence looks up the shared pool by name, exactly as described in [article 03](../singleton-wrapper), rather than constructing its own allocator:
+The sequence looks up the shared pool by name, exactly as described in [A Singleton Wrapper for Block, Subsystem, and SoC Reuse](../singleton-wrapper), rather than constructing its own allocator:
 
 ```systemverilog
 // 64-byte alignment matches this engine's burst size; uvm_mem_mam has no
@@ -51,7 +51,7 @@ class dma_transfer_seq extends uvm_sequence;
 endclass
 ```
 
-Both regions come from the same call to `get_pool()`, so the same non-overlap guarantee covers all three cases the allocator actually promises: `src_region` and `dst_region` can't overlap each other, neither can overlap a region some concurrently running sequence has outstanding, and, if [article 04](../ral-address-map-collisions) reserved the register windows up front, neither can overlap a CSR block either.
+Both regions come from the same call to `get_pool()`, so the same non-overlap guarantee covers all three cases the allocator actually promises: `src_region` and `dst_region` can't overlap each other, neither can overlap a region some concurrently running sequence has outstanding, and, if [Keeping Allocations Out of the RAL Address Map](../ral-address-map-collisions) reserved the register windows up front, neither can overlap a CSR block either.
 
 ## The overlap check worth adding to the scoreboard anyway
 

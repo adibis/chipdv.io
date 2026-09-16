@@ -40,9 +40,9 @@ The access string describes what software does, full stop. It makes no claim abo
 
 ## Why this matters for the mirrored value
 
-RAL's predictor (from [article 01](../ral-fundamentals)) needs the access type to update the mirrored value correctly after a bus transaction. For a plain RW field, predicting the mirrored value after a write is trivial: mirrored becomes whatever was written. For W1C, the correct prediction is not "mirrored becomes the written value." Writing 1 to a W1C bit should predict the bit clearing to 0, not becoming 1. Writing 0 predicts no change at all. If the register model's access string is wrong, say a W1C field got accidentally declared RW during generation, the predictor computes the wrong mirrored value after every single write, and every subsequent read-compare in the test reports a mismatch that has nothing to do with a real hardware bug.
+RAL's predictor (from [UVM RAL Fundamentals](../ral-fundamentals)) needs the access type to update the mirrored value correctly after a bus transaction. For a plain RW field, predicting the mirrored value after a write is trivial: mirrored becomes whatever was written. For W1C, the correct prediction is not "mirrored becomes the written value." Writing 1 to a W1C bit should predict the bit clearing to 0, not becoming 1. Writing 0 predicts no change at all. If the register model's access string is wrong, say a W1C field got accidentally declared RW during generation, the predictor computes the wrong mirrored value after every single write, and every subsequent read-compare in the test reports a mismatch that has nothing to do with a real hardware bug.
 
-Part of why this is a generation-correctness problem as much as a testbench-logic problem: [article 03](../ral-generation) treats the register model as something to validate against its source of truth, not something to eyeball once at project kickoff and forget about.
+Part of why this is a generation-correctness problem as much as a testbench-logic problem: [RAL Generation in Practice](../ral-generation) treats the register model as something to validate against its source of truth, not something to eyeball once at project kickoff and forget about.
 
 ## Which access types generic sequences handle safely
 

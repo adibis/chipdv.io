@@ -9,7 +9,7 @@ prev: /csr/register-access-types
 next: /csr/builtin-sequence-limits
 ---
 
-Hand-writing a `uvm_reg_block` for anything past a handful of registers isn't a serious option on a real project and hasn't been for years. A moderately sized peripheral easily has a hundred registers with several fields each; an SoC-level address map has thousands. Every one of those needs an offset, a reset value, an access type, and field boundaries that match a specification exactly. Typing that by hand is slow, and it's a guaranteed source of the exact class of bug [article 02](../register-access-types) describes, where a field's access type gets transcribed wrong and every test built on top of it inherits the mistake.
+Hand-writing a `uvm_reg_block` for anything past a handful of registers isn't a serious option on a real project and hasn't been for years. A moderately sized peripheral easily has a hundred registers with several fields each; an SoC-level address map has thousands. Every one of those needs an offset, a reset value, an access type, and field boundaries that match a specification exactly. Typing that by hand is slow, and it's a guaranteed source of the exact class of bug [Register Access Types Aren't Symmetric](../register-access-types) describes, where a field's access type gets transcribed wrong and every test built on top of it inherits the mistake.
 
 ## The model is generated, the spec is authoritative
 
