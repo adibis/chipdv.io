@@ -62,20 +62,7 @@
         {{- end -}}
         {{- if site.Params.koFi.enable -}}
           <div class="hx:mt-1">
-            <script src="https://storage.ko-fi.com/cdn/widget/Widget_2.js"></script>
-            <script>
-              kofiwidget2.init('{{ site.Params.koFi.text | default "Support me on Ko-fi" }}', '{{ site.Params.koFi.color | default "#72a4f2" }}', '{{ site.Params.koFi.id }}');
-              kofiwidget2.draw();
-            </script>
-            {{/* Ko-fi's own widget CSS is a.kofi-button{font-family:...!important},
-              same specificity as this rule -- placing ours after its injected
-              <style> in the DOM is what wins the tie, not the !important alone */}}
-            <style>
-              a.kofi-button, .kofitext {
-                font-family: 'Comfortaa', var(--font-sans) !important;
-                font-weight: 500 !important;
-              }
-            </style>
+            {{- partial "custom/kofi-widget.html" . -}}
           </div>
         {{- end -}}
         {{/* Scroll To Top */}}

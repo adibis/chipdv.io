@@ -1,0 +1,23 @@
+{{/* Ko-fi support button. Self-contained (loads its own copy of Ko-fi's
+  tiny widget script) so it can be embedded more than once per page -- e.g.
+  once in the desktop-only ToC sidebar, once in a mobile-only spot -- without
+  either placement depending on load order from the other. draw() uses
+  document.writeln at the point the script runs, so two independent
+  instances just write their own markup in their own place; verified
+  against Ko-fi's own Widget_2.js source, not assumed. */}}
+{{- if site.Params.koFi.enable -}}
+  <script src="https://storage.ko-fi.com/cdn/widget/Widget_2.js"></script>
+  <script>
+    kofiwidget2.init('{{ site.Params.koFi.text | default "Support me on Ko-fi" }}', '{{ site.Params.koFi.color | default "#72a4f2" }}', '{{ site.Params.koFi.id }}');
+    kofiwidget2.draw();
+  </script>
+  {{/* Ko-fi's own widget CSS is a.kofi-button{font-family:...!important},
+    same specificity as this rule -- placing ours after its injected
+    <style> in the DOM is what wins the tie, not the !important alone */}}
+  <style>
+    a.kofi-button, .kofitext {
+      font-family: 'Comfortaa', var(--font-sans) !important;
+      font-weight: 500 !important;
+    }
+  </style>
+{{- end -}}
