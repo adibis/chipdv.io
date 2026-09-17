@@ -37,6 +37,12 @@ params:
     enable: true
     repo: "https://github.com/adibis/chipdv.io"
 
+  koFi:
+    enable: true
+    id: "B2Q82756QE"
+    text: "Buy me a coffee"
+    color: "#df8e1d"
+
   displayUpdatedDate: true
   dateFormat: "January 2, 2006"
 
