@@ -21,6 +21,12 @@ Start from a root entity, the FSM module, the arbitration block, the error handl
 
 This is a different shape from the orchestrator pattern in [The Orchestration Gap](../orchestration-gap). There, context grows to cover the entire result set of every spawned agent. Here, context grows only to cover the reasoning path actually taken, the files that turned out to matter for this specific hypothesis, not every file that could conceivably matter.
 
+### A caveat: non-agentic versus agentic, not single-call versus fleet
+
+The comparison in the previous section is between a single non-agentic completion, one prompt built from whatever got stuffed into context, one response, and the traversal pattern described here. It is not a claim that a single *agentic* session with tool access can't do iterative exploration. An agent that can read a file, decide what to read next based on what it found, and repeat is already doing a version of this traversal inside one continuous run, no daemon or fleet required. That's a real and increasingly common way to work.
+
+What a single long-running agentic session still doesn't give you is the two things the rest of this architecture is actually for: the process doing the watching doesn't need to stay alive for the eight hours a regression runs, because it can exit between steps and resume from state instead of holding a live session the whole time, and the routing between specialized layers is deterministic code you can inspect, not another layer of LLM judgment accumulating its own context. Those properties justify the daemon-coordinated fleet. An inability to reason iteratively in a single session doesn't.
+
 ## Per-layer specialization
 
 It helps to split reasoning by abstraction layer rather than run one generalist agent over everything. A spec agent reads the architectural specification and extracts testable properties: "the arbiter shall grant within 8 cycles under full load." An RTL agent reads the implementation and looks for code paths that could violate that property. A firmware agent checks whether any firmware sequence can create the conditions that trigger the violation. A testbench agent checks whether any existing test or coverage point would catch it if it occurred.

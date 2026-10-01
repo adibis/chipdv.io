@@ -231,7 +231,7 @@ We ran a controlled experiment against a real OpenTitan file, `dv_base_env_cfg.s
 
 The task: extract every `virtual` usage as a typed knowledge-graph triple in the form `(subject, RELATION_TYPE, object)`. No relation vocabulary was supplied in the task itself. The model had to provide the relation names, which is exactly what an extraction pipeline for a typed knowledge graph would require.
 
-We tested two models: **claude-sonnet-4-6** (frontier, via API) and **qwen2.5-coder:7b** (local, via Ollama running on an M4 Pro). Three system prompts were compared across five runs each.
+We tested two models: **claude-sonnet-4-5** (frontier, via API) and **qwen2.5-coder:7b** (local, via Ollama running on an M4 Pro). Three system prompts were compared across five runs each.
 
 ### The prompts
 
@@ -310,7 +310,7 @@ Across five soft-hint runs: `TYPED_AS_VIRTUAL_INTERFACE`, `HAS_VIRTUAL_INTERFACE
 (create_ral_by_name,      OVERRIDES,      dv_base_env_cfg)
 ```
 
-### The numbers: claude-sonnet-4-6
+### The numbers: claude-sonnet-4-5
 
 Over five runs each, scored against a schema that accepts only `HAS_VIRTUAL_IF` and `OVERRIDES` as valid relation names:
 

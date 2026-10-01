@@ -27,14 +27,14 @@ The result is that generated SV looks like textbook SV. It uses the clean patter
 
 UVM relies heavily on macros. `uvm_object_utils`, `uvm_component_utils`, `uvm_field_int`, `uvm_declare_p_sequencer`, these are not syntactic sugar. They expand to substantial amounts of generated code that register the class with the UVM factory, implement the `copy`, `compare`, `print`, and `clone` methods, declare sequencer handle types, and wire up the field automation framework.
 
-LLMs see the macro call, not the expansion. They learn patterns for when to use which macro, but they don't have a reliable model of what missing or incorrectly ordered macros actually do at runtime. Generated code routinely:
+LLMs see the macro call, not the expansion. For the standard UVM macros specifically, that's less of a blind spot than it sounds: `uvm_object_utils` and its relatives are defined in the UVM base class library, which is public and heavily represented in any code corpus, so a model has effectively memorized what they expand to. The actual failure is usually upstream of the macro. The model gets the class's role wrong, component versus object, sequence versus sequence item, the same cross-file inheritance confusion this series measures directly in its own extraction model, and then applies a correctly-understood macro to a misclassified class. Generated code routinely:
 
 - Uses `uvm_object_utils` on a component (factory registration breaks silently)
 - Omits `uvm_field_*` entries for fields that need to be randomized or printed
 - Uses `uvm_declare_p_sequencer` without understanding what `p_sequencer` is and where it's valid to call it
 - Gets the argument count to `uvm_do_with` or `uvm_do_on_pri_with` wrong
 
-These errors compile fine. They fail at simulation, often in a way that's hard to trace back to the macro.
+These errors compile fine. They fail at simulation, often in a way that's hard to trace back to the macro. The blind spot that's actually dangerous is a step further up the stack: a team's own macro layer built on top of UVM's, a project-specific `proj_uvm_component_utils` wrapping three other macros with site-specific defaults, which no model has seen and has no public expansion to have memorized.
 
 ### Scheduling semantics
 
@@ -56,7 +56,7 @@ A non-trivial UVM testbench is thousands of files. A single env hierarchy might 
 
 This creates a hard practical limit: you can ask an LLM about a file you paste into the prompt, and it will give you a competent answer about that file. You cannot ask it about the testbench architecture, because the testbench doesn't fit. The model has no persistent memory of what it's seen, no index of the codebase, no awareness of how the file you just pasted connects to the fifteen other files that depend on it.
 
-This isn't a solvable problem by making context windows larger. A 200K-token context window fits maybe fifty large SV files. Real projects have thousands. The problem is structural.
+Making the window bigger helps less than it sounds like it should. Even as frontier context windows grow past a million tokens, two things don't change: a real project's file count keeps growing to meet whatever the current ceiling is, and retrieval accuracy over a very long context degrades anyway, models reliably do worse at finding and using a specific fact buried in the middle of a huge context than the same fact handed to them directly. A bigger window changes the size of the problem. It doesn't change that the right answer is retrieving the handful of files that actually matter, not holding all of them at once.
 
 ## What they are actually good at
 
@@ -78,4 +78,4 @@ Each of these is addressable with the right infrastructure. A system with a stru
 
 That infrastructure is what this series is about. The next article takes one failure mode, keyword conflation, and measures it precisely, which sets up everything that follows.
 
-The LLMs aren't going to get better at SV by themselves. The tooling around them has to catch up first.
+This gap isn't guaranteed to stay fixed. If hardware design becomes enough of a commercial target for frontier labs, SV-specific training data and task-specific reinforcement learning could narrow it directly, the way general code generation improved once labs decided it mattered enough to invest in. Nothing about today's gap is a law of nature. But that investment hasn't shown up yet, and the tooling this series describes doesn't have to wait for it.
