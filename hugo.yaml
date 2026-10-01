@@ -7,7 +7,7 @@ enableRobotsTXT: true
 enableGitInfo: true
 
 params:
-  description: "UVM chip design verification, worked through in full: register verification, memory allocation, SoC reuse patterns, and firmware verification."
+  description: "AI-native chip design verification and the classical UVM engineering underneath it: register verification, memory allocation, testbench architecture, firmware verification, and knowledge graphs for chip design."
   images:
     - "images/og-card.png"
 
@@ -49,43 +49,48 @@ params:
 
 menu:
   main:
+    - name: DV Intelligence
+      pageRef: /ai-dv
+      weight: 1
+      params:
+        tab: true
     - name: CSR Verification
       pageRef: /csr
-      weight: 1
+      weight: 2
       params:
         tab: true
     - name: Memory Allocation
       pageRef: /mam
-      weight: 2
+      weight: 3
       params:
         tab: true
     - name: SoC Reuse
       pageRef: /reuse
-      weight: 3
+      weight: 4
       params:
         tab: true
     - name: Firmware
       pageRef: /fw
-      weight: 4
+      weight: 5
       params:
         tab: true
     - name: Projects
       pageRef: /projects
-      weight: 5
+      weight: 6
     - name: About
       pageRef: /about
-      weight: 7
-    - name: search
       weight: 8
+    - name: search
+      weight: 9
       params:
         type: search
     - name: theme-toggle
-      weight: 9
+      weight: 10
       params:
         type: theme-toggle
     - name: RSS
       url: /index.xml
-      weight: 10
+      weight: 11
       params:
         icon: rss
 
