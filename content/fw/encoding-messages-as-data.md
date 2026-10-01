@@ -6,7 +6,6 @@ publishDate: 2026-08-31
 draft: false
 description: "Encoding severity, core, file, and line into a single fixed-width identifier, using variadic C macros that never put the message string in the firmware image."
 prev: /fw/debug-infrastructure-is-part-of-the-bug
-next: /fw/uvm-decode-and-payoff
 ---
 
 [Your Debug Infrastructure Is Part of the Bug](../debug-infrastructure-is-part-of-the-bug) ended on a requirement: a debug message needs to become a fixed-size piece of data a core can write in one unsynchronized store, not a string that has to physically move somewhere character by character. This article and the next one build that scheme end to end, adapted from a technique first presented at SNUG Silicon Valley 2025. This one covers the encoding and the C-side macros that generate it; a later article covers decoding it back into `uvm_info`/`uvm_error` on the UVM side.

@@ -3,7 +3,7 @@ title: "Firmware Verification"
 weight: 5
 description: "The firmware-on-RTL problems that only show up at multi-core and regression scale: races existing debug tools can't localize, a message-ID logging scheme built to replace UART streaming, and what survives the jump to emulation, post-silicon, and SoC integration."
 icon: terminal
-image: /images/fw/06-uvm-decode-and-payoff.svg
+image: /images/fw/05-message-id-encoding.svg
 imageAlt: "Firmware writes a 32-bit message ID to a fixed memory location per core; a UVM monitor decodes it back into uvm_info/uvm_error"
 cascade:
   type: docs

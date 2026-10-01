@@ -6,7 +6,6 @@ publishDate: 2026-09-04
 draft: false
 description: "Registers that change value without a software write, and the races that shows up between a hardware update and a predictor's mirrored value."
 prev: /csr/builtin-sequence-limits
-next: /csr/soc-stress-patterns
 ---
 
 Every register discussed so far changes value in response to a bus transaction. Software writes it, or software's read triggers a clear. There's a whole other category that changes independently of software entirely: a status register tracking FIFO fill level, a free-running counter, a state-machine-encoded status field, an error code latched the instant a fault occurs. RAL calls these volatile, and if a register that behaves this way isn't marked volatile in the model, the mirrored value quietly turns into fiction the moment hardware updates the field on its own.

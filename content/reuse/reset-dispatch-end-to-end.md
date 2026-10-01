@@ -6,7 +6,6 @@ publishDate: 2026-09-10
 draft: false
 description: "Article 04 stopped at two sub-environments and a translated enum. Here's the same dispatch three levels deep, from the virtual sequence that triggers it down to a per-core loop that has to make real decisions."
 prev: /reuse/hierarchical-reset-dispatch
-next: /reuse/reset-driver-override
 ---
 
 [Hierarchical Reset Dispatch](../hierarchical-reset-dispatch) established the shape: `chiplet_env.reset(kind)` translates its own vocabulary into each sub-environment's, and that translation is chiplet-level knowledge the sub-environments never see. What it didn't show is where the call comes from in the first place, or what happens when one of those sub-environments isn't a single block but a set of identical, repeated instances, cores, lanes, channels, whatever the DUT happens to replicate. Both gaps matter in practice: something has to actually trigger `chiplet_env.reset()`, and "fan out to N identical children" is a genuinely different problem from "fan out to two differently-typed children," with its own failure modes that a two-sub-environment example never has to confront.
