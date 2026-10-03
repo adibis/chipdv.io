@@ -13,6 +13,18 @@ DMA engines, packet buffers, scratchpad memories: any testbench that needs to ha
 
 UVM ships an answer to most of this: `uvm_mem_mam`, the memory allocation manager built into the register layer. It's underused, and even when it's used correctly at the block level, it doesn't automatically solve the reuse problem once a subsystem or SoC environment needs to share allocation state with the blocks underneath it. This series covers the built-in class in depth, and the wrapper most projects end up needing around it.
 
-## Published
+## The allocator, and making it reusable
 
-{{< section-cards >}}
+{{< cards cols="3" >}}
+  {{< card link="/mam/case-for-shared-manager/" title="The Case for a Shared Memory Manager" subtitle="Why ad hoc address allocation breaks down past a single sequence, and what uvm_mem_mam already gives you for free." image="/images/mam/01-collision-problem.svg" alt="Hardcoded addresses colliding silently versus an allocator guaranteeing non-overlap by construction" >}}
+  {{< card link="/mam/inside-uvm-mem-mam/" title="Inside uvm_mem_mam" subtitle="Configuration, allocation modes, locality, and the region handle that tracks what's actually been given out." image="/images/mam/02-allocation-modes.svg" alt="GREEDY taking the first free extent large enough, with THRIFTY documented but not yet implemented" >}}
+  {{< card link="/mam/singleton-wrapper/" title="A Singleton Wrapper for Block, Subsystem, and SoC Reuse" subtitle="A raw uvm_mem_mam instance doesn't share state across testbench levels on its own. A registry that lets it." image="/images/mam/03-registry-pattern.svg" alt="Block, subsystem, and SoC environments sharing one registered pool instance" >}}
+  {{< card link="/mam/ral-address-map-collisions/" title="Keeping Allocations Out of the RAL Address Map" subtitle="Registers and memory sharing an address space, and using reserve_region so the allocator never hands out a colliding chunk." image="/images/mam/04-reserved-windows.svg" alt="A shared address space with CSR windows reserved and everything else left allocatable" >}}
+{{< /cards >}}
+
+## Worked examples
+
+{{< cards cols="3" >}}
+  {{< card link="/mam/dma-case-study/" title="Case Study: DMA Source/Destination Buffer Allocation" subtitle="A worked example: aligned region requests, release timing, and the overlap and fragmentation bugs that show up in practice." image="/images/mam/05-dma-lifecycle.svg" alt="A DMA sequence lifecycle from request through transfer to release" >}}
+  {{< card link="/mam/block-chiplet-soc-worked-example/" title="Block to Chiplet to SoC: A DMA and Ethernet Worked Example" subtitle="Three DMA engines and an Ethernet block, verified standalone, reused inside a chiplet, then an SoC. One manager, one place every address decision gets made." image="/images/mam/06-name-collision-recurrence.svg" alt="One allocation manager reused unchanged from block level up through chiplet and SoC level" >}}
+{{< /cards >}}

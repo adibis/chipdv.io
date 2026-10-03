@@ -4,7 +4,7 @@ weight: 5
 date: 2026-09-04
 publishDate: 2026-09-04
 draft: false
-description: "Registers that change value without a software write, and the races that shows up between a hardware update and a predictor's mirrored value."
+description: "Registers that change value without a software write, and the race that shows up between a hardware update and a predictor's mirrored value."
 prev: /csr/builtin-sequence-limits
 ---
 
@@ -60,4 +60,4 @@ The predictor from [UVM RAL Fundamentals](../ral-fundamentals) has the same prob
 
 ---
 
-*Next: SoC-Level Register Stress Patterns*
+*Next: SoC-Level Register Stress Patterns — parallel access through a shared CSR bridge with multiple masters, and back-to-back zero-delay writes followed by readback.*
