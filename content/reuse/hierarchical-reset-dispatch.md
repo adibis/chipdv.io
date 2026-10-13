@@ -89,7 +89,7 @@ class axi_boundary_checker extends reset_aware_comp;
 endclass
 
 // virtual sequencer watcher: cooperative abort for anything mid-flight,
-// the same pattern article 01 recommends over a hard kill()
+// the same pattern recommended earlier in this series, not a hard kill()
 class chiplet_vseqr_reset_watcher extends reset_aware_comp;
   function bit watches_domain(string domain); return 1; endfunction
   task pre_reset(string domain);
@@ -114,7 +114,7 @@ class chiplet_regmodel_resetter extends reset_aware_comp;
 endclass
 
 // scoreboard: quiesce only after checkers are already quiet and
-// sequences have drained, exactly the ordering article 01 argues for
+// sequences have drained, exactly the ordering argued for earlier in this series
 class chiplet_scoreboard extends reset_aware_comp;
   function bit watches_domain(string domain); return 1; endfunction
   task pre_reset(string domain);
