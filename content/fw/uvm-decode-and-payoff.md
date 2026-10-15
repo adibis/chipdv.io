@@ -6,7 +6,6 @@ publishDate: 2026-10-12
 draft: false
 description: "Reading the message identifier back out of memory and reconstructing the original uvm_info/uvm_error call. Adapted from a paper at SNUG Silicon Valley 2025."
 prev: /fw/encoding-messages-as-data
-next: /fw/dual-sided-register-backdoor
 ---
 
 [Turning a Debug Message Into 32 Bits](../encoding-messages-as-data) got a 32-bit identifier and its arguments into fixed memory locations with one unsynchronized store per core, and a pair of tables generated at compile time that map identifiers back to the original message string and file/line. This article is the other half of that mechanism, adapted from the same technique presented at SNUG Silicon Valley 2025 (Shevade & Shripad, *UVM_INFO From Firmware Code*): a UVM memory monitor that watches the write locations, reconstructs the message, and prints it through `uvm_info`/`uvm_error` like any other testbench message, plus the actual performance case this whole series has been building toward.
@@ -126,4 +125,4 @@ At the scale of a single test this is a nice speedup. At regression scale, with 
 
 ---
 
-*Next: [The Dual-Sided Register Backdoor](../dual-sided-register-backdoor)*
+*Next: Two Cheap Tricks: A PC Spy and a Boot Fast-Forward — turning a raw program counter into a readable function name, and skipping a slow boot without touching what it's skipping.*

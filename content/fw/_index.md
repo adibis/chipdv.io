@@ -3,8 +3,8 @@ title: "Firmware Verification"
 weight: 5
 description: "The firmware-on-RTL problems that only show up at multi-core and regression scale: races existing debug tools can't localize, a message-ID logging scheme built to replace UART streaming, and what survives the jump to emulation, post-silicon, and SoC integration."
 icon: terminal
-image: /images/fw/07-dual-sided-register-backdoor.svg
-imageAlt: "Two independent desync directions between a C driver's local state and the UVM RAL predictor's mirror, each closed by an explicit notification"
+image: /images/fw/06-uvm-decode-and-payoff.svg
+imageAlt: "Firmware writes a 32-bit message ID to a fixed memory location per core; a UVM monitor decodes it back into uvm_info/uvm_error"
 cascade:
   type: docs
 ---
@@ -27,5 +27,4 @@ This series is about the parts of firmware verification that only get hard at sc
   {{< card link="/fw/debug-infrastructure-is-part-of-the-bug/" title="Your Debug Infrastructure Is Part of the Bug" subtitle="Instrumenting a suspected multi-core race with print statements changes the exact timing it depends on, worth knowing before reaching for a faster UART." >}}
   {{< card link="/fw/encoding-messages-as-data/" title="Turning a Debug Message Into 32 Bits" subtitle="Encoding severity, core, file, and line into a single fixed-width identifier, using variadic C macros that never put the message string in the firmware image." >}}
   {{< card link="/fw/uvm-decode-and-payoff/" title="A UVM Monitor That Decodes C, and What It's Worth" subtitle="Reading the message identifier back out of memory and reconstructing the original uvm_info/uvm_error call. Adapted from a paper at SNUG Silicon Valley 2025." >}}
-  {{< card link="/fw/dual-sided-register-backdoor/" title="The Dual-Sided Register Backdoor" subtitle="Firmware writes a register directly and RAL's mirror goes stale; a UVM backdoor write goes stale the other way. DPI doesn't answer either one." >}}
 {{< /cards >}}
