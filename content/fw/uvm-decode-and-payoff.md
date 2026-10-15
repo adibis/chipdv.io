@@ -6,13 +6,14 @@ publishDate: 2026-10-12
 draft: false
 description: "Reading the message identifier back out of memory and reconstructing the original uvm_info/uvm_error call. Adapted from a paper at SNUG Silicon Valley 2025."
 prev: /fw/encoding-messages-as-data
+next: /fw/dual-sided-register-backdoor
 ---
 
-[Article 05](../encoding-messages-as-data) got a 32-bit identifier and its arguments into fixed memory locations with one unsynchronized store per core, and a pair of tables generated at compile time that map identifiers back to the original message string and file/line. This article is the other half of that mechanism, adapted from the same technique presented at SNUG Silicon Valley 2025 (Shevade & Shripad, *UVM_INFO From Firmware Code*): a UVM memory monitor that watches the write locations, reconstructs the message, and prints it through `uvm_info`/`uvm_error` like any other testbench message, plus the actual performance case this whole series has been building toward.
+[Turning a Debug Message Into 32 Bits](../encoding-messages-as-data) got a 32-bit identifier and its arguments into fixed memory locations with one unsynchronized store per core, and a pair of tables generated at compile time that map identifiers back to the original message string and file/line. This article is the other half of that mechanism, adapted from the same technique presented at SNUG Silicon Valley 2025 (Shevade & Shripad, *UVM_INFO From Firmware Code*): a UVM memory monitor that watches the write locations, reconstructs the message, and prints it through `uvm_info`/`uvm_error` like any other testbench message, plus the actual performance case this whole series has been building toward.
 
 ## Loading both tables into the testbench
 
-Before the monitor can decode anything, both tables from article 05 need to be parsed into associative arrays indexed the same way the C side computed the identifier, so a lookup at runtime is a single hash access, not a scan:
+Before the monitor can decode anything, both tables from [Turning a Debug Message Into 32 Bits](../encoding-messages-as-data) need to be parsed into associative arrays indexed the same way the C side computed the identifier, so a lookup at runtime is a single hash access, not a scan:
 
 ```systemverilog
 typedef struct {
@@ -117,12 +118,12 @@ What shows up in the simulation log reads like ordinary firmware trace, not a he
 
 ## What this is actually worth
 
-This is the measurement [article 04](../debug-infrastructure-is-part-of-the-bug) promised rather than gave: 100 messages, up to 64 characters each, logged through a shared memory-mapped location. Character streaming took 764.946us of simulation time and 23 minutes 39 seconds of wall clock. The message-ID scheme above took 72.074us and 6 minutes 36 seconds for the same 100 messages, a roughly 90% reduction in simulation time and a comparable drop in wall clock, though wall clock is noisier since it depends on whatever else is running on the same machine.
+This is the measurement [Your Debug Infrastructure Is Part of the Bug](../debug-infrastructure-is-part-of-the-bug) promised rather than gave: 100 messages, up to 64 characters each, logged through a shared memory-mapped location. Character streaming took 764.946us of simulation time and 23 minutes 39 seconds of wall clock. The message-ID scheme above took 72.074us and 6 minutes 36 seconds for the same 100 messages, a roughly 90% reduction in simulation time and a comparable drop in wall clock, though wall clock is noisier since it depends on whatever else is running on the same machine.
 
-The mechanism behind that gap is exactly what this article and the last one built: streaming spends cycles proportional to message length, one write (and one FIFO-ready poll) per character; the identifier scheme spends a fixed, small number of writes regardless of message length, one word for the identifier and one per argument, at most three total for a two-argument message. That difference doesn't depend on multi-core contention at all, it holds even measured on a single core with no cross-core lock in the picture. Add the cross-core serialization problem from article 04 back in, and the gap widens further, because the identifier scheme has no shared lock to contend on in the first place: each core writes to its own `PRINT_REG` offset, so nothing about emitting a message forces one core to wait on another's.
+The mechanism behind that gap is exactly what this article and the last one built: streaming spends cycles proportional to message length, one write (and one FIFO-ready poll) per character; the identifier scheme spends a fixed, small number of writes regardless of message length, one word for the identifier and one per argument, at most three total for a two-argument message. That difference doesn't depend on multi-core contention at all, it holds even measured on a single core with no cross-core lock in the picture. Add the cross-core serialization problem from [Your Debug Infrastructure Is Part of the Bug](../debug-infrastructure-is-part-of-the-bug) back in, and the gap widens further, because the identifier scheme has no shared lock to contend on in the first place: each core writes to its own `PRINT_REG` offset, so nothing about emitting a message forces one core to wait on another's.
 
 At the scale of a single test this is a nice speedup. At regression scale, with the kind of heavy, always-on logging that chasing a rare multi-core race actually requires, it's the difference between debug instrumentation that's cheap enough to leave on for every run and one that has to be switched on selectively after a failure is already suspected, which puts the entire methodology back to reproducing the bug first and instrumenting it second.
 
 ---
 
-*Next: The Dual-Sided Register Backdoor — firmware writes a register directly and RAL's mirror goes stale; a UVM backdoor write goes stale the other way. DPI doesn't answer either one.*
+*Next: [The Dual-Sided Register Backdoor](../dual-sided-register-backdoor)*
