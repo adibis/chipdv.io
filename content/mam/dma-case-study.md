@@ -20,7 +20,7 @@ The sequence looks up the shared pool by name, exactly as described in [A Single
 ```systemverilog
 // 64-byte alignment matches this engine's burst size; uvm_mem_mam has no
 // alignment argument on request_region(), so the constraint lives on a
-// policy object instead, per article 02
+// policy object instead, per "Inside uvm_mem_mam"
 class burst_aligned_policy extends uvm_mem_mam_policy;
   constraint c_64b_aligned {
     start_offset[5:0] == 6'b0;

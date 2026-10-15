@@ -8,7 +8,7 @@ description: "Parallel access through a shared CSR bridge with multiple masters,
 prev: /csr/volatile-registers
 ---
 
-Everything in this series so far tests a register in isolation: one master, one access, checked against the model. At the SoC level, registers are frequently reachable from more than one master through a shared bridge, and the built-in sequences from [article 04](../builtin-sequence-limits) have no concept of that at all. They issue one transaction, wait for it to complete, and move to the next. The bugs that live at this level aren't register-model bugs. They're bridge arbitration, ordering, and timing bugs that only exist under contention, and no amount of single-master register testing will find them.
+Everything in this series so far tests a register in isolation: one master, one access, checked against the model. At the SoC level, registers are frequently reachable from more than one master through a shared bridge, and the built-in sequences from [What the Built-in Sequences Actually Test](../builtin-sequence-limits) have no concept of that at all. They issue one transaction, wait for it to complete, and move to the next. The bugs that live at this level aren't register-model bugs. They're bridge arbitration, ordering, and timing bugs that only exist under contention, and no amount of single-master register testing will find them.
 
 ## Why a shared CSR bridge with multiple masters is a real test target
 
