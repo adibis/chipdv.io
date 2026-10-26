@@ -77,6 +77,9 @@ menu:
     - name: Projects
       pageRef: /projects
       weight: 6
+    - name: Blog
+      pageRef: /blog
+      weight: 7
     - name: About
       pageRef: /about
       weight: 8
