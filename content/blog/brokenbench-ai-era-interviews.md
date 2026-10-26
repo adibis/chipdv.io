@@ -4,18 +4,20 @@ weight: 1
 date: 2026-10-26
 publishDate: 2026-10-26
 draft: false
-description: "brokenbench already tests whether you can write correct constrained-random code from a spec. Here's a taxonomy for the second skill the AI era also demands: catching code, yours or a model's, that compiles clean while being wrong."
+description: "If a model can write your SystemVerilog in seconds, what's left to practice, and what does a DV interview even measure anymore? brokenbench's answer: catching code -- yours or a model's -- that compiles clean while being wrong."
 ---
 
-[brokenbench](/projects/brokenbench/) is a [ziglings](https://codeberg.org/ziglings/exercises)/[rustlings](https://github.com/rust-lang/rustlings)-style set of SystemVerilog and UVM exercises -- leetcode for constrained-random verification. Most exercises hand you a spec in a comment and an empty class, and you write the constraint logic yourself against a checker built to catch partial credit, not just crashes. A smaller set hands you working code with a real bug already sitting in it instead, and the job is to find it before the checker does. Either way: no tutorials, no multiple choice, a checker that says `PASS` or it doesn't.
+A model can write your constraint block, your assertion, your scoreboard predictor, faster than you can finish reading the spec it's working from. It compiles. It runs. It very likely prints `PASS`. So why keep practicing SystemVerilog at all -- and if writing the code isn't the bottleneck anymore, what is a DV interview even supposed to measure?
 
-Writing correct code from a spec is still the right first filter, and it isn't going away. It's just not the whole filter anymore. A model can produce that same constraint block, assertion, or scoreboard in seconds, and the result will compile, run, and usually print `PASS` -- which means a candidate's own write-from-scratch answer can look just as clean without actually being right. What a model is bad at, and what a careless engineer is just as bad at, is the second half of the job: looking at code, its own or someone else's, and telling whether a clean run actually proves anything. That's a different skill than writing the constraint in the first place, and it's the one that increasingly separates a good engineer from a bad one once a model is generating a chunk of the first draft either way.
+Writing correct code from a spec hasn't stopped mattering. It's stopped being *enough*. A model closes the writing gap for a careless candidate and a careful one alike, so the thing that used to separate them -- can you produce the constraint -- no longer does. What separates them now is whether they can tell, afterward, whether the thing that got produced -- theirs, a coworker's, a model's -- actually does what the spec says, given that it compiled, ran, and printed nothing was wrong.
 
-This post is the exercise taxonomy for that second skill -- categories, a scoring rubric, and four cases worked all the way through in code, because a table of categories alone doesn't show what any of this looks like in practice.
+[brokenbench](/projects/brokenbench/) already tests half of this. It's a [ziglings](https://codeberg.org/ziglings/exercises)/[rustlings](https://github.com/rust-lang/rustlings)-style set of SystemVerilog and UVM exercises -- leetcode for constrained-random verification. Most exercises hand you a spec in a comment and an empty class, and you write the constraint logic yourself against a checker built to catch partial credit, not just crashes. A smaller set hands you working code with a real bug already sitting in it instead, and the job is to find it before the checker does. Either way: no tutorials, no multiple choice, a checker that says `PASS` or it doesn't.
+
+The write-from-scratch half is the half a model is already good at. The debug-the-bug half is the half that's about to matter a lot more -- and it needs a specific kind of bug, one a model would also plausibly produce with total confidence, not just whatever a tired engineer happened to leave behind. This post is the taxonomy for that: categories, a scoring rubric, four cases worked all the way through in code, and three new brokenbench exercises built to it.
 
 ## What a green run doesn't prove
 
-An interview that asks a candidate to write a `randomize()` call and watch it compile is testing syntax. It was never testing much more than that, but it mattered less when writing the syntax was the bottleneck. It isn't anymore. The bottleneck has moved to reading: given code that already compiles, runs, and terminates cleanly, can someone tell whether it does what the spec says?
+An interview that asks a candidate to write a `randomize()` call and watch it compile is testing syntax -- the thing a model now does for free. The bottleneck has moved to reading: given code that already compiles, runs, and terminates cleanly, can someone tell whether it does what the spec says?
 
 Three principles follow from that shift:
 
