@@ -64,6 +64,8 @@ Not everything is broken. There are specific tasks where LLMs work well in an SV
 
 **Reading code.** Paste a driver and ask "what does this do?" and you'll get a good answer. LLMs are excellent at explaining what existing code does, identifying what UVM class it extends, and summarizing what protocol it implements. This is a real productivity gain when onboarding to an unfamiliar testbench.
 
+That's a different skill from reading code to find what's silently wrong in it, though, and it's worth not conflating the two. Code that compiles, runs, and prints `PASS` can still violate the spec it was supposed to implement, and explaining what code does, correctly, is not the same operation as checking whether what it does is actually right. [Ten Ways Code Lies](/blog/brokenbench-ai-era-interviews/) works through that distinction in depth, and [brokenbench](/projects/brokenbench/) is the exercise set built around it: code a model would write with total confidence, that's wrong in a way only a careful, independent read catches.
+
 **Spec inconsistency detection.** Give an LLM an interface specification and the monitor implementation side by side, and ask "does the monitor correctly check all the assertions in the spec?" It will often find genuine discrepancies. The model doesn't need to understand the full codebase for this, it just needs both documents.
 
 **Assertion explanation.** SVA properties with complex temporal operators are hard to read. Paste an assertion and ask what behavior it's checking, usually a good answer.

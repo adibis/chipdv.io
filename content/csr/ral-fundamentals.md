@@ -91,7 +91,7 @@ predictor.adapter = axi_adapter;
 monitor.ap.connect(predictor.bus_in);
 ```
 
-Worth checking explicitly in any new register environment: is the predictor connected to the actual bus monitor, or only exercised by tests that happen to go exclusively through RAL? The gap stays invisible until a test mixes access styles, and by then it looks like a hardware bug rather than a wiring gap.
+Worth checking explicitly in any new register environment: is the predictor connected to the actual bus monitor, or only exercised by tests that happen to go exclusively through RAL? The gap stays invisible until a test mixes access styles, and by then it looks like a hardware bug rather than a wiring gap. [brokenbench's `predictor_needs_the_monitor_wired_in`](https://github.com/adibis/brokenBench/blob/master/exercises/csr/predictor_needs_the_monitor_wired_in.sv) is this exact gap as a self-contained exercise: a predictor that's fully constructed and configured, but never actually connected to the bus monitor's analysis port.
 
 ## Where this is going
 

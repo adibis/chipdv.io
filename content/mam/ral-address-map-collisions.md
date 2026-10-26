@@ -17,6 +17,8 @@ A DMA sequence requests a 4KB destination buffer. The allocator, tracking only w
 
 This is the same class of problem [The Case for a Shared Memory Manager](../case-for-shared-manager) describes for two sequences colliding with each other, one level more dangerous, because the "other side" of the collision isn't a test-local buffer someone can shrug off. It's live register state that other parts of the environment depend on.
 
+The underlying constraint mistake, sorting only on where ranges *start* and calling that non-overlapping, shows up on its own, decoupled from registers entirely, in [brokenbench's `nonoverlapping_address_ranges`](https://github.com/adibis/brokenBench/blob/master/exercises/sv/nonoverlapping_address_ranges.sv): ordering the starts looks like it solves the problem, says nothing about where each range *ends*, and a large enough region reaches straight into the next one, sorted starting addresses and all.
+
 ![A shared address space with CSR windows reserved and everything else left allocatable](/images/mam/04-reserved-windows.svg)
 
 ## The fix: reserve every register window before allocating anything

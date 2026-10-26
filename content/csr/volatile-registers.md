@@ -30,6 +30,8 @@ Volatility marking tells the testbench not to assume a value hasn't changed. It 
 
 Backdoor reads of a volatile field make this worse. A backdoor peek reads the underlying storage element directly with no synchronization to the clock domain a frontdoor path would sample on, which means a backdoor read of a rapidly changing volatile register can return a value no frontdoor transaction could ever have observed. It caught the register mid-transition in a way the actual protocol never exposes. This is exactly where the blind reliance on backdoor access for speed, mentioned in [UVM RAL Fundamentals](../ral-fundamentals), turns into a correctness bug rather than a performance shortcut.
 
+A related but distinct timing trap: `uvm_reg::sample()`, the hook a register-model generator wires to a covergroup, fires before `do_predict()` runs on that same access, not after. Read the field's own mirrored value from inside `sample()` expecting to see what this access just produced, and the value staring back is whatever the *previous* access left behind. [brokenbench's `sample_fires_before_the_mirror_updates`](https://github.com/adibis/brokenBench/blob/master/exercises/csr/sample_fires_before_the_mirror_updates.sv) is this exact ordering, isolated in one exercise: get the coverage right without ever trusting the mirror for the access being sampled.
+
 ![Volatile register race: a hardware push between a frontdoor read's sampling edge and a backdoor peek mid-transition](/images/csr/05-volatile-race.svg)
 
 ## What a robust volatile-register test actually checks

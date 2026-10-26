@@ -97,6 +97,8 @@ if (!uvm_config_db#(periph_env_cfg)::get(this, "", "cfg", cfg))
 
 A block-level environment that always sets its own default before children run never hits this fatal. An SoC-level integration that renamed an instance, or a sibling-ordering race that fired too late, hits it immediately, at the point of the actual mistake, with a message that says exactly what's missing, instead of surfacing forty minutes into a regression as a data mismatch that traces back to a driver silently running with the wrong delay.
 
+Two brokenbench exercises isolate `config_db` failure modes from this article directly: [`agent_ids_via_config_db`](https://github.com/adibis/brokenBench/blob/master/exercises/uvm/agent_ids_via_config_db.sv), four channel agents configured via `config_db` with one of them silently wrong, and [`config_override_loses_to_legacy_default`](https://github.com/adibis/brokenBench/blob/master/exercises/uvm/config_override_loses_to_legacy_default.sv), where `uvm_config_db::set()` resolves precedence by hierarchy depth, not by which call is more specific or runs last, and a perfectly reasonable-looking override loses to a broad default for exactly that reason.
+
 ---
 
 *Next: [Hierarchical Reset Dispatch: Cold, Warm, Analog, Digital](../hierarchical-reset-dispatch)*

@@ -44,6 +44,8 @@ RAL's predictor (from [UVM RAL Fundamentals](../ral-fundamentals)) needs the acc
 
 Part of why this is a generation-correctness problem as much as a testbench-logic problem: [RAL Generation in Practice](../ral-generation) treats the register model as something to validate against its source of truth, not something to eyeball once at project kickoff and forget about.
 
+`update()` has its own version of this trap, and it doesn't need a generation error to trigger: it recomputes what to write for *every* field in the register, not just the one a caller actually touched, which inverts an untouched W1C field's `desired` value as a side effect of writing somewhere else in the same register. [brokenbench's `update_can_silently_clear_a_w1c_field`](https://github.com/adibis/brokenBench/blob/master/exercises/csr/update_can_silently_clear_a_w1c_field.sv) is exactly that: enable a device through `update()` without clearing a real, currently-pending interrupt sitting in the same register.
+
 ## Which access types generic sequences handle safely
 
 A plain RW field is what `reg_bit_bash_seq` and `reg_access_seq` were designed for. Write a pattern, read it back, expect an exact match. That works because nothing except software is expected to change the value between the write and the read.

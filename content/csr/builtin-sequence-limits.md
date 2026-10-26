@@ -66,6 +66,8 @@ task directed_w1c_seq::body();
 endtask
 ```
 
+None of the three built-ins independently confirm a write actually reached hardware, either; all three trust the model's own mirrored value, which `do_predict()` updates to the *intended* value regardless of whether the bus transaction silently did nothing. Two brokenbench exercises isolate that gap directly: [`confirm_write_trusts_the_mirror_not_the_bus`](https://github.com/adibis/brokenBench/blob/master/exercises/csr/confirm_write_trusts_the_mirror_not_the_bus.sv), where a "confirmed" write report turns out to be checking the mirror against itself, and [`write_updates_the_mirror_even_when_dropped`](https://github.com/adibis/brokenBench/blob/master/exercises/csr/write_updates_the_mirror_even_when_dropped.sv), where the only way to actually know is an independent readback through the bus.
+
 Registers with a value that changes on its own, independent of any software write, need the volatility handling in [Volatile Registers and the Predictor Problem](../volatile-registers). And registers that shouldn't be swept at all, because sweeping them causes a side effect elsewhere in the design, need explicit exclusion, which is what the waiver mechanism in The Waiver Problem and a Scalable Waiver Manager is for. Running the built-ins against those registers without exclusion doesn't just fail to test them correctly. It can corrupt DUT state for every test that runs afterward.
 
 ---
