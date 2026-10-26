@@ -35,7 +35,7 @@ text { font-family: 'Tecnico Fino', 'IBM Plex Mono', ui-monospace, Menlo, monosp
 
   <!-- group 3: large packet [128:1023], meant to be rare -->
   <rect x="510" y="71" width="42" height="229" fill="#fffbeb" stroke="#df8e1d" stroke-width="1.5"/>
-  <text x="531" y="63" text-anchor="middle" font-size="15" font-weight="500" fill="#df8e1d" color="#df8e1d">≈96%</text>
+  <text x="531" y="92" text-anchor="middle" font-size="15" font-weight="500" fill="#b45309" color="#b45309">≈96%</text>
   <rect x="558" y="288" width="42" height="12" fill="#f0f9ff" stroke="#0369a1" stroke-width="1.5"/>
   <text x="579" y="280" text-anchor="middle" font-size="15" font-weight="500" fill="#0369a1" color="#0369a1">≈5%</text>
   <text x="555" y="322" text-anchor="middle" font-size="13" fill="#64748b" color="#64748b">[128:1023]</text>
