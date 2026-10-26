@@ -13,7 +13,7 @@ Writing correct code from a spec hasn't stopped mattering. It's stopped being *e
 
 [brokenbench](/projects/brokenbench/) already tests half of this. It's a [ziglings](https://codeberg.org/ziglings/exercises)/[rustlings](https://github.com/rust-lang/rustlings)-style set of SystemVerilog and UVM exercises -- leetcode for constrained-random verification. Most exercises hand you a spec in a comment and an empty class, and you write the constraint logic yourself against a checker built to catch partial credit, not just crashes. A smaller set hands you working code with a real bug already sitting in it instead, and the job is to find it before the checker does. Either way: no tutorials, no multiple choice, a checker that says `PASS` or it doesn't.
 
-The write-from-scratch half is the half a model is already good at. The debug-the-bug half is the half that's about to matter a lot more -- and it needs a specific kind of bug, one a model would also plausibly produce with total confidence, not just whatever a tired engineer happened to leave behind. This post is the taxonomy for that: categories, a scoring rubric, four cases worked all the way through in code, and three new brokenbench exercises built to it.
+The write-from-scratch half is the half a model is already good at. The debug-the-bug half is the half that's about to matter a lot more -- and it needs a specific kind of bug, one a model would also plausibly produce with total confidence, not just whatever a tired engineer happened to leave behind. This post is the taxonomy for that: categories, a scoring rubric, five cases worked all the way through in code, and three new brokenbench exercises built to it.
 
 ## What a green run doesn't prove
 
@@ -72,9 +72,9 @@ Difficulty tiers aren't about how obscure a defect is. They're about what it tak
 
 Include clean artifacts with no seeded defect in roughly one exercise out of five. Someone who finds a bug in every file is pattern-matching, not reading.
 
-## Four of these, worked
+## Five of these, worked
 
-A table of categories tells you the shape of the problem. It doesn't show what the lie actually looks like. Four worked cases, one per tier range, do.
+A table of categories tells you the shape of the problem. It doesn't show what the lie actually looks like. Five worked cases do.
 
 ### 1. The return value nobody checks
 
@@ -156,6 +156,27 @@ endfunction
 Nothing here is syntactically wrong, and in isolation it reads like a perfectly normal predictor: compute the expected value, compare it to what the monitor captured. The problem is `dut_pkg::crc32_calc` -- it's the RTL's own CRC function, pulled in because it was already written, tested, and convenient to reuse instead of writing a second implementation from the spec. If that function has a bug -- wrong polynomial, wrong bit order, doesn't matter which -- the scoreboard calls the same wrong function the RTL calls and gets the same wrong answer on both sides. Every comparison passes. The check never had two independent sources of truth; it had one function called twice.
 
 This one doesn't live in the code at all. It lives in where the code came from, and no amount of reading the scoreboard's logic in isolation surfaces it. The only way to catch it is to ask, separately from the code: is this prediction actually independent of the thing it's checking, or does it share an implementation?
+
+### 5. The credit that's never coming back
+
+The first four lies all show up as a wrong value somewhere -- an address, a weight, a timestamp, a checksum. This one doesn't. It shows up as two sides of a protocol waiting on each other forever, and the line that causes it is one token off from the line that would have been correct.
+
+```systemverilog
+localparam int DEPTH = 16;
+logic [4:0] credits;
+
+initial credits = DEPTH - 1;  // 15
+```
+
+![Spec versus code, side by side: localparam DEPTH = 16 and credits assigned DEPTH in both, except the shipped code subtracts 1, resetting credits to 15 instead of 16 -- everything else about the two is identical](/images/blog/02-spec-vs-code-off-by-one.svg)
+
+The spec is one line: at reset, `credits` must equal `DEPTH`, the receive buffer's actual physical capacity, because nothing is in flight yet. `DEPTH - 1` doesn't look wrong sitting in a reset block. It's the same pattern that's correct everywhere else in a file like this one -- `buf[DEPTH-1]` is the last valid array index, and a credit count reads enough like an index that the idiom slides right over. It isn't an index here. It's a count, and a count has to equal the thing it's counting, not the thing minus one.
+
+Everyday traffic never notices. A handful of small transfers never gets anywhere near 15 credits outstanding at once; credits return, the link keeps moving, nothing looks unusual for as long as nobody runs the one test that actually fills it. The gap only opens under a full-depth burst: sixteen flits sent as one atomic unit, which the receiver won't acknowledge -- won't return a single credit for -- until all sixteen have landed, because fifteen-sixteenths of an indivisible transfer isn't data it can use. The sender has fifteen credits. It sends flit 15, hits zero, and waits for a credit back. The receiver is waiting for flit 16 to complete the burst before it releases anything.
+
+![Diagram: a credit-over-time line descending from 16 toward 0 across flits 1 through 15, with flit 16 marked as never sent, below it a sender box reading "credits: 0, waiting for a credit to free up" and a receiver box reading "has flits 1-15, waiting for flit 16 to complete the burst," connected by two arrows pointing at each other labeled "neither side moves again"](/images/blog/03-credit-deadlock.svg)
+
+Neither side moves again. Nothing crashed to get here -- no assertion fired, no error printed, the link just stopped, and it stopped in a way that's indistinguishable from the receiver legitimately being slow until someone goes looking for why it's been stopped for considerably longer than slow ever looks like. Finding it beforehand means asking, for every constant in a reset block, what the spec actually requires that number to equal -- not whether it compiles, and not whether it resembles a different number three lines up that happens to look similar.
 
 ## Keeping it honest
 
