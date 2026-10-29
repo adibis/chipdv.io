@@ -6,7 +6,6 @@ publishDate: 2026-10-28
 draft: false
 description: "A block-level chiplet environment drives reset and clamp over the vif. Reused in an SoC, those calls need to go through the real power controller's registers."
 prev: /reuse/reset-dispatch-end-to-end
-next: /reuse/boundary-assertions-reset
 ---
 
 [Hierarchical Reset Dispatch: Cold, Warm, Analog, Digital](../hierarchical-reset-dispatch) covers *when* and *what kind* of reset fires. This article is about *how* it actually gets applied to the DUT, and why that answer has to change depending on where the chiplet environment is running. A block-level test verifying a chiplet in isolation has no power controller RTL to go through, so it drives reset and clamp directly on the virtual interface. An SoC-level test integrating that same chiplet has a real power controller sitting above it, and driving reset over the vif directly would bypass the exact logic the SoC-level test exists to verify: that a CSR write to the power controller actually produces a correct reset and clamp sequence at the chiplet boundary.
@@ -111,4 +110,4 @@ set_type_override_by_type(vif_reset_driver::get_type(), csr_reset_driver::get_ty
 
 ---
 
-*Next: [Boundary Assertions for Register-Triggered Reset](../boundary-assertions-reset)*
+*Next: Boundary Assertions for Register-Triggered Reset — a register write completing tells you the bus transaction succeeded. It says nothing about whether the reset and clamp pins it triggered actually moved.*

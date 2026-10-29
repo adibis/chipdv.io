@@ -35,7 +35,7 @@ text { font-family: 'Tecnico Fino', 'IBM Plex Mono', ui-monospace, Menlo, monosp
   <rect x="610" y="166" width="200" height="18" fill="#ffffff"/>
   <text x="710" y="178" text-anchor="middle" font-size="14" fill="#b91c1c" color="#b91c1c">write chiplet_reset_ctrl</text>
 
-  <rect x="600" y="195" width="220" height="40" rx="6" fill="#fef2f2" stroke="#b91c1c" stroke-width="1" stroke-dasharray="3,3"/>
+  <rect x="570" y="195" width="280" height="40" rx="6" fill="#fef2f2" stroke="#b91c1c" stroke-width="1" stroke-dasharray="3,3"/>
   <text x="710" y="220" text-anchor="middle" font-size="15" fill="#b91c1c" color="#b91c1c">real power controller RTL</text>
 
   <line x1="710" y1="235" x2="710" y2="260" stroke="#b91c1c" stroke-width="1.5" stroke-dasharray="3,3" marker-end="url(#arrow05d)"/>

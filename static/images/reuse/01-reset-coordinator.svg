@@ -22,22 +22,22 @@ text { font-family: 'Tecnico Fino', 'IBM Plex Mono', ui-monospace, Menlo, monosp
   <text x="345" y="79" text-anchor="middle" font-size="18" fill="#0f172a" color="#0f172a">1. monitor</text>
   <text x="345" y="112" text-anchor="middle" font-size="15" fill="#64748b" color="#64748b">pre_reset, stop sampling</text>
 
-  <rect x="460" y="54" width="180" height="42" rx="6" fill="#f0f9ff" stroke="#0369a1" stroke-width="1.5"/>
-  <text x="550" y="79" text-anchor="middle" font-size="18" fill="#0f172a" color="#0f172a">2. scoreboard</text>
-  <text x="550" y="112" text-anchor="middle" font-size="15" fill="#64748b" color="#64748b">pre_reset, clear expected state</text>
+  <rect x="520" y="54" width="180" height="42" rx="6" fill="#f0f9ff" stroke="#0369a1" stroke-width="1.5"/>
+  <text x="610" y="79" text-anchor="middle" font-size="18" fill="#0f172a" color="#0f172a">2. scoreboard</text>
+  <text x="610" y="112" text-anchor="middle" font-size="15" fill="#64748b" color="#64748b">pre_reset, clear expected state</text>
 
   <rect x="270" y="132" width="150" height="42" rx="6" fill="#f0f9ff" stroke="#0369a1" stroke-width="1.5"/>
   <text x="345" y="157" text-anchor="middle" font-size="18" fill="#0f172a" color="#0f172a">3. predictor</text>
   <text x="345" y="186" text-anchor="middle" font-size="15" fill="#64748b" color="#64748b">pre_reset, invalidate mirrors</text>
 
-  <rect x="460" y="132" width="180" height="42" rx="6" fill="#f0f9ff" stroke="#0369a1" stroke-width="1.5"/>
-  <text x="550" y="157" text-anchor="middle" font-size="18" fill="#0f172a" color="#0f172a">4. sequencer</text>
-  <text x="550" y="186" text-anchor="middle" font-size="15" fill="#64748b" color="#64748b">post_reset, re-arm, unblock</text>
+  <rect x="520" y="132" width="180" height="42" rx="6" fill="#f0f9ff" stroke="#0369a1" stroke-width="1.5"/>
+  <text x="610" y="157" text-anchor="middle" font-size="18" fill="#0f172a" color="#0f172a">4. sequencer</text>
+  <text x="610" y="186" text-anchor="middle" font-size="15" fill="#64748b" color="#64748b">post_reset, re-arm, unblock</text>
 
   <line x1="200" y1="88" x2="268" y2="70" stroke="#0369a1" stroke-width="1.5" marker-end="url(#arrow01r)"/>
-  <line x1="200" y1="98" x2="458" y2="70" stroke="#0369a1" stroke-width="1.5" marker-end="url(#arrow01r)"/>
+  <line x1="200" y1="98" x2="518" y2="70" stroke="#0369a1" stroke-width="1.5" marker-end="url(#arrow01r)"/>
   <line x1="200" y1="130" x2="268" y2="148" stroke="#0369a1" stroke-width="1.5" marker-end="url(#arrow01r)"/>
-  <line x1="200" y1="140" x2="458" y2="148" stroke="#0369a1" stroke-width="1.5" marker-end="url(#arrow01r)"/>
+  <line x1="200" y1="140" x2="518" y2="148" stroke="#0369a1" stroke-width="1.5" marker-end="url(#arrow01r)"/>
 
   <text x="20" y="212" font-size="18" font-weight="600" fill="#0f172a" color="#0f172a">the phase timeline has no equivalent event</text>
 
