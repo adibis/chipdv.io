@@ -22,8 +22,8 @@ This isn't generic SystemVerilog trivia. Every exercise is built around a mistak
 ## Every exercise, by track
 
 {{< cards cols="2" >}}
+  {{< card link="/projects/brokenbench/learn/" title="Learn SystemVerilog Constraints from Scratch" subtitle="Fourteen exercises for engineers who haven't written SystemVerilog constraints before: dist weights, inside, foreach, implies, inheritance, and common UVM lifecycle mistakes." >}}
   {{< card link="/projects/brokenbench/sv/" title="SystemVerilog Practice Problems" subtitle="Twelve interview-prep exercises: constrained-random gotchas, multi-dimensional uniqueness, lifecycle hooks, and the kind of mistake that compiles clean and passes a casual read." >}}
   {{< card link="/projects/brokenbench/uvm/" title="UVM Testbench Interview Problems" subtitle="Eight UVM component-level bugs: config_db scoping and precedence, factory-override ordering, objection lifecycle errors, analysis-port aliasing, scoreboard correlation design." >}}
   {{< card link="/projects/brokenbench/csr/" title="Fixing UVM RAL and uvm_reg Bugs" subtitle="Six uvm_reg and register-map exercises: uvm_mem's missing mirror state, predictor and mirror synchronization gaps, access-policy mistakes." >}}
-  {{< card link="/projects/brokenbench/learn/" title="Learn SystemVerilog Constraints from Scratch" subtitle="Fourteen exercises for engineers who haven't written SystemVerilog constraints before: dist weights, inside, foreach, implies, inheritance, and common UVM lifecycle mistakes." >}}
 {{< /cards >}}

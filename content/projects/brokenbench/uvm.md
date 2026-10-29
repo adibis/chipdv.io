@@ -1,6 +1,6 @@
 ---
 title: "UVM Testbench Interview Problems"
-weight: 3
+weight: 4
 date: 2026-10-29
 publishDate: 2026-10-29
 draft: false
@@ -9,7 +9,7 @@ prev: /projects/brokenbench/sv
 next: /projects/brokenbench/csr
 ---
 
-UVM component-level bugs, the kind that compile clean, run clean, and still don't test what they look like they're testing. config_db scoping and precedence, factory-override ordering, objection lifecycle errors, analysis-port aliasing, scoreboard correlation design, virtual-sequencer handshake timing.
+UVM component-level bugs, the kind that compile clean, run clean, and still don't test what they look like they're testing. `config_db` scoping and precedence, factory-override ordering, objection lifecycle errors, analysis-port aliasing, scoreboard correlation design, virtual-sequencer handshake timing. Every checker is correct as given; fix only what the write-up asks for, and leave anything below the checker marker alone.
 
 ### Factory Override {#factory-override}
 
@@ -17,13 +17,13 @@ UVM component-level bugs, the kind that compile clean, run clean, and still don'
 
 **Factory override compiles clean and runs clean, but the DUT's parity checker never actually gets tested.**
 
-{{% details title="Full breakdown" closed="true" %}}
+{{% details title="The spec and the fix" closed="false" %}}
 
 A register-write test wants to run with an error-injecting driver instead of the normal one, so the DUT's write-parity checker actually gets exercised: the error-injecting driver corrupts one bit of every write, and the checker is supposed to catch it. Swapping drivers is done with a factory type override -- `base_write_driver` -> `error_inject_write_driver` -- so the env's own code never has to know the error-injecting variant exists.
 
 Run this: the test believes it configured the error-injecting driver, but `env.drv` is still a plain `base_write_driver`.
 
-Fix the code so `env.drv` really is an `error_inject_write_driver`. Don't edit anything at or below the "checker" marker.
+Fix the code so `env.drv` really is an `error_inject_write_driver`.
 
 Try it yourself: `make run EX=factory_override` after cloning
 [brokenBench](https://github.com/adibis/brokenBench), or read the
@@ -43,7 +43,7 @@ Try it yourself: `make run EX=factory_override` after cloning
 
 Run this: the test never gets past item 2.
 
-Fix the code so all 5 items are processed, including the bad one, without the simulation dying. Don't edit anything at or below the "checker" marker.
+Fix the code so all 5 items are processed, including the bad one, without the simulation dying.
 
 Try it yourself: `make run EX=error_path_double_drops_objection` after cloning
 [brokenBench](https://github.com/adibis/brokenBench), or read the
@@ -65,7 +65,7 @@ Before trusting the rest of the environment to run real stimulus, `run_phase` do
 
 Run this: the sanity check fails, and it reports the same channel id four times.
 
-Fix the code so every channel agent reports its own configured id. Don't edit anything at or below the "checker" marker.
+Fix the code so every channel agent reports its own configured id.
 
 Try it yourself: `make run EX=agent_ids_via_config_db` after cloning
 [brokenBench](https://github.com/adibis/brokenBench), or read the
@@ -87,7 +87,7 @@ Run this: the override is 7. `a.channel_id` comes out 999 -- the broad default -
 
 `uvm_config_db::set()` computes precedence from the depth of the component passed as its first argument, not from which call is more specific or which one runs last. A call scoped through a deeper component's handle gets a lower precedence than one scoped through a shallower one, even when the deeper call is the one meant to win.
 
-Fix the test's override so `a.channel_id` ends up 7. Don't touch `chan_agent`, and don't edit anything at or below the "checker" marker.
+Fix the test's override so `a.channel_id` ends up 7. Don't touch `chan_agent`.
 
 Try it yourself: `make run EX=config_override_loses_to_legacy_default` after cloning
 [brokenBench](https://github.com/adibis/brokenBench), or read the
@@ -107,7 +107,7 @@ Try it yourself: `make run EX=config_override_loses_to_legacy_default` after clo
 
 Run this: `imm_sub` reports every transaction correctly. `batch_sub` reports the same, single, final transaction's `id`/`data` for every entry it collected -- as if all N broadcasts had carried identical data, even though the checker can already see from `imm_sub` that they didn't.
 
-Fix the code below so `batch_sub` reports what each transaction's `id`/`data` actually were at the moment it arrived. Don't edit anything at or below the "checker" marker.
+Fix the code below so `batch_sub` reports what each transaction's `id`/`data` actually were at the moment it arrived.
 
 Try it yourself: `make run EX=deferred_subscriber_needs_clone` after cloning
 [brokenBench](https://github.com/adibis/brokenBench), or read the
@@ -142,7 +142,7 @@ Try it yourself: `make run EX=scoreboard_correlate_by_id` after cloning
 
 {{< badge "write-from-scratch" >}} {{< badge "virtual-sequencer" >}} {{< badge "fork-join" >}}
 
-**Write coord_vseq::body() so channel B's item carries the exact value channel A's driver actually processed -- not a value you compute or guess ahead of time.**
+**Write `coord_vseq::body()` so channel B's item carries the exact value channel A's driver actually processed -- not a value you compute or guess ahead of time.**
 
 {{% details title="Full breakdown" closed="true" %}}
 
@@ -183,7 +183,7 @@ sb::predict() below is exactly the kind of predictor a model writes with total c
 
 A scoreboard whose predictor calls the DUT's own function has no way to disagree with it, no matter what that function actually computes. Reading predict() in isolation won't tell you anything is wrong -- it calls a function named crc8 and returns what it returns. The only way to know whether that's actually CRC-8/SMBUS is to implement the spec above independently and check.
 
-Fix sb::predict() so it's an actual independent implementation of CRC-8/SMBUS, as specified above -- not a call to dut_pkg::crc8(). Verify your implementation against the 0xF4 check value before assuming it's right. Don't edit anything at or below the "checker" marker; it's correct as given and is what's judging you.
+Fix sb::predict() so it's an actual independent implementation of CRC-8/SMBUS, as specified above -- not a call to dut_pkg::crc8(). Verify your implementation against the 0xF4 check value before assuming it's right.
 
 Try it yourself: `make run EX=scoreboard_reuses_dut_checksum` after cloning
 [brokenBench](https://github.com/adibis/brokenBench), or read the

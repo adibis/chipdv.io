@@ -1,14 +1,14 @@
 ---
 title: "Learn SystemVerilog Constraints from Scratch"
-weight: 5
+weight: 2
 date: 2026-10-29
 publishDate: 2026-10-29
 draft: false
 description: "Fourteen exercises for engineers who haven't written SystemVerilog constraints before: dist weights, inside, foreach, implies, inheritance, and the UVM lifecycle calls that are easy to get wrong the first time."
-prev: /projects/brokenbench/csr
+next: /projects/brokenbench/sv
 ---
 
-Never touched SystemVerilog constraints before? Start here. Most of these hand you a spec and a stub to write against it -- constraints, `foreach`/`implies`/`inside`, `dist` weights, array reduction -- one concept per exercise, or a short deliberate chain of them. A handful hand you real code with one call missing or misused instead: a `config_db` that's never `set()`, a sequence that's created but never `start()`ed, an objection dropped without a matching raise.
+Never touched SystemVerilog constraints before? Start here. Most of these hand you a spec and a stub to write against it -- constraints, `foreach`/`implies`/`inside`, `dist` weights, array reduction -- one concept per exercise, or a short deliberate chain of them. A handful hand you real code with one call missing or misused instead: a `config_db` that's never `set()`, a sequence that's created but never `start()`ed, an objection dropped without a matching raise. Every exercise's checker is correct as given; fix only what the write-up asks for, and leave anything below the checker marker alone.
 
 ### SV Mechanics Chain {#sv-mechanics-chain}
 
@@ -16,11 +16,11 @@ Never touched SystemVerilog constraints before? Start here. Most of these hand y
 
 **Write a class, a compound constraint, and a factory function from scratch.**
 
-{{% details title="Full breakdown" closed="true" %}}
+{{% details title="The spec and the fix" closed="false" %}}
 
 A class handle that's declared but never assigned with `new()` is null -- calling a method or randomizing through it fails at runtime, not at compile time. A factory function that's supposed to hand back a ready-to-use object has exactly one job it can't skip: actually constructing the object before returning it.
 
-Fix the class and function below so the check after it passes. Don't edit anything at or below the "checker" marker.
+Fix the class and function below so the check after it passes.
 
 Write the constraint and the factory function from scratch:
 
@@ -44,7 +44,7 @@ Try it yourself: `make run EX=sv_mechanics_chain` after cloning
 
 Every constraint block in a class needs its own name, the same as any other class member -- two blocks sharing a name isn't two constraints being combined, it's a redefinition error. Beyond that, this is just ordinary constraint-writing: a range needs `inside`, and a field pinned to one exact value needs `==`, not `=` (which isn't a valid constraint operator at all).
 
-Fix the class below so the check after it passes. Don't edit anything at or below the "checker" marker.
+Fix the class below so the check after it passes.
 
 Write three constraints from scratch, each in its own uniquely-named constraint block:
 
@@ -76,7 +76,7 @@ Try it yourself: `make run EX=sv_constraint_chain` after cloning
 
 Same operator every time, always wrapped in braces, entries separated by commas, a range written as [low:high] with low on the left.
 
-Fix the class below so the check after it passes. Don't edit anything at or below the "checker" marker.
+Fix the class below so the check after it passes.
 
 Write the constraints so mode, address, and val each land in their intended set on every randomize() call.
 
@@ -109,7 +109,7 @@ Try it yourself: `make run EX=inside_operator_variants` after cloning
                              each individual value inside it gets less).
 ```
 
-Fix the class below so the check after it passes. Don't edit anything at or below the "checker" marker.
+Fix the class below so the check after it passes.
 
 Write two constraints from scratch:
 
@@ -132,7 +132,7 @@ Try it yourself: `make run EX=dist_coin_and_die` after cloning
 
 `a -> b` means "whenever a holds, b must also hold" -- it says nothing at all about what happens when a doesn't hold, and it isn't symmetric: `a -> b` and `b -> a` are two different constraints. Getting the two sides backwards from what you meant still compiles and still looks reasonable at a glance; it just enforces the opposite relationship.
 
-Fix the class below so the check after it passes. Don't edit anything at or below the "checker" marker.
+Fix the class below so the check after it passes.
 
 Write two implication constraints from scratch:
 
@@ -149,13 +149,13 @@ Try it yourself: `make run EX=implies_basics` after cloning
 
 {{< badge "write-from-scratch" >}}
 
-**Write a foreach constraint, and an inline randomize() with{} constraint.**
+**Write a `foreach` constraint, and an inline `randomize() with{}` constraint.**
 
 {{% details title="Full breakdown" closed="true" %}}
 
 `foreach (arr[i]) ...` introduces `i` as a loop variable scoped to that constraint, usable to index the same array on each pass. Separately, `randomize() with { ... }` adds a one-off constraint for a single call without touching the class itself -- useful for pinning a `rand` field to a specific value just for that call.
 
-Fix the class and function below so the check after it passes. Don't edit anything at or below the "checker" marker.
+Fix the class and function below so the check after it passes.
 
 Write the constraint and the inline randomize() call from scratch:
 
@@ -172,7 +172,7 @@ Try it yourself: `make run EX=foreach_with_basics` after cloning
 
 {{< badge "write-from-scratch" >}} {{< badge "best-practice" >}}
 
-**Write a function that makes randomize() reproducible.**
+**Write a function that makes `randomize()` reproducible.**
 
 {{% details title="Full breakdown" closed="true" %}}
 
@@ -190,7 +190,7 @@ Try it yourself: `make run EX=foreach_with_basics` after cloning
 
 They're two separate calls on the handle, not composable -- srandom(seed) is not an argument you pass into randomize(); randomize() only takes an optional list of field names to restrict which fields get re-rolled.
 
-Fix the function below so the check after it passes. Don't edit anything at or below the "checker" marker.
+Fix the function below so the check after it passes.
 
 Write make_seeded_item() from scratch:
 
@@ -208,7 +208,7 @@ Try it yourself: `make run EX=missing_seed_reproducibility` after cloning
 
 {{< badge "lifecycle-hook" >}}
 
-**Rand_mode(0) left on from a debug helper.**
+**A `rand_mode(0)` left on from a debug helper.**
 
 {{% details title="Full breakdown" closed="true" %}}
 
@@ -216,7 +216,7 @@ rand_mode() turns randomization for a specific field on or off without touching 
 
 Look at the constructor: there are two rand_mode() calls, one broader and one narrower. One disables randomization for the whole object, the other re-enables it for a single field. Which field ends up silently pinned to one value forever, and which one actually stays random?
 
-Fix the class below so the check after it passes. Don't edit anything at or below the "checker" marker.
+Fix the class below so the check after it passes.
 
 This class is over-constrained today. Fix it so seq_num actually varies across repeated randomize() calls, the same way channel already does.
 
@@ -238,7 +238,7 @@ Constraint blocks aren't like virtual methods -- a differently-named constraint 
 
 What actually works: `constraint_mode()`, the same idea as `rand_mode()` but for constraint blocks instead of fields. Called on a named constraint -- including one inherited from a base class -- `constraint_mode(0)` turns that specific block off without touching its declaration. Turn the base class's range constraint off in the subclass's own constructor, then a new constraint declared in the subclass is the only one left applying.
 
-Fix the classes below so the check after them passes. Don't edit anything at or below the "checker" marker.
+Fix the classes below so the check after them passes.
 
 Write constraints so that wide_item's values reach above 50:
 
@@ -255,7 +255,7 @@ Try it yourself: `make run EX=inherited_constraints_stack` after cloning
 
 {{< badge "write-from-scratch" >}} {{< badge "lifecycle-hook" >}} {{< badge "array" >}}
 
-**Write post_randomize() so a queue of objects isn't full of nulls.**
+**Write `post_randomize()` so a queue of objects isn't full of nulls.**
 
 {{% details title="Full breakdown" closed="true" %}}
 
@@ -263,7 +263,7 @@ Try it yourself: `make run EX=inherited_constraints_stack` after cloning
 
 `post_randomize()` is the natural place to do that -- it runs right after randomize() finishes picking every random value, including the queue's own size, so by the time it runs you know exactly how many elements there are to build.
 
-Fix the class below so the check after it passes. Don't edit anything at or below the "checker" marker.
+Fix the class below so the check after it passes.
 
 Write post_randomize() so every element of queue_of_pkts ends up as a real, randomized object:
 
@@ -288,7 +288,7 @@ Array reduction methods (`sum()`, `product()`, `and()`, `or()`, `xor()`) collaps
 
 That makes `sum() with (...)` a way to count: `arr.sum() with (item == N ? 1 : 0)` turns every element into a 1 (if it matches) or 0 (if it doesn't), and summing those 1s and 0s gives you exactly how many elements equal N -- without touching what any individual element's value is.
 
-Fix the class below so the check after it passes. Don't edit anything at or below the "checker" marker.
+Fix the class below so the check after it passes.
 
 Write two constraints from scratch, each using sum() with (...) to count matching elements:
 
@@ -305,7 +305,7 @@ Try it yourself: `make run EX=array_reduction_with` after cloning
 
 {{< badge "config-db" >}}
 
-**Uvm_config_db::get() works fine -- nobody ever called set().**
+**`uvm_config_db::get()` works fine -- nobody ever called `set()`.**
 
 {{% details title="Full breakdown" closed="true" %}}
 
@@ -315,7 +315,7 @@ Try it yourself: `make run EX=array_reduction_with` after cloning
 
 Run this: `w.mode` stays -1, `worker`'s uninitialized default, instead of becoming 1.
 
-Fix `test::build_phase()` so `w.mode` ends up 1. Don't touch `worker`, and don't edit anything at or below the "checker" marker.
+Fix `test::build_phase()` so `w.mode` ends up 1. Don't touch `worker`.
 
 Try it yourself: `make run EX=uvm_config_db_never_set` after cloning
 [brokenBench](https://github.com/adibis/brokenBench), or read the
@@ -337,7 +337,7 @@ Try it yourself: `make run EX=uvm_config_db_never_set` after cloning
 
 Run this: `recorded` does become 42 -- that part isn't the problem -- but a `UVM_FATAL` fires right after it.
 
-Fix `run_phase` so no `UVM_FATAL` occurs. Don't edit anything at or below the "checker" marker.
+Fix `run_phase` so no `UVM_FATAL` occurs.
 
 Try it yourself: `make run EX=uvm_objection_never_raised` after cloning
 [brokenBench](https://github.com/adibis/brokenBench), or read the
@@ -359,7 +359,7 @@ Try it yourself: `make run EX=uvm_objection_never_raised` after cloning
 
 Run this: `e.drv.received_count` stays 0 -- the driver never gets anything to record.
 
-Fix `test::run_phase()` so the driver actually receives the item. Don't touch `my_seq` or `my_driver`, and don't edit anything at or below the "checker" marker.
+Fix `test::run_phase()` so the driver actually receives the item. Don't touch `my_seq` or `my_driver`.
 
 Try it yourself: `make run EX=uvm_sequence_never_started` after cloning
 [brokenBench](https://github.com/adibis/brokenBench), or read the

@@ -1,14 +1,15 @@
 ---
 title: "SystemVerilog Practice Problems"
-weight: 2
+weight: 3
 date: 2026-10-29
 publishDate: 2026-10-29
 draft: false
 description: "Twelve interview-prep SystemVerilog exercises: constrained-random gotchas, multi-dimensional uniqueness, lifecycle hooks, and the kind of mistake that compiles clean and passes a casual read."
+prev: /projects/brokenbench/learn
 next: /projects/brokenbench/uvm
 ---
 
-Core SystemVerilog and constrained-random gotchas. Every one of these is either a documented real-world mistake or something found by actually testing this repo's own exercises against Verilator -- a tool limitation tag means the exercise needed a workaround, or a patched build, to get a real pass out of the checker at all.
+Core SystemVerilog and constrained-random gotchas. Every one of these is either a documented real-world mistake or something found by actually testing this repo's own exercises against Verilator -- a tool limitation tag means the exercise needed a workaround, or a patched build, to get a real pass out of the checker at all. Every checker is correct as given; fix only what the write-up asks for, and leave anything below the checker marker alone.
 
 ### Nonoverlapping Address Ranges {#nonoverlapping-address-ranges}
 
@@ -16,15 +17,15 @@ Core SystemVerilog and constrained-random gotchas. Every one of these is either 
 
 **Sorted isn't the same as non-overlapping -- unless you check the right pair.**
 
-{{% details title="Full breakdown" closed="true" %}}
+{{% details title="The spec and the fix" closed="false" %}}
 
 A classic memory-allocator constraint: hand out N address ranges that don't overlap. Ordering just the *starts* (`regions[0].base < regions[1].base < ...`) looks like it accomplishes that -- nothing about the constraint is obviously wrong -- but it says nothing about where each range actually *ends*. A large enough region reaches straight into the next one, sorted starting addresses and all.
 
 The fix isn't to compare every region against every other region -- once the array is genuinely kept in ascending order by base_addr, checking each region only against its immediate predecessor is enough: if region i doesn't reach into region i+1, and region i+1 doesn't reach into region i+2, nothing earlier can reach past i+1 either, because everything is already sorted. That's the whole reason to maintain the ordering in the first place -- it turns an all-pairs check into an adjacent-pairs check.
 
-One more thing worth being deliberate about: `regions[i-1]` only makes sense once `i > 0`. `i` in a foreach loop is unsigned, so guard that access with a real if/else, not a bare `if` with nothing to fall through to at i==0 -- a stray reference to index -1 on an unsigned type wraps to the largest possible value instead of going negative, the same silent-wraparound trap iommu_scattered_page_table's physical-bounds check calls out for address arithmetic.
+One more thing worth being deliberate about: `regions[i-1]` only makes sense once `i > 0`. `i` in a `foreach` loop is unsigned, so guard that access with a real if/else, not a bare `if` with nothing to fall through to at `i==0` -- a stray reference to index -1 on an unsigned type wraps to the largest possible value instead of going negative, the same silent-wraparound trap `iommu_scattered_page_table`'s physical-bounds check calls out for address arithmetic.
 
-Fix the class below so the check after it passes. Don't edit anything at or below the "checker" marker.
+Fix the class below so the check after it passes.
 
 Write the constraints so:
 
@@ -46,13 +47,13 @@ Try it yourself: `make run EX=nonoverlapping_address_ranges` after cloning
 
 {{< badge "write-from-scratch" >}} {{< badge "multi-constraint" >}} {{< badge "cross-call-state" >}} {{< badge "array" >}}
 
-**Counting flipped bits with sum() with(), not $countones().**
+**Counting flipped bits with `sum() with()`, not `$countones()`.**
 
 {{% details title="Full breakdown" closed="true" %}}
 
 $countones() would make this trivial -- but the point here is the array-reduction technique itself, not the answer. `sum() with (...)` needs an actual array to reduce, and a 32-bit vector isn't one: `current_data ^ previous_data` is still a single packed value, and there's no direct way to hand a packed expression straight to `.sum()` (the streaming operator `{<<{...}}` can't be chained into a method call, and comparing an unpacked array against a streaming expression with `==` fails to compile -- both real, worth hitting once so you know what doesn't work, not just what does). What DOES work: declare a plain array of individual bits, tie each element to the matching XOR bit with an ordinary `foreach` constraint (not a procedural loop -- constraints don't have those), and reduce that array. `sum() with (int'(item))` on a plain (non-struct) array of `rand bit` elements works cleanly; casting each 1-bit element to `int` before summing avoids the count silently wrapping once more than one bit is set.
 
-Fix the class below so the check after it passes. Don't edit anything at or below the "checker" marker.
+Fix the class below so the check after it passes.
 
 Write the constraints and lifecycle hook so:
 
@@ -79,7 +80,7 @@ A `foreach (grid[i])` loop iterating rows and constraining each row's three cell
 
 (`unique{}` isn't used here on purpose: on the current toolchain, using unique{} on a row-slice of a 2D array crashes the compiler outright -- a real, current tool limitation, not a design choice. Pairwise != is the working alternative here.)
 
-Fix the class below so the check after it passes. Don't edit anything at or below the "checker" marker.
+Fix the class below so the check after it passes.
 
 Write the constraints so:
 
@@ -119,7 +120,7 @@ A NIC frame has an 8-bit header, a variable-length payload, and an 8-bit CRC. No
     computed AFTER the fact in post_randomize(), with an optional fault-injection twist.
 ```
 
-Fix the class below so the check after it passes. Don't edit anything at or below the "checker" marker.
+Fix the class below so the check after it passes.
 
 Write the class so:
 
@@ -162,7 +163,7 @@ A frame stream where every frame has a header, an id, a payload, and a size. Mos
     checked with `inside {}` is the pattern that actually holds up.
 ```
 
-Fix the class below so the check after it passes. Don't edit anything at or below the "checker" marker.
+Fix the class below so the check after it passes.
 
 Write the class so, across many randomize() calls on freshly-constructed objects:
 
@@ -188,7 +189,7 @@ A pipeline hazard test needs instructions that deliberately depend on each other
 
 A real sequence doesn't reuse one transaction object and re-randomize() it -- it constructs a fresh instr_item for every instruction. Whatever holds "what did the previous instruction write" has to survive that: an ordinary (non-static) member resets to its default on every new(), so it forgets the previous instruction the moment a new object exists. It needs to be shared across every instance instead.
 
-Fix the class below so the check after it passes. Don't edit anything at or below the "checker" marker.
+Fix the class below so the check after it passes.
 
 Write the constraints so that, among instructions where gen_hazard is 1 (and there was a previous instruction), roughly 20% hazard on src_reg_0 only, 50% on src_reg_1 only, and 30% on both -- and never on neither. Registers that aren't hazarding shouldn't coincidentally match the previous instruction's dst_reg either.
 
@@ -225,7 +226,7 @@ Two things make the spec itself, not just the mechanics, worth getting exactly r
 
 One tool-specific thing to know before you reach for the obvious approach: putting a `dist{}` clause directly on an enum-typed rand variable does not reproduce its declared weights reliably on this toolchain (confirmed in this repo's own README -- see the "Real, current tool limitations" section). Drive the weighted pick through a plain-width rand field instead, and map it onto the enum afterward with an ordinary equality constraint.
 
-Fix the class below so the check after it passes. Don't edit anything at or below the "checker" marker.
+Fix the class below so the check after it passes.
 
 Write the class so:
 
@@ -269,7 +270,7 @@ Array reduction/locator methods (`sum()`, `find()`, ... `with (...)`) are the no
 
 So for this class, every aggregate requirement below needs a different tool. The alternative that actually works: express a running total as its own `rand int` array, one element per cmd_list entry, related to its neighbor by an ordinary per-element constraint inside `foreach` (`running[i] == running[i-1] + (...)`) -- a "prefix sum," built entirely from plain equality constraints the solver already handles correctly, with no with (...) clause anywhere. The last element of that running array is the total you actually want to bound.
 
-Fix the class below so the check after it passes. Don't edit anything at or below the "checker" marker.
+Fix the class below so the check after it passes.
 
 Write the constraints so:
 
@@ -295,7 +296,7 @@ Try it yourself: `make run EX=command_stream_bandwidth_cap` after cloning
 
 The trick that makes nonoverlapping_address_ranges cheap -- keep the array sorted, then only check each element against its immediate predecessor -- depends entirely on the array actually being sorted. Take that away and the shortcut goes with it: with physical pages genuinely scattered in no particular order, page 3 could overlap page 9 just as easily as page 4, and there's no single neighbor whose check would have caught it. The only way to be sure none of them touch is to check every pair, not just adjacent ones -- an ordinary nested `foreach` (a loop inside a loop, both walking the same array) inside a `constraint` block, comparing each pair once.
 
-Fix the class below so the check after it passes. Don't edit anything at or below the "checker" marker.
+Fix the class below so the check after it passes.
 
 Write the constraints so:
 
@@ -348,7 +349,7 @@ A DMA scheduler's allocation grid: 4 channels, each with 4 ring-buffer slots, ea
     the kind of bug that still passes a handful of manual spot checks.
 ```
 
-Fix the class below so the check after it passes. Don't edit anything at or below the "checker" marker.
+Fix the class below so the check after it passes.
 
 Write the class so, on every randomize() call:
 
@@ -368,7 +369,7 @@ Try it yourself: `make run EX=dma_ring_allocator` after cloning
 
 {{< badge "best-practice" >}} {{< badge "multi-constraint" >}} {{< badge "plausible-pass" >}}
 
-**Desc_item.randomize() fails every single call -- and nothing that matters ever checks.**
+**`desc_item.randomize()` fails every single call -- and nothing that matters ever checks.**
 
 {{% details title="Full breakdown" closed="true" %}}
 
@@ -384,7 +385,7 @@ desc_item below is exactly the kind of class a model writes with total confidenc
 
 The loop below is the kind of driving loop that shows up in a thousand sequences -- create an item, randomize it, use it. It compiles. It runs. Run it: every single descriptor comes back with addr == 0 and len == 0, and the return value randomize() hands back -- the one piece of information that would have said so directly -- is never looked at. Verilator itself prints an UNSATCONSTR warning on every failed call; that's realistic, not a tell -- a plain $warning never fails a regression, and a log with warnings scrolling by looks identical to a clean one unless someone is actually grepping for them.
 
-Fix whatever's actually broken against the spec above -- not a leftover default. Don't edit anything at or below the "checker" marker; it's correct as given and is what's judging you.
+Fix whatever's actually broken against the spec above -- not a leftover default.
 
 Try it yourself: `make run EX=unchecked_randomize_hides_unsat_conflict` after cloning
 [brokenBench](https://github.com/adibis/brokenBench), or read the
@@ -404,7 +405,7 @@ SPEC: at reset, credits must equal DEPTH (16) -- the receive buffer's actual phy
 
 link_model below is exactly the kind of class a model writes with total confidence when asked to implement the spec above: `credits = DEPTH - 1` reads like the array-index idiom that's correct everywhere else in a file like this one (`buf[DEPTH-1]` is the last valid index) -- it just isn't an index here, it's a count, and a count has to equal the thing it's counting. Run this: the burst never completes.
 
-Fix link_model so a full-depth burst actually completes. Don't edit anything at or below the "checker" marker; it's correct as given and is what's judging you.
+Fix link_model so a full-depth burst actually completes.
 
 Try it yourself: `make run EX=off_by_one_credit_deadlocks_a_full_depth_burst` after cloning
 [brokenBench](https://github.com/adibis/brokenBench), or read the

@@ -1,27 +1,26 @@
 ---
 title: "Fixing UVM RAL and uvm_reg Bugs"
-weight: 4
+weight: 5
 date: 2026-10-29
 publishDate: 2026-10-29
 draft: false
 description: "Six uvm_reg and register-map exercises: uvm_mem's missing mirror state, predictor and mirror synchronization gaps, access-policy mistakes, and coverage sampling that silently never fires."
 prev: /projects/brokenbench/uvm
-next: /projects/brokenbench/learn
 ---
 
-`uvm_reg` and register-map exercises: `uvm_mem`'s missing mirror state, predictor and mirror synchronization gaps, access-policy mistakes (W1C fields silently cleared by a generic `update()`), and coverage sampling that silently never fires.
+`uvm_reg` and register-map exercises: `uvm_mem`'s missing mirror state, predictor and mirror synchronization gaps, access-policy mistakes (W1C fields silently cleared by a generic `update()`), and coverage sampling that silently never fires. Every checker is correct as given; fix only what the write-up asks for, and leave anything below the checker marker alone.
 
 ### UVM Mem Needs a Shadow Model {#uvm-mem-needs-a-shadow-model}
 
 {{< badge "write-from-scratch" >}} {{< badge "mem-model" >}}
 
-**Extend uvm_mem so it catches a real address-decode corruption bug -- the base class keeps no record of what any address should currently hold.**
+**Extend `uvm_mem` so it catches a real address-decode corruption bug -- the base class keeps no record of what any address should currently hold.**
 
-{{% details title="Full breakdown" closed="true" %}}
+{{% details title="The spec and the fix" closed="false" %}}
 
-uvm_reg has a mirror: ask a field what it should currently read, and the register layer answers from its own tracked state. uvm_mem has no such thing -- it's a placeholder for an address range and nothing else. Every write/read just moves data across the bus layer, and the instant it's done, nothing in the base class remembers what any given address was last set to. If something needs to know whether a later read came back correct, that expected state has to be built by hand, keyed by address, from scratch.
+`uvm_reg` has a mirror: ask a field what it should currently read, and the register layer answers from its own tracked state. `uvm_mem` has no such thing -- it's a placeholder for an address range and nothing else. Every write/read just moves data across the bus layer, and the instant it's done, nothing in the base class remembers what any given address was last set to. If something needs to know whether a later read came back correct, that expected state has to be built by hand, keyed by address, from scratch.
 
-uvm_mem does give you a real hook for this: `post_write(uvm_reg_item rw)` and `post_read(uvm_reg_item rw)` are both called automatically, from inside the base class's own do_write()/do_read() tasks, after every real access through this memory -- frontdoor or back, whatever map it came through. `rw.get_offset()` is the address; `rw.get_value(0)` is the data that was just written, or just read back. Override both (and add whatever member state you need) on `tracked_mem` so that:
+`uvm_mem` does give you a real hook for this: `post_write(uvm_reg_item rw)` and `post_read(uvm_reg_item rw)` are both called automatically, from inside the base class's own `do_write()`/`do_read()` tasks, after every real access through this memory -- frontdoor or back, whatever map it came through. `rw.get_offset()` is the address; `rw.get_value(0)` is the data that was just written, or just read back. Override both (and add whatever member state you need) on `tracked_mem` so that:
 
 1. A write at some address records what that address should read back as -- and that recorded value survives any number of *other* addresses being written in between, right up until a write actually lands on that same address again.
 2. A read increments `match_count` if it returns the value last written to that same address, or `mismatch_count` otherwise -- and it's still `mismatch_count`, not something you silently drop, when the data legitimately doesn't match (that's the whole point: it means the bus actually returned something other than what was last written there).
@@ -38,7 +37,7 @@ Try it yourself: `make run EX=uvm_mem_needs_a_shadow_model` after cloning
 
 {{< badge "write-from-scratch" >}} {{< badge "coverage" >}} {{< badge "mirror" >}}
 
-**Override uvm_reg's own sample() hook correctly -- it runs before the mirror it would be tempting to read from has actually been updated.**
+**Override `uvm_reg`'s own `sample()` hook correctly -- it runs before the mirror it would be tempting to read from has actually been updated.**
 
 {{% details title="Full breakdown" closed="true" %}}
 
@@ -63,7 +62,7 @@ Try it yourself: `make run EX=sample_fires_before_the_mirror_updates` after clon
 
 {{< badge "write-from-scratch" >}} {{< badge "mirror" >}} {{< badge "best-practice" >}}
 
-**Catch a write that silently never reaches hardware -- neither write()'s own status nor the register model's mirror can tell you that on their own.**
+**Catch a write that silently never reaches hardware -- neither `write()`'s own status nor the register model's mirror can tell you that on their own.**
 
 {{% details title="Full breakdown" closed="true" %}}
 
@@ -87,7 +86,7 @@ Try it yourself: `make run EX=write_updates_the_mirror_even_when_dropped` after 
 
 {{< badge "predictor" >}} {{< badge "mirror" >}} {{< badge "analysis-port" >}}
 
-**Wire up a uvm_reg_predictor -- in explicit-prediction mode, it's the only thing that ever updates the mirror, and "the fields look set up right" doesn't mean it's actually connected.**
+**Wire up a `uvm_reg_predictor` -- in explicit-prediction mode, it's the only thing that ever updates the mirror, and "the fields look set up right" doesn't mean it's actually connected.**
 
 {{% details title="Full breakdown" closed="true" %}}
 
@@ -110,7 +109,7 @@ Try it yourself: `make run EX=predictor_needs_the_monitor_wired_in` after clonin
 
 {{< badge "write-from-scratch" >}} {{< badge "w1c" >}} {{< badge "access-policy" >}}
 
-**Enable a device through update() without silently clearing a real pending interrupt sitting in the same register.**
+**Enable a device through `update()` without silently clearing a real pending interrupt sitting in the same register.**
 
 {{% details title="Full breakdown" closed="true" %}}
 
@@ -130,7 +129,7 @@ Try it yourself: `make run EX=update_can_silently_clear_a_w1c_field` after cloni
 
 {{< badge "predictor" >}} {{< badge "access-policy" >}} {{< badge "plausible-pass" >}}
 
-**Confirm_write() checks the mirror right after the write that set it -- of course it always agrees.**
+**`confirm_write()` checks the mirror right after the write that set it -- of course it always agrees.**
 
 {{% details title="Full breakdown" closed="true" %}}
 
@@ -147,7 +146,7 @@ SPEC, per the register map doc, status_reg packs one byte into two fields:
 
 confirmer::confirm_write() below is exactly the kind of helper a model writes with total confidence when asked to prove a write landed as intended: with auto-prediction on (the default), r.write() sets the mirror directly from the data you handed it, before the bus transaction even happens, so checking the mirror right after your own write will always agree with what you just told it. Run this as shipped: it reports confirmed_count=3, flagged_count=0 -- every write "confirmed," including the ones that tried to change cfg and lock in the same transaction, and silently didn't change cfg.
 
-Fix confirm_write() so it checks what the bus actually reports -- an actual frontdoor read, not the mirror -- against `expected`. Don't edit anything at or below the "checker" marker; it's correct as given and is what's judging you.
+Fix confirm_write() so it checks what the bus actually reports -- an actual frontdoor read, not the mirror -- against `expected`.
 
 Try it yourself: `make run EX=confirm_write_trusts_the_mirror_not_the_bus` after cloning
 [brokenBench](https://github.com/adibis/brokenBench), or read the
