@@ -34,7 +34,7 @@ Hand-listing every register block's base address and size the same way, hardcode
 
 ## Deriving the reserved ranges from the RAL model instead
 
-The register address map already exists, generated from the same source of truth described in the CSR series's article on RAL generation. Every `uvm_reg_block` mapped into the shared address space via a `uvm_reg_map` knows its own base offset and the address range its registers occupy. Walking that model at setup time, instead of hand-maintaining a parallel list, keeps the reservation automatically correct whenever the register map changes:
+The register address map already exists, generated from the same source of truth the CSR series' [RAL Generation in Practice](/csr/ral-generation) describes. Every `uvm_reg_block` mapped into the shared address space via a `uvm_reg_map` knows its own base offset and the address range its registers occupy. Walking that model at setup time, instead of hand-maintaining a parallel list, keeps the reservation automatically correct whenever the register map changes:
 
 ```systemverilog
 function void reserve_all_csr_windows(uvm_mem_mam mam, uvm_reg_map map);
@@ -47,7 +47,7 @@ function void reserve_all_csr_windows(uvm_mem_mam mam, uvm_reg_map map);
 endfunction
 ```
 
-This runs once, during environment build, before any test issues a `request_region()` call against the shared pool. Because it's reading directly from the register model rather than a separately maintained list, a register block moving, resizing, or getting added between now and the next regeneration doesn't require finding and updating a second copy of the address information anywhere. The reservation is a query against the model, not a fact somebody has to remember to keep synchronized. That's the same principle the CSR series applied to the waiver file's `@include` mechanism, letting each level of ownership be the single source of truth for its own piece of the picture, rather than hand-copied between them.
+This runs once, during environment build, before any test issues a `request_region()` call against the shared pool. Because it's reading directly from the register model rather than a separately maintained list, a register block moving, resizing, or getting added between now and the next regeneration doesn't require finding and updating a second copy of the address information anywhere. The reservation is a query against the model, not a fact somebody has to remember to keep synchronized. That's the same principle the CSR series' [The Waiver Problem and a Scalable Waiver Manager](/csr/waiver-manager) applies to the waiver file's `@include` mechanism, letting each level of ownership be the single source of truth for its own piece of the picture, rather than hand-copied between them.
 
 ## ECC-protected ranges need the same treatment, for a different reason
 

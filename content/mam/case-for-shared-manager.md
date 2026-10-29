@@ -20,7 +20,7 @@ The actual requirement is an allocator: something that hands out a range of addr
 
 ## uvm_mem_mam: built in, underused
 
-`uvm_mem_mam` (Memory Allocation Manager) is part of the standard UVM register layer, sitting alongside `uvm_reg` and `uvm_reg_block` but modeling a `uvm_mem`: a contiguous memory region rather than a set of discrete registers. Where `uvm_reg_block` gives you named fields at fixed offsets, `uvm_mem` gives you a byte-addressable range, and `uvm_mem_mam` is the allocator that manages who owns which slice of it.
+`uvm_mem_mam` (Memory Allocation Manager) is part of the standard UVM register layer, sitting alongside `uvm_reg` and `uvm_reg_block`, the register model the CSR series' [UVM RAL Fundamentals](/csr/ral-fundamentals) covers in depth, but modeling a `uvm_mem`: a contiguous memory region rather than a set of discrete registers. Where `uvm_reg_block` gives you named fields at fixed offsets, `uvm_mem` gives you a byte-addressable range, and `uvm_mem_mam` is the allocator that manages who owns which slice of it.
 
 The basic operation is a `request_region()` call that takes a size and returns a `uvm_mem_region` handle representing a chunk the allocator has marked as in use. Nobody else gets that chunk until the handle is explicitly released with `release_region()`. This is precisely "request chunks for src/dst memories": a DMA sequence asks the manager for two regions, uses the returned addresses to build its transfer descriptor, and releases both once the transfer is verified.
 
