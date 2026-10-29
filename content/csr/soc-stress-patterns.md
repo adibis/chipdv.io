@@ -6,6 +6,7 @@ publishDate: 2026-10-10
 draft: false
 description: "Parallel access through a shared CSR bridge with multiple masters, and back-to-back zero-delay writes followed by readback."
 prev: /csr/volatile-registers
+next: /csr/waiver-manager
 ---
 
 Everything in this series so far tests a register in isolation: one master, one access, checked against the model. At the SoC level, registers are frequently reachable from more than one master through a shared bridge, and the built-in sequences from [What the Built-in Sequences Actually Test](../builtin-sequence-limits) have no concept of that at all. They issue one transaction, wait for it to complete, and move to the next. The bugs that live at this level aren't register-model bugs. They're bridge arbitration, ordering, and timing bugs that only exist under contention, and no amount of single-master register testing will find them.
@@ -82,4 +83,4 @@ Neither scenario means much at the block level. A block-level register environme
 
 ---
 
-*Next: The Waiver Problem and a Scalable Waiver Manager — why blanket register testing fails for interrupt generators and FSM-driven registers, and a singleton waiver manager built on include files.*
+*Next: [The Waiver Problem and a Scalable Waiver Manager](../waiver-manager)*

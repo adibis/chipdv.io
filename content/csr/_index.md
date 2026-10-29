@@ -27,3 +27,10 @@ This series is about the parts of CSR verification that don't show up in the UVM
   {{< card link="/csr/builtin-sequence-limits/" title="What the Built-in Sequences Actually Test" subtitle="reg_hw_reset, reg_bit_bash, reg_access: what they catch, and the access types where they quietly pass over the bug." >}}
   {{< card link="/csr/volatile-registers/" title="Volatile Registers and the Predictor Problem" subtitle="Registers that change value without a software write, and the race that shows up between a hardware update and a predictor's mirrored value." >}}
 {{< /cards >}}
+
+## Scaling register verification to the SoC
+
+{{< cards cols="3" >}}
+  {{< card link="/csr/soc-stress-patterns/" title="SoC-Level Register Stress Patterns" subtitle="Parallel access through a shared CSR bridge with multiple masters, and back-to-back zero-delay writes followed by readback." >}}
+  {{< card link="/csr/waiver-manager/" title="The Waiver Problem and a Scalable Waiver Manager" subtitle="Why blanket register testing fails for interrupt generators and FSM-driven registers, and a singleton waiver manager built on include files." >}}
+{{< /cards >}}
