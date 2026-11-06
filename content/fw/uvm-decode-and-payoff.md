@@ -125,4 +125,4 @@ At the scale of a single test this is a nice speedup. At regression scale, with 
 
 ---
 
-*Next: Two Cheap Tricks: A PC Spy and a Boot Fast-Forward — turning a raw program counter into a readable function name, and skipping a slow boot without touching what it's skipping.*
+*Next: What Survives Outside Simulation — taking the same firmware to emulation and then silicon, and which checkers survive each move.*
