@@ -6,6 +6,7 @@ publishDate: 2026-10-29
 draft: false
 description: "Why blanket register testing fails for interrupt generators and FSM-driven registers, and a singleton waiver manager built on include files."
 prev: /csr/soc-stress-patterns
+next: /csr/register-callbacks
 ---
 
 Running a generic sweep, bit-bash, access-type check, reset check, against every register in the map is the right default. It's also wrong for a specific, predictable subset of registers, and running it against those anyway doesn't just fail to test them correctly. It can break every test that runs after it in the same simulation. This article is about identifying that subset, and about a waiver mechanism that stays usable as the register count goes from one block to an entire SoC.
@@ -107,4 +108,4 @@ This gets exclusion out of test code and into a data file the people who underst
 
 ---
 
-*Next: Register Callbacks in Depth — pre_write, post_write, pre_read, post_read: modeling side-effecting registers without duplicating waiver or volatility logic.*
+*Next: [Register Callbacks in Depth](../register-callbacks)*

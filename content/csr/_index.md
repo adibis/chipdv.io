@@ -34,3 +34,9 @@ This series is about the parts of CSR verification that don't show up in the UVM
   {{< card link="/csr/soc-stress-patterns/" title="SoC-Level Register Stress Patterns" subtitle="Parallel access through a shared CSR bridge with multiple masters, and back-to-back zero-delay writes followed by readback." >}}
   {{< card link="/csr/waiver-manager/" title="The Waiver Problem and a Scalable Waiver Manager" subtitle="Why blanket register testing fails for interrupt generators and FSM-driven registers, and a singleton waiver manager built on include files." >}}
 {{< /cards >}}
+
+## Modeling register behavior
+
+{{< cards cols="3" >}}
+  {{< card link="/csr/register-callbacks/" title="Register Callbacks in Depth" subtitle="The four pre/post hooks, why they never fire for firmware's writes, and the post_predict hook that does." >}}
+{{< /cards >}}
