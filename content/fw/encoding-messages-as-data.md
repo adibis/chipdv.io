@@ -44,13 +44,18 @@ The C-side entry point needs to accept a variable number of arguments the same w
 #define C_MSG_IMPL(N, ...) \
   C_MSG_IMPL2(N, __VA_ARGS__)
 
+// sizeof never evaluates its operand, so the literal stays in the -E
+// output for the table generator but never reaches the compiled image.
 #define C_MSG_IMPL2(N, severity, message, ...) \
-  C_MSG_DISPATCHER( \
-    GET_UUID(severity, HART_ID, COUNT_OPTIONAL_ARGS(severity, message __VA_OPT__(,) __VA_ARGS__), \
-              C_MSG_ID, __LINE__), \
-    severity, message, COUNT_OPTIONAL_ARGS(severity, message __VA_OPT__(,) __VA_ARGS__) \
-    __VA_OPT__(,) __VA_ARGS__)
+  ((void)sizeof(message), \
+   C_MSG_DISPATCHER( \
+     GET_UUID(severity, HART_ID, COUNT_OPTIONAL_ARGS(severity, message __VA_OPT__(,) __VA_ARGS__), \
+               C_MSG_ID, __LINE__), \
+     COUNT_OPTIONAL_ARGS(severity, message __VA_OPT__(,) __VA_ARGS__) \
+     __VA_OPT__(,) __VA_ARGS__))
 ```
+
+The `(void)sizeof(message)` is what keeps that promise. Passing the string to a function as an ordinary argument would force the compiler to store it in the image's read-only data, since a function can't receive a pointer to something that doesn't exist. `sizeof` only asks how big its operand is, which the compiler knows without emitting anything. So the literal sits in the expanded source, right next to the dispatcher call, for the build step below to find, and the object file never contains it. Severity doesn't need to be passed separately either: it's already packed into the identifier.
 
 `GET_UUID` is the macro that actually does the bit-packing described above, severity into 3 bits, core ID into 5, argument count into 2, the file's small integer ID and the line number filling the rest, all folded into one constant bitwise expression at preprocess time. Its body is a straightforward sequence of shifts and ORs against those five fields and is omitted here since it's mechanical once the field layout is fixed; what matters for the rest of this article is only that it produces the `unique_id` constant `C_MSG_DISPATCHER` receives below. `C_MSG_ID` is the file's small integer ID mentioned above, made visible to every call site in a given file the same way `HART_ID` is: a `-D` define the build passes on that file's own compile command, incremented by the same Makefile rule (below) that walks the file list.
 
@@ -59,39 +64,36 @@ The C-side entry point needs to accept a variable number of arguments the same w
 ```c
 // This name is preserved through preprocessing on purpose - it's what the
 // compile-time table generator (below) greps for.
-void C_MSG_DISPATCHER(uint32_t unique_id, int severity,
-                      const char *message, int count, ...) {
+void C_MSG_DISPATCHER(uint32_t unique_id, int count, ...) {
   va_list args;
   va_start(args, count);
   if (count == 0) {
-    c_msg_2(unique_id, severity, message);
+    c_msg_2(unique_id);
   } else if (count == 1) {
     uint32_t a1 = va_arg(args, uint32_t);
-    c_msg_3(unique_id, severity, message, a1);
+    c_msg_3(unique_id, a1);
   } else if (count == 2) {
     uint32_t a1 = va_arg(args, uint32_t);
     uint32_t a2 = va_arg(args, uint32_t);
-    c_msg_4(unique_id, severity, message, a1, a2);
+    c_msg_4(unique_id, a1, a2);
   } else if (count == 3) {
     uint32_t a1 = va_arg(args, uint32_t);
     uint32_t a2 = va_arg(args, uint32_t);
     uint32_t a3 = va_arg(args, uint32_t);
-    c_msg_5(unique_id, severity, message, a1, a2, a3);
+    c_msg_5(unique_id, a1, a2, a3);
   }
   va_end(args);
 }
 
 // Writes the identifier, then any argument words, to fixed, per-core
 // locations - a single unsynchronized store per word, no cross-core lock.
-void c_msg_4(uint32_t unique_id, uint8_t severity, const char *msg,
-             uint32_t a1, uint32_t a2) {
+void c_msg_4(uint32_t unique_id, uint32_t a1, uint32_t a2) {
   WRITE32(PRINT_REG + 100 * HART_ID, unique_id);
   WRITE32(PRINT_REG + 100 * HART_ID + 0x4, a1);
   WRITE32(PRINT_REG + 100 * HART_ID + 0x8, a2);
 }
 
-void c_msg_5(uint32_t unique_id, uint8_t severity, const char *msg,
-             uint32_t a1, uint32_t a2, uint32_t a3) {
+void c_msg_5(uint32_t unique_id, uint32_t a1, uint32_t a2, uint32_t a3) {
   WRITE32(PRINT_REG + 100 * HART_ID, unique_id);
   WRITE32(PRINT_REG + 100 * HART_ID + 0x4, a1);
   WRITE32(PRINT_REG + 100 * HART_ID + 0x8, a2);
@@ -105,7 +107,7 @@ A call site now reads exactly like a `printf` call:
 C_MSG(INFO, "Executing main for core_%0d", CORE_ID);
 ```
 
-and after preprocessing, expands into a `C_MSG_DISPATCHER` call carrying the fully-computed identifier as a constant bitwise expression, the format string, and the argument, with the string only ever appearing in the preprocessor output, not in a runtime data section of the compiled image.
+and after preprocessing, expands into a `C_MSG_DISPATCHER` call carrying the fully-computed identifier as a constant bitwise expression, the argument count, and the argument, preceded by the format string inside its unevaluated `sizeof`. The string appears only in the preprocessor output, not in any data section of the compiled image.
 
 ## A watchdog firing between the identifier and its arguments
 
@@ -131,15 +133,15 @@ This is the same discipline [Mid-Sim Reset: Why UVM's Phase Model Doesn't Help](
 
 ## Recovering the string at compile time, not at runtime
 
-The firmware image is small precisely because the string never has to be linked into it. What has to exist somewhere is a table built once, from saved preprocessor output, mapping every identifier a build could ever produce back to its original format string and argument count. A build rule saves that output (`gcc -E`) per compiled file, then a script scans it for every `C_MSG_DISPATCHER(...)` call, evaluates the (by then fully constant) bitwise expression that computes the identifier, and extracts the message string and severity sitting next to it in the same call:
+The firmware image is small precisely because the string never has to be linked into it. What has to exist somewhere is a table built once, from saved preprocessor output, mapping every identifier a build could ever produce back to its original format string and argument count. A build rule saves that output (`gcc -E`) per compiled file, then a script scans it for every `C_MSG_DISPATCHER(...)` call, evaluates the (by then fully constant) bitwise expression that computes the identifier, and extracts the message string from the `sizeof` just before it. Severity comes back out of the identifier's own bits:
 
 ```python
 # Grep C_MSG_DISPATCHER calls out of saved preprocessor output, evaluate the
 # constant unique_id expression, and emit one table row per message.
 for match in find_dispatcher_calls(preprocessed_source):
     unique_id = eval_expr(match.unique_id_expr)      # constant by this point
-    message   = extract_quoted_string(match.args[2])
-    severity  = match.args[1]
+    message   = extract_quoted_string(match.sizeof_operand)
+    severity  = id_field(unique_id, "severity")
     nargs     = eval_expr(match.arg_count_expr)
     table.append(f'{unique_id:08X},{severity},{nargs},"{message}"')
 ```
