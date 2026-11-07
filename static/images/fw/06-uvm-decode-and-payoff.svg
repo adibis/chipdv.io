@@ -58,5 +58,5 @@ text { font-family: 'Tecnico Fino', 'IBM Plex Mono', ui-monospace, Menlo, monosp
 
   <line x1="855" y1="210" x2="855" y2="248" stroke="#16a34a" stroke-width="1.5" marker-end="url(#arrow04)"/>
 
-  <text x="500" y="392" text-anchor="middle" font-size="13" fill="#64748b" color="#64748b">the same tables from article 05, read once at compile time, decode every message at run time</text>
+  <text x="500" y="392" text-anchor="middle" font-size="13" fill="#64748b" color="#64748b">the same tables, built once at compile time, decode every message at run time</text>
 </svg>
