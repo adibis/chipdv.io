@@ -11,7 +11,7 @@ cascade:
 
 Most firmware-on-RTL debug advice stops at "add some prints and rerun." That holds up for a single core running a single directed test. It stops holding up the moment the failure is a race that needs contention to manifest, the regression runs on eight cores in parallel, and the printf you just added changes the timing enough to make the bug disappear on the next run.
 
-This series is about the parts of firmware verification that only get hard at scale: three mechanically different flavors of timing bug that standard PC-trace debugging can't localize, a message-ID logging scheme that replaces character-streaming UART output (built out of a technique first presented at SNUG Silicon Valley 2025), the practical tricks that make firmware-in-the-loop simulation survivable, and what happens to all of it once the same firmware has to run on emulation, actual silicon, or a different integration level than it was written for.
+This series is about the parts of firmware verification that only get hard at scale: three mechanically different flavors of timing bug that standard PC-trace debugging can't localize, a message-ID logging scheme that replaces character-streaming UART output (built out of a technique first presented at SNUG Silicon Valley 2025), and what happens to all of it once the same firmware has to run on emulation, actual silicon, or a different integration level than it was written for.
 
 ## Three races that only show up at scale
 
@@ -27,4 +27,10 @@ This series is about the parts of firmware verification that only get hard at sc
   {{< card link="/fw/debug-infrastructure-is-part-of-the-bug/" title="Your Debug Infrastructure Is Part of the Bug" subtitle="Instrumenting a suspected multi-core race with print statements changes the exact timing it depends on, worth knowing before reaching for a faster UART." >}}
   {{< card link="/fw/encoding-messages-as-data/" title="Turning a Debug Message Into 32 Bits" subtitle="Encoding severity, core, file, and line into a single fixed-width identifier, using variadic C macros that never put the message string in the firmware image." >}}
   {{< card link="/fw/uvm-decode-and-payoff/" title="A UVM Monitor That Decodes C, and What It's Worth" subtitle="Reading the message identifier back out of memory and reconstructing the original uvm_info/uvm_error call. Adapted from a paper at SNUG Silicon Valley 2025." >}}
+{{< /cards >}}
+
+## Beyond RTL simulation
+
+{{< cards cols="3" >}}
+  {{< card link="/fw/what-survives-outside-simulation/" title="What Survives Outside Simulation" subtitle="The race needs more cycles than simulation can afford, so the same firmware moves to emulation, then silicon. Which checkers make each jump, and why the message-ID scheme does." >}}
 {{< /cards >}}
