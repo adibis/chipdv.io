@@ -12,3 +12,21 @@
   gtag('config', 'G-6MJZBSJ8ZP');
 </script>
 {{ end }}
+
+{{- /* Playable diagrams. The stylesheets are small enough to load
+     everywhere; the player script only goes on pages that use the flow
+     shortcode, and from the head: emitting it from the shortcode behind a
+     once-per-page flag breaks under hugo server, whose page store survives
+     rebuilds. */ -}}
+{{- range slice "css/flow.css" "css/flow-svg-dark.css" }}
+{{- with resources.Get . }}
+{{- $css := . | minify | fingerprint }}
+<link rel="stylesheet" href="{{ $css.RelPermalink }}" integrity="{{ $css.Data.Integrity }}">
+{{- end }}
+{{- end }}
+{{- if .HasShortcode "flow" }}
+{{- with resources.Get "js/flow-player.js" }}
+{{- $js := . | minify | fingerprint }}
+<script src="{{ $js.RelPermalink }}" integrity="{{ $js.Data.Integrity }}" defer></script>
+{{- end }}
+{{- end }}

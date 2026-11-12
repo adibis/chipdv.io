@@ -1,0 +1,55 @@
+{{- /* Playable diagram, driven by data/flows/<id>.yaml. In the page it is a
+     static figure with a Play button and the steps as a numbered list; the
+     player (assets/js/flow-player.js) opens it full-screen. The SVG ships
+     inside a <template> so it isn't in the live page twice, and every
+     element id and chapter link a flow names is checked here, so a typo
+     fails the build instead of doing nothing in the browser. */ -}}
+{{- $id := .Get 0 -}}
+{{- $flow := index site.Data.flows $id -}}
+{{- if not $flow -}}
+  {{- errorf "flow %q: no data/flows/%s.yaml (%s)" $id $id .Position -}}
+{{- end -}}
+{{- $svgPath := printf "static/images/%s.svg" $flow.diagram -}}
+{{- $svg := readFile $svgPath -}}
+{{- range $i, $s := $flow.steps -}}
+  {{- $refs := $s.lit | default slice -}}
+  {{- with $s.travel }}{{ $refs = $refs | append . }}{{ end -}}
+  {{- range $refs -}}
+    {{- if not (strings.Contains $svg (printf "id=%q" .)) -}}
+      {{- errorf "flow %q step %d: no element id=%q in %s" $id (add $i 1) . $svgPath -}}
+    {{- end -}}
+  {{- end -}}
+{{- end -}}
+{{- $n := len $flow.steps -}}
+<figure class="dv-flow" id="flow-{{ $id }}" data-flow-id="{{ $id }}">
+  <div class="dv-flow-bar" hidden>
+    <button type="button" class="dv-flow-open">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z" fill="currentColor"/></svg>
+      <span>{{ $flow.play | default "Play this transaction" }}</span>
+    </button>
+    <span class="dv-flow-open-meta">{{ $n }} steps, full screen</span>
+  </div>
+  <div class="dv-flow-poster">
+    <img src="/images/{{ $flow.diagram }}.svg" alt="{{ $flow.description }}" loading="lazy" />
+  </div>
+  <figcaption>{{ $flow.title }}</figcaption>
+  <details class="dv-flow-steps" open>
+    <summary>All {{ $n }} steps</summary>
+    <ol>
+      {{- range $i, $s := $flow.steps }}
+      <li>
+        {{- with $s.scene }}<strong class="dv-flow-li-scene">{{ . }}{{ with $s.role }} ({{ . }}){{ end }}.</strong> {{ end -}}
+        {{- with $s.condition }}<em>{{ . | strings.FirstUpper }}:</em> {{ end -}}
+        <span class="dv-flow-li-text">{{ $s.caption | markdownify }}</span>
+        {{- with $s.chapter -}}
+          {{- $p := site.GetPage . -}}
+          {{- if not $p }}{{ errorf "flow %q step %d: no page at %q" $id (add $i 1) . }}{{ end }}
+          <a class="dv-flow-chapter" href="{{ $p.RelPermalink }}">{{ $p.LinkTitle }}</a>
+        {{- end -}}
+      </li>
+      {{- end }}
+    </ol>
+  </details>
+  <template class="dv-flow-svg">{{ $svg | safeHTML }}</template>
+  <script type="application/json">{{ $flow | jsonify | safeJS }}</script>
+</figure>

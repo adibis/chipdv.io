@@ -93,6 +93,22 @@ monitor.ap.connect(predictor.bus_in);
 
 Worth checking explicitly in any new register environment: is the predictor connected to the actual bus monitor, or only exercised by tests that happen to go exclusively through RAL? The gap stays invisible until a test mixes access styles, and by then it looks like a hardware bug rather than a wiring gap. [brokenbench's `predictor_needs_the_monitor_wired_in`](https://github.com/adibis/brokenBench/blob/master/exercises/csr/predictor_needs_the_monitor_wired_in.sv) is this exact gap as a self-contained exercise: a predictor that's fully constructed and configured, but never actually connected to the bus monitor's analysis port.
 
+## One access, end to end
+
+Each piece above is easy to follow on its own. What's harder to keep in your head is the order they run in, and which of them a given access actually touches. The walks below follow one register, CTRL at offset `'h10` behind an APB agent, through all of it. EN and MODE are plain RW fields. DONE is a W1C status bit the hardware sets by itself, declared volatile. The panel beside each step shows the desired value, the mirrored value and what the flops really hold, so you can see exactly when they disagree.
+
+The first walk is one frontdoor write, from `csr.write()` to the flops and back through the monitor and predictor into the mirror. It ends with the same register written through the backdoor, to show what that skips.
+
+{{< flow "csr-write" >}}
+
+The same write in time order. Nearly everything before the driver runs at zero simulation time. The step to watch is near the end: the predictor's update and the return of `write()` happen in the same time step, and nothing in UVM decides which comes first.
+
+{{< flow "csr-write-timing" >}}
+
+The second walk is the case the predictor can't cover by itself. The hardware sets DONE without any bus transfer, so the monitor sees nothing and the mirror goes stale. A `mirror(UVM_CHECK)` read then shows what declaring DONE volatile buys, and a write of 1 clears it again.
+
+{{< flow "csr-mirror" >}}
+
 ## Where this is going
 
 Everything above assumes a register behaves predictably. Write a value, read it back, get the same value. Most registers don't. The next article covers the access-type field RAL uses to decide what "predictably" even means for a given register, and why treating it as one axis instead of two is where a lot of register test plans go wrong.

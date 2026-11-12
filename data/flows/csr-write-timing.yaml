@@ -1,0 +1,190 @@
+title: "One frontdoor write, in time order"
+diagram: csr/flow-write-timing
+play: "Play the timing"
+description: >-
+  The same csr.write(status, 'h005) as a sequence diagram: each component a
+  lifeline, each call or transfer an arrow, top to bottom in simulation
+  order, with the two things that happen at once drawn side by side.
+steps:
+  - scene: "Into the model"
+    role: "Testbench"
+    caption: >-
+      The sequence calls `write()` on the register. Everything until the
+      driver takes the item happens at zero simulation time.
+    lit: [arrow-t-call]
+    travel: arrow-t-call
+    token: "write"
+    chapter: /csr/ral-fundamentals
+    state:
+      label: "CTRL at 'h10"
+      fields:
+        - [desired, "'h000"]
+        - [mirrored, "'h000"]
+        - [DUT flops, "'h000"]
+
+  - caption: >-
+      `set()` stages the value as desired, 'h005.
+    lit: [block-t-set]
+    state:
+      label: "CTRL at 'h10"
+      fields:
+        - [desired, "'h005"]
+        - [mirrored, "'h000"]
+        - [DUT flops, "'h000"]
+
+  - caption: >-
+      The `pre_write` callbacks run, fields first. Any of them can cancel the
+      write.
+    lit: [block-t-pre]
+    chapter: /csr/register-callbacks
+    state:
+      label: "CTRL at 'h10"
+      fields:
+        - [desired, "'h005"]
+        - [mirrored, "'h000"]
+        - [DUT flops, "'h000"]
+
+  - caption: >-
+      The register passes the access to its map.
+    lit: [arrow-t-dowrite]
+    travel: arrow-t-dowrite
+    token: "rw"
+    state:
+      label: "CTRL at 'h10"
+      fields:
+        - [desired, "'h005"]
+        - [mirrored, "'h000"]
+        - [DUT flops, "'h000"]
+
+  - caption: >-
+      The adapter's `reg2bus()` builds the APB item.
+    lit: [block-t-reg2bus]
+    state:
+      label: "CTRL at 'h10"
+      fields:
+        - [desired, "'h005"]
+        - [mirrored, "'h000"]
+        - [DUT flops, "'h000"]
+
+  - caption: >-
+      The map starts the item on the sequencer, from inside the calling
+      sequence, and blocks in `finish_item`.
+    lit: [arrow-t-start]
+    travel: arrow-t-start
+    token: "APB item"
+    state:
+      label: "CTRL at 'h10"
+      fields:
+        - [desired, "'h005"]
+        - [mirrored, "'h000"]
+        - [DUT flops, "'h000"]
+
+  - scene: "On the bus"
+    role: "DUT"
+    caption: >-
+      The driver puts the transfer on the pins. This is the first step that
+      takes clock cycles: at least two for APB, plus any wait states.
+    lit: [arrow-t-apb]
+    travel: arrow-t-apb
+    token: "PWDATA 'h005"
+    state:
+      label: "CTRL at 'h10"
+      fields:
+        - [desired, "'h005"]
+        - [mirrored, "'h000"]
+        - [DUT flops, "'h000"]
+
+  - caption: >-
+      The flops take 'h005.
+    lit: [block-t-flops]
+    state:
+      label: "CTRL at 'h10"
+      fields:
+        - [desired, "'h005"]
+        - [mirrored, "'h000"]
+        - [DUT flops, "'h005"]
+
+  - scene: "Back in the testbench"
+    role: "Testbench"
+    caption: >-
+      At the end of the transfer, in a typical agent, the driver's
+      `item_done` and the monitor's write to the predictor land in the same
+      time step.
+    lit: [arrow-t-done, arrow-t-observe]
+    travel: [arrow-t-done, arrow-t-observe]
+    token: ["done", "transfer"]
+    parallel:
+      - "Driver: item_done, so finish_item returns"
+      - "Monitor: the transfer, to the predictor"
+    state:
+      label: "CTRL at 'h10"
+      fields:
+        - [desired, "'h005"]
+        - [mirrored, "'h000"]
+        - [DUT flops, "'h005"]
+
+  - caption: >-
+      The map's `bus2reg()` reads the status off the item; the predictor's
+      `bus2reg()` reads the address and data, and finds CTRL at 'h10.
+    lit: [block-t-bus2reg, block-t-find]
+    parallel:
+      - "Map: status UVM_IS_OK"
+      - "Predictor: CTRL, written 'h005"
+    state:
+      label: "CTRL at 'h10"
+      fields:
+        - [desired, "'h005"]
+        - [mirrored, "'h000"]
+        - [DUT flops, "'h005"]
+
+  - predict: >-
+      Is the predictor's update guaranteed to land before `write()` returns?
+    caption: >-
+      The predictor updates the mirror. It is drawn above the status return,
+      but nothing in UVM orders the two: they are separate processes in the
+      same time step.
+    lit: [arrow-t-predict]
+    travel: arrow-t-predict
+    token: "'h005"
+    chapter: /csr/volatile-registers
+    state:
+      label: "CTRL at 'h10"
+      fields:
+        - [desired, "'h005"]
+        - [mirrored, "'h005"]
+        - [DUT flops, "'h005"]
+
+  - caption: >-
+      The map returns the status to the register.
+    lit: [arrow-t-status]
+    travel: arrow-t-status
+    token: "status"
+    state:
+      label: "CTRL at 'h10"
+      fields:
+        - [desired, "'h005"]
+        - [mirrored, "'h005"]
+        - [DUT flops, "'h005"]
+
+  - caption: >-
+      The `post_write` callbacks run, the register's and then the fields'.
+    lit: [block-t-post]
+    chapter: /csr/register-callbacks
+    state:
+      label: "CTRL at 'h10"
+      fields:
+        - [desired, "'h005"]
+        - [mirrored, "'h005"]
+        - [DUT flops, "'h005"]
+
+  - caption: >-
+      `write()` returns to the sequence with `UVM_IS_OK`.
+    lit: [arrow-t-return]
+    travel: arrow-t-return
+    token: "IS_OK"
+    state:
+      label: "CTRL at 'h10"
+      fields:
+        - [desired, "'h005"]
+        - [mirrored, "'h005"]
+        - [DUT flops, "'h005"]

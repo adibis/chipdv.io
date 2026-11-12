@@ -1,0 +1,212 @@
+title: "A status bit the mirror never heard about"
+diagram: csr/flow-access-view
+play: "Play this read"
+description: >-
+  The hardware sets CTRL's DONE bit on its own, so the mirror goes stale.
+  mirror(UVM_CHECK) reads CTRL over APB, skips the compare on the volatile
+  DONE bit, and the predictor brings the mirror up to date; a write of 1
+  then clears DONE, and the predictor applies the same W1C rule.
+steps:
+  - scene: "In the DUT"
+    role: "DUT"
+    caption: >-
+      CTRL holds 'h005 and the model agrees. Then the block finishes a job
+      and its own logic sets DONE, bit 8. No bus transfer happens, so the
+      monitor sees nothing and the mirror still says 'h005.
+    lit: [block-hwlogic, block-flops]
+    travel: arrow-hw-flops
+    token: "DONE = 1"
+    state: &m0
+      label: "CTRL at 'h10"
+      fields:
+        - [desired, "'h005"]
+        - [mirrored, "'h005"]
+        - [DUT flops, "'h105"]
+    chapter: /csr/volatile-registers
+
+  - scene: "In the test"
+    role: "Testbench"
+    caption: >-
+      The sequence calls `csr.mirror(status, UVM_CHECK)`. Before reading
+      anything, `mirror()` notes the mirrored value, 'h005, as what it
+      expects to find.
+    lit: [block-seq, block-reg, block-mirrored]
+    travel: arrow-seq-reg
+    token: "mirror"
+    state: *m0
+    chapter: /csr/ral-fundamentals
+
+  - caption: >-
+      The read takes the same route as a write: through the map and
+      `reg2bus()` to an APB item, this time with write = 0.
+    lit: [block-reg, block-map, block-adapter]
+    travel: arrow-map-adapter
+    packet:
+      label: "uvm_reg_bus_op"
+      headers:
+        - name: bus_op
+          fields:
+            - [kind, "UVM_READ"]
+            - [addr, "'h10"]
+            - [n_bits, "32"]
+    state: *m0
+
+  - caption: >-
+      The item goes to the sequencer and on to the driver.
+    lit: [block-adapter, block-sqr, block-drv]
+    travel: arrow-adapter-sqr
+    packet: &apb_r
+      label: "APB item"
+      headers:
+        - name: apb_item
+          fields:
+            - [addr, "'h10"]
+            - [write, "0"]
+    state: *m0
+
+  - scene: "On the bus"
+    role: "DUT"
+    caption: >-
+      The driver puts a read on the pins: PADDR 'h10 with PWRITE low.
+    lit: [block-drv, block-apb]
+    travel: arrow-drv-apb
+    token: "PADDR 'h10"
+    state: *m0
+
+  - caption: >-
+      The slave decodes 'h10 and reads the flops: 'h105, DONE included.
+    lit: [block-apb, block-flops]
+    travel: arrow-flops-apb
+    token: "'h105"
+    state: *m0
+
+  - caption: >-
+      The value comes back on PRDATA, and the driver copies it into the
+      item.
+    lit: [block-apb, block-drv]
+    travel: arrow-apb-drv
+    packet:
+      label: "APB read"
+      headers:
+        - name: pins
+          fields:
+            - [PADDR, "'h10"]
+            - [PWRITE, "0"]
+            - [PRDATA, "'h105"]
+            - [PREADY, "1"]
+            - [PSLVERR, "0"]
+    state: *m0
+
+  - scene: "Back in the testbench"
+    role: "Testbench"
+    caption: >-
+      As with the write, two things happen at once: the driver hands the
+      finished item back to the map, and the monitor publishes the read it
+      saw.
+    lit: [block-drv, block-adapter, block-mon]
+    travel: [arrow-drv-adapter, arrow-apb-mon]
+    token: ["'h105", "APB read"]
+    parallel:
+      - "Driver: the item, PRDATA filled in, back to the map"
+      - "Monitor: the read it saw on the pins"
+    state: *m0
+
+  - caption: >-
+      `bus2reg()` pulls 'h105 out of the item, and `mirror()` gets its
+      value back.
+    lit: [block-adapter, block-map, block-reg]
+    travel: arrow-adapter-map
+    token: "'h105"
+    state: *m0
+
+  - predict: >-
+      Expected 'h005, read 'h105. Does `mirror(UVM_CHECK)` report an error?
+    caption: >-
+      No. The compare skips any field whose check is off, and declaring DONE
+      volatile when it was configured turned its check off. EN and MODE are
+      compared and match. Had DONE not been declared volatile, this read
+      would fail with an error that looks like a DUT bug and is really a
+      model that was never told the hardware writes this bit.
+    lit: [block-reg, block-mirrored]
+    state: *m0
+    chapter: /csr/volatile-registers
+
+  - caption: >-
+      Meanwhile the monitor's copy of the read reaches the predictor.
+    lit: [block-mon, block-pred]
+    travel: arrow-mon-pred
+    packet: *apb_r
+    state: *m0
+
+  - caption: >-
+      The predictor finds CTRL and predicts a read: each field takes the
+      value read (a read-to-clear field would be predicted as 0 instead).
+      The mirror catches up to 'h105. Only a read could have told it.
+    lit: [block-pred, block-mirrored, block-desired]
+    travel: arrow-pred-mirror
+    token: "predict 'h105"
+    state: &m1
+      label: "CTRL at 'h10"
+      fields:
+        - [desired, "'h105"]
+        - [mirrored, "'h105"]
+        - [DUT flops, "'h105"]
+    chapter: /csr/register-access-types
+
+  - scene: "Clearing DONE"
+    role: "Testbench"
+    caption: >-
+      To acknowledge the job, the sequence writes 1 to DONE with
+      `csr.write(status, 'h105)`. In `set()`, a W1C field treats the 1 as a
+      clear, so desired becomes 'h005: what the register should read after
+      the write, not the bits sent.
+    lit: [block-seq, block-reg, block-desired]
+    travel: arrow-seq-reg
+    token: "write 'h105"
+    state: &m2
+      label: "CTRL at 'h10"
+      fields:
+        - [desired, "'h005"]
+        - [mirrored, "'h105"]
+        - [DUT flops, "'h105"]
+    chapter: /csr/register-access-types
+
+  - scene: "On the bus"
+    role: "DUT"
+    caption: >-
+      The write follows the same path as the first walk: map, adapter,
+      sequencer, driver, then PWDATA 'h105 on the pins.
+    lit: [block-drv, block-apb]
+    travel: arrow-drv-apb
+    token: "PWDATA 'h105"
+    state: *m2
+
+  - caption: >-
+      The 1 on bit 8 clears DONE; EN and MODE are written with the values
+      they already hold. The flops read 'h005 again.
+    lit: [block-apb, block-flops]
+    travel: arrow-apb-flops
+    token: "clear DONE"
+    state: &m3
+      label: "CTRL at 'h10"
+      fields:
+        - [desired, "'h005"]
+        - [mirrored, "'h105"]
+        - [DUT flops, "'h005"]
+
+  - scene: "Back in the testbench"
+    role: "Testbench"
+    caption: >-
+      The predictor applies the same W1C rule to the write it saw: DONE was 1
+      in the mirror and written 1, so it becomes 0. Desired, mirrored and the
+      flops agree on 'h005 again.
+    lit: [block-mon, block-pred, block-mirrored]
+    travel: arrow-pred-mirror
+    token: "predict 'h005"
+    state:
+      label: "CTRL at 'h10"
+      fields:
+        - [desired, "'h005"]
+        - [mirrored, "'h005"]
+        - [DUT flops, "'h005"]
+    chapter: /csr/register-access-types

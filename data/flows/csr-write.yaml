@@ -1,0 +1,244 @@
+title: "One register write, end to end"
+diagram: csr/flow-access-view
+play: "Play this write"
+description: >-
+  csr.write(status, 'h005) followed from the sequence through the register
+  model, map, adapter, APB agent and DUT, then back through the monitor and
+  predictor into the mirror; then the same register written through the
+  backdoor, which skips all of that.
+steps:
+  - scene: "In the test"
+    role: "Testbench"
+    caption: >-
+      The sequence calls `csr.write(status, 'h005)`: EN = 1, MODE = 2. The
+      first thing `write()` does is `set()`, so the desired value becomes
+      'h005 before anything moves. The mirrored value stays at 'h000: nothing
+      has reached the hardware yet.
+    lit: [block-seq, block-reg, block-desired]
+    travel: arrow-seq-reg
+    token: "write 'h005"
+    state: &s0
+      label: "CTRL at 'h10"
+      fields:
+        - [desired, "'h005"]
+        - [mirrored, "'h000"]
+        - [DUT flops, "'h000"]
+    chapter: /csr/ral-fundamentals
+
+  - caption: >-
+      The `pre_write` callbacks run, the fields' first and then the
+      register's. A callback can change the value about to be written, or
+      set the status to `UVM_NOT_OK`, which ends the write here with nothing
+      on the bus.
+    lit: [block-reg, block-cbs]
+    state: *s0
+    chapter: /csr/register-callbacks
+
+  - caption: >-
+      The register hands the access to its map. The map knows CTRL's offset
+      in this address space, 'h10, and which sequencer and adapter serve it.
+      The same register in a second map would have a second address and a
+      second bus.
+    lit: [block-reg, block-map]
+    travel: arrow-reg-map
+    token: "rw"
+    state: *s0
+    chapter: /csr/ral-fundamentals
+
+  - caption: >-
+      The map builds a generic `uvm_reg_bus_op` and calls the adapter's
+      `reg2bus()`, which turns it into an APB item. Only the adapter knows
+      the protocol, so swapping the bus means writing a new adapter, not
+      touching the tests.
+    lit: [block-map, block-adapter]
+    travel: arrow-map-adapter
+    packet:
+      label: "uvm_reg_bus_op"
+      headers:
+        - name: bus_op
+          fields:
+            - [kind, "UVM_WRITE"]
+            - [addr, "'h10"]
+            - [data, "'h005"]
+            - [n_bits, "32"]
+    state: *s0
+    chapter: /csr/ral-fundamentals
+
+  - caption: >-
+      The map runs `start_item` and `finish_item` on the APB sequencer, from
+      inside the calling sequence. The item waits in line behind any other
+      traffic on that sequencer, like any other item.
+    lit: [block-adapter, block-sqr]
+    travel: arrow-adapter-sqr
+    packet: &apb_w
+      label: "APB item"
+      headers:
+        - name: apb_item
+          fields:
+            - [addr, "'h10"]
+            - [write, "1"]
+            - [wdata, "'h005"]
+    state: *s0
+    chapter: /csr/soc-stress-patterns
+
+  - caption: >-
+      The driver takes the item with `get_next_item`.
+    lit: [block-sqr, block-drv]
+    travel: arrow-sqr-drv
+    packet: *apb_w
+    state: *s0
+
+  - scene: "On the bus"
+    role: "DUT"
+    caption: >-
+      The driver puts the transfer on the pins: a setup phase, then an access
+      phase with PENABLE high, until the slave raises PREADY.
+    lit: [block-drv, block-apb]
+    travel: arrow-drv-apb
+    token: "PWDATA 'h005"
+    packet:
+      label: "APB write"
+      headers:
+        - name: pins
+          fields:
+            - [PADDR, "'h10"]
+            - [PWRITE, "1"]
+            - [PWDATA, "'h005"]
+            - [PREADY, "1"]
+            - [PSLVERR, "0"]
+    state: *s0
+
+  - caption: >-
+      The slave decodes 'h10 to CTRL and the flops take 'h005. This is the
+      only step that changes the hardware. Everything after it is the
+      testbench catching up.
+    lit: [block-apb, block-flops]
+    travel: arrow-apb-flops
+    token: "'h005"
+    state: &s1
+      label: "CTRL at 'h10"
+      fields:
+        - [desired, "'h005"]
+        - [mirrored, "'h000"]
+        - [DUT flops, "'h005"]
+
+  - scene: "Back in the testbench"
+    role: "Testbench"
+    caption: >-
+      Two things happen at once. The driver calls `item_done`, which lets the
+      map's `finish_item` return. And the monitor, which watches the same
+      pins, publishes the transfer it saw on its analysis port.
+    lit: [block-drv, block-adapter, block-mon]
+    travel: [arrow-drv-adapter, arrow-apb-mon]
+    token: ["done", "APB write"]
+    parallel:
+      - "Driver: item_done, back to the map"
+      - "Monitor: the transfer it saw on the pins"
+    state: *s1
+
+  - caption: >-
+      The map calls `bus2reg()` on the finished item to get the status:
+      `UVM_IS_OK`, since PSLVERR was low. With the predictor doing the
+      predicting, the map's auto-predict is off, so the mirror is not
+      touched here.
+    lit: [block-adapter, block-map]
+    travel: arrow-adapter-map
+    token: "IS_OK"
+    state: *s1
+    chapter: /csr/ral-fundamentals
+
+  - caption: >-
+      The monitor's item reaches the predictor's `bus_in` export.
+    lit: [block-mon, block-pred]
+    travel: arrow-mon-pred
+    packet: *apb_w
+    state: *s1
+
+  - predict: >-
+      DONE is write-1-to-clear and was written 0. What does the predictor
+      put in the mirror for it?
+    caption: >-
+      The predictor runs its own `bus2reg()`, finds CTRL by address 'h10 and
+      calls its `do_predict()`. Each field applies its access policy: EN and
+      MODE take the written value; DONE was written 0, and writing 0 to a
+      W1C bit changes nothing, so it stays 0. Mirrored and desired both
+      become 'h005.
+    lit: [block-pred, block-mirrored, block-desired]
+    travel: arrow-pred-mirror
+    token: "predict 'h005"
+    state: &s2
+      label: "CTRL at 'h10"
+      fields:
+        - [desired, "'h005"]
+        - [mirrored, "'h005"]
+        - [DUT flops, "'h005"]
+    chapter: /csr/register-access-types
+
+  - caption: >-
+      Back in the register, the `post_write` callbacks run, the register's
+      and then each field's. They see the final status.
+    lit: [block-map, block-reg, block-cbs]
+    travel: arrow-map-reg
+    token: "status"
+    state: *s2
+    chapter: /csr/register-callbacks
+
+  - caption: >-
+      `write()` returns `UVM_IS_OK` to the sequence. Nothing in UVM orders
+      this return against the predictor's update: both happen in the same
+      time step, so code that reads the mirror straight after `write()` is
+      relying on scheduling luck.
+    lit: [block-reg, block-seq]
+    travel: arrow-reg-seq
+    token: "IS_OK"
+    state: *s2
+    chapter: /csr/volatile-registers
+
+  - scene: "Through the backdoor"
+    role: "Testbench"
+    predict: >-
+      Now `csr.write(status, 'h003, UVM_BACKDOOR)`. Which blocks does it
+      skip?
+    caption: >-
+      The same start: `set()` makes desired 'h003, and the `pre_write`
+      callbacks run as before.
+    lit: [block-seq, block-reg, block-desired, block-cbs]
+    travel: arrow-seq-reg
+    token: "write 'h003"
+    state: &s3
+      label: "CTRL at 'h10"
+      fields:
+        - [desired, "'h003"]
+        - [mirrored, "'h005"]
+        - [DUT flops, "'h005"]
+    chapter: /csr/ral-fundamentals
+
+  - caption: >-
+      There is no map, adapter or bus. The register reads the flops through
+      their HDL path ('h005), works out what each field would hold after this
+      write (DONE is W1C and written 0, so it keeps what it read), and
+      deposits 'h003 straight into the flops.
+    lit: [block-reg, block-flops]
+    travel: arrow-backdoor
+    token: "hdl_write 'h003"
+    state: &s4
+      label: "CTRL at 'h10"
+      fields:
+        - [desired, "'h003"]
+        - [mirrored, "'h005"]
+        - [DUT flops, "'h003"]
+    chapter: /csr/ral-fundamentals
+
+  - caption: >-
+      The register predicts its own mirror, 'h003. The APB slave, monitor and
+      predictor never saw this write, and the decode of 'h10 was never
+      exercised. That is why backdoor is for setup, not for testing the
+      access path.
+    lit: [block-reg, block-mirrored]
+    state:
+      label: "CTRL at 'h10"
+      fields:
+        - [desired, "'h003"]
+        - [mirrored, "'h003"]
+        - [DUT flops, "'h003"]
+    chapter: /csr/builtin-sequence-limits
