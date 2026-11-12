@@ -197,7 +197,7 @@ steps:
   - scene: "Through the backdoor"
     role: "Testbench"
     predict: >-
-      Now `csr.write(status, 'h003, UVM_BACKDOOR)`. Which blocks does it
+      Now csr.write(status, 'h003, UVM_BACKDOOR). Which blocks does it
       skip?
     caption: >-
       The same start: `set()` makes desired 'h003, and the `pre_write`

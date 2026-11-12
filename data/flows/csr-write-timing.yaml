@@ -138,7 +138,7 @@ steps:
         - [DUT flops, "'h005"]
 
   - predict: >-
-      Is the predictor's update guaranteed to land before `write()` returns?
+      Is the predictor's update guaranteed to land before write() returns?
     caption: >-
       The predictor updates the mirror. It is drawn above the status return,
       but nothing in UVM orders the two: they are separate processes in the

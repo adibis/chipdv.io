@@ -120,7 +120,7 @@ steps:
     state: *m0
 
   - predict: >-
-      Expected 'h005, read 'h105. Does `mirror(UVM_CHECK)` report an error?
+      Expected 'h005, read 'h105. Does mirror(UVM_CHECK) report an error?
     caption: >-
       No. The compare skips any field whose check is off, and declaring DONE
       volatile when it was configured turned its check off. EN and MODE are
