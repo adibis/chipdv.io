@@ -1,0 +1,5 @@
+{{- /* Post count, then the blog's other ways in. */ -}}
+{{- $n := len .pages -}}
+<span>{{ $n }} {{ cond (eq $n 1) "post" "posts" }}</span>
+{{- with site.GetPage "/tags" }}<a href="{{ .RelPermalink }}">Tags</a>{{ end }}
+{{- with site.GetPage "/blog" }}{{ with .OutputFormats.Get "rss" }}<a href="{{ .RelPermalink }}">RSS</a>{{ end }}{{ end }}

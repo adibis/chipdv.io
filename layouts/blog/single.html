@@ -1,0 +1,39 @@
+{{ define "main" }}
+  <div class="hx:mx-auto hx:flex hextra-max-page-width">
+    {{ partial "sidebar.html" (dict "context" . "disableSidebar" true "displayPlaceholder" true) }}
+    {{ partial "toc.html" . }}
+    <article class="hx:w-full hx:break-words hx:flex hx:min-h-[calc(100vh-var(--navbar-height))] hx:min-w-0 hx:justify-center hx:pb-8 hx:pr-[calc(env(safe-area-inset-right)-1.5rem)]">
+      <main id="content" class="hx:w-full hx:min-w-0 hextra-max-content-width hx:px-6 hx:pt-4 hx:md:px-12">
+        {{- /* Eyebrow, title, the description as a standfirst, then tags. No
+             breadcrumb: the eyebrow links back to the blog. */}}
+        <header class="chipdv-post-head">
+          <div class="chipdv-post-eyebrow">
+            <a href="{{ .CurrentSection.RelPermalink }}">BLOG</a>
+            {{- with .Date }}<span>&middot;</span><time datetime="{{ .Format "2006-01-02" }}">{{ .Format "Jan 2, 2006" | strings.ToUpper }}</time>{{ end }}
+            <span>&middot;</span><span>{{ .ReadingTime }} MIN</span>
+            {{- if .Draft }}<span class="chipdv-post-draft">Draft</span>{{ end }}
+          </div>
+          <div class="hx:flex hx:flex-col hx:sm:flex-row hx:items-start hx:sm:items-center hx:sm:justify-between hx:gap-4">
+            <h1 class="hx:mb-0 hx:text-4xl hx:font-bold hx:tracking-tight hx:text-slate-900 hx:dark:text-slate-100">{{ .Title }}</h1>
+            {{ partial "components/page-context-menu" . }}
+          </div>
+          {{ with .Description }}<p class="chipdv-post-standfirst">{{ . }}</p>{{ end }}
+          {{- with .GetTerms "tags" }}
+          <div class="chipdv-post-tags">
+            {{- range $i, $t := . }}{{ if $i }}<span>/</span>{{ end }}<a href="{{ $t.RelPermalink }}">{{ $t.LinkTitle }}</a>{{ end }}
+          </div>
+          {{- end }}
+        </header>
+        <div class="content">
+          {{ .Content }}
+        </div>
+        {{- partial "components/last-updated.html" . -}}
+        {{- if (site.Params.blog.article.displayPagination | default true) -}}
+          {{- .Store.Set "reversePagination" (.Params.reversePagination | default true) -}}
+          {{- partial "components/pager.html" . -}}
+        {{ end }}
+        {{- partial "components/comments.html" . -}}
+      </main>
+    </article>
+  </div>
+{{ end }}

@@ -4,6 +4,7 @@ weight: 1
 date: 2026-10-26
 publishDate: 2026-10-26
 draft: false
+tags: [Interviews, UVM, brokenbench]
 description: "If a model can write your SystemVerilog in seconds, what's left to practice, and what does a DV interview even measure anymore? brokenbench's answer: catching code -- yours or a model's -- that compiles clean while being wrong."
 ---
 

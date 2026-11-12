@@ -1,0 +1,7 @@
+{{ define "main" }}
+  {{- $pages := .Pages.ByDate.Reverse -}}
+  {{ partial "blog/shell.html" (dict
+    "page" . "title" .Title "intro" .Description "label" "POSTS"
+    "links" (partial "blog/links.html" (dict "pages" $pages))
+    "body" (partial "blog/rows.html" $pages)) }}
+{{ end }}

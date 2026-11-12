@@ -1,0 +1,19 @@
+{{- /* Hextra's single-column frame for the blog's list pages: heading, the
+     home page's label row, then the body. */ -}}
+<div class="hx:mx-auto hx:flex hextra-max-page-width">
+  {{ partial "sidebar.html" (dict "context" .page "disableSidebar" true "displayPlaceholder" true) }}
+  {{ partial "toc.html" (dict "Params" (dict "toc" false)) }}
+  <article class="hx:w-full hx:break-words hx:flex hx:min-h-[calc(100vh-var(--navbar-height))] hx:min-w-0 hx:justify-center hx:pb-8 hx:pr-[calc(env(safe-area-inset-right)-1.5rem)]">
+    <main id="content" class="hx:w-full hx:min-w-0 hextra-max-content-width hx:px-6 hx:pt-4 hx:md:px-12">
+      <header class="chipdv-blog-head">
+        <h1>{{ .title }}</h1>
+        {{ with .intro }}<p>{{ . }}</p>{{ end }}
+      </header>
+      <div class="chipdv-section-label-row chipdv-blog-label-row">
+        <div class="chipdv-section-label">{{ .label }}</div>
+        <div class="chipdv-blog-links">{{ .links }}</div>
+      </div>
+      {{ .body }}
+    </main>
+  </article>
+</div>

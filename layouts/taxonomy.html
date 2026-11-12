@@ -1,0 +1,10 @@
+{{ define "main" }}
+  {{- $body := "" -}}
+  {{- range .Data.Terms.Alphabetical }}
+    {{- $body = printf `%s<a class="chipdv-blog-row chipdv-tag-row" href="%s"><span>%d</span><span>%s</span></a>` $body .Page.RelPermalink .Count .Page.LinkTitle -}}
+  {{- end -}}
+  {{ partial "blog/shell.html" (dict
+    "page" . "title" .Title "intro" .Description "label" "TAGS"
+    "links" (partial "blog/links.html" (dict "pages" (site.GetPage "/blog").Pages))
+    "body" ($body | safeHTML)) }}
+{{ end }}

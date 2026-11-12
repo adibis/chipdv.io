@@ -673,3 +673,73 @@ nav button {
 .dark img[src*="/images/"] {
   filter: invert(0.92) hue-rotate(180deg);
 }
+
+/* ── Blog: the home page's label rows and dated rows, at reading size ── */
+.chipdv-blog-head { margin: 1.5rem 0 2.5rem; }
+.chipdv-blog-head h1 { font-size: 2.25rem; font-weight: 700; line-height: 1.2; }
+.chipdv-blog-head p { margin-top: .4rem; color: #525252; }
+.dark .chipdv-blog-head p { color: #a3a3a3; }
+.chipdv-blog-label-row { border-bottom: 1px solid #e5e5e5; padding-bottom: .5rem; margin-bottom: 0; }
+.dark .chipdv-blog-label-row { border-bottom-color: #333; }
+.chipdv-blog-links { display: flex; gap: 1rem; font: .75rem var(--font-mono); color: #737373; }
+.chipdv-blog-links a { color: inherit; text-decoration: none; }
+.chipdv-blog-links a:hover { color: var(--color-primary-600); }
+.dark .chipdv-blog-links { color: #a3a3a3; }
+
+.chipdv-blog-year { margin-top: 1.75rem; }
+.chipdv-blog-year > h2 { margin-bottom: .25rem; }
+.chipdv-blog-row {
+  display: grid; grid-template-columns: 5.5rem 1fr; gap: 1rem; align-items: baseline;
+  padding: 1rem 0; border-bottom: 1px solid #f0f0f0;
+}
+.dark .chipdv-blog-row { border-bottom-color: #262626; }
+.chipdv-blog-row time {
+  font: .75rem var(--font-mono); text-transform: uppercase;
+  font-variant-numeric: tabular-nums; color: #737373;
+}
+.dark .chipdv-blog-row time { color: #a3a3a3; }
+.chipdv-blog-row h3 { font-size: 1.3rem; font-weight: 600; line-height: 1.3; }
+.chipdv-blog-row h3 a { color: #171717; text-decoration: none; }
+.dark .chipdv-blog-row h3 a { color: #e5e5e5; }
+.chipdv-blog-row h3 a:hover { color: var(--color-primary-600); }
+.chipdv-blog-row p {
+  margin-top: .3rem; font-size: 1rem; line-height: 1.5; color: #525252;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+}
+.dark .chipdv-blog-row p { color: #a3a3a3; }
+.chipdv-tag-row { text-decoration: none; padding: .6rem 0; }
+.chipdv-tag-row span:first-child { font: .75rem var(--font-mono); color: #737373; }
+.chipdv-tag-row span:last-child { font-size: 1.1rem; color: #171717; }
+.dark .chipdv-tag-row span:last-child { color: #e5e5e5; }
+.chipdv-tag-row:hover span:last-child { color: var(--color-primary-600); }
+@media (max-width: 640px) {
+  .chipdv-blog-row { grid-template-columns: 1fr; gap: .2rem; }
+}
+
+.chipdv-post-draft {
+  margin-left: .6rem; vertical-align: middle;
+  font: .65rem var(--font-mono); text-transform: uppercase; letter-spacing: .06em;
+  padding: .1rem .45rem; border-radius: 999px;
+  border: 1px solid var(--color-accent); color: var(--color-accent);
+}
+
+/* Post header: mono eyebrow, title, standfirst, tags, rule */
+.chipdv-post-head {
+  margin: 1.5rem 0 2.5rem; padding-bottom: 1.5rem; border-bottom: 1px solid #e5e5e5;
+}
+.dark .chipdv-post-head { border-bottom-color: #333; }
+.chipdv-post-eyebrow {
+  display: flex; flex-wrap: wrap; align-items: center; gap: .5rem; margin-bottom: .75rem;
+  font: 600 .6875rem var(--font-mono); letter-spacing: .06em; color: #737373;
+}
+.dark .chipdv-post-eyebrow { color: #a3a3a3; }
+.chipdv-post-eyebrow a { color: var(--color-primary-600); text-decoration: none; }
+.chipdv-post-eyebrow .chipdv-post-draft { margin-left: 0; }
+.chipdv-post-standfirst {
+  margin-top: 1rem; max-width: 40em; font-size: 1.35rem; font-style: italic;
+  line-height: 1.5; color: #525252;
+}
+.dark .chipdv-post-standfirst { color: #a3a3a3; }
+.chipdv-post-tags { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: 1rem; font: .8rem var(--font-mono); color: #a3a3a3; }
+.chipdv-post-tags a { color: var(--color-primary-600); text-decoration: none; }
+.chipdv-post-tags a:hover { text-decoration: underline; }

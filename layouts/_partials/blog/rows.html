@@ -1,0 +1,7 @@
+{{- /* Posts newest first, grouped by year: the blog index is also its archive. */ -}}
+{{- range .GroupByDate "2006" }}
+<section class="chipdv-blog-year">
+  <h2 class="chipdv-section-label">{{ .Key }}</h2>
+  {{- range .Pages }}{{ partial "blog/entry.html" . }}{{ end }}
+</section>
+{{- end }}

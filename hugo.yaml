@@ -5,6 +5,10 @@ theme: hextra
 
 enableRobotsTXT: true
 enableGitInfo: true
+# Keep tag names as written (UVM, brokenbench) instead of title-casing them.
+capitalizeListTitles: false
+taxonomies:
+  tag: tags
 
 params:
   description: "AI-native chip design verification and the classical UVM engineering underneath it: register verification, memory allocation, testbench architecture, firmware verification, and knowledge graphs for chip design."

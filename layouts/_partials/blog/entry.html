@@ -1,0 +1,7 @@
+<article class="chipdv-blog-row">
+  <time datetime="{{ .Date.Format "2006-01-02" }}">{{ .Date.Format "Jan 2" }}</time>
+  <div>
+    <h3><a href="{{ .RelPermalink }}">{{ .Title }}</a>{{ if .Draft }}<span class="chipdv-post-draft">Draft</span>{{ end }}</h3>
+    <p>{{ partial "utils/page-description" . }}</p>
+  </div>
+</article>
