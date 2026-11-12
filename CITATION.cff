@@ -1,0 +1,19 @@
+cff-version: 1.2.0
+message: "If you cite an article from this site, please cite it as below, with the article's title and URL."
+title: "chipDV"
+authors:
+  - family-names: Shevade
+    given-names: Aditya
+url: "https://chipdv.io/"
+repository-code: "https://github.com/adibis/chipdv.io"
+license:
+  - CC-BY-4.0
+  - MIT
+preferred-citation:
+  type: blog
+  title: "chipDV"
+  authors:
+    - family-names: Shevade
+      given-names: Aditya
+  url: "https://chipdv.io/"
+  year: 2026
