@@ -1,0 +1,4 @@
+{{- /* A track's coloured label, from data/brokenbench/tracks.yaml. */ -}}
+{{- with index (where hugo.Data.brokenbench.tracks "id" .) 0 -}}
+<span class="bb-chip bb-t-{{ .id }}" title="{{ .name }}">{{ .short }}</span>
+{{- end -}}

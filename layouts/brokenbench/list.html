@@ -1,0 +1,61 @@
+{{ define "main" }}
+{{- /* brokenbench's landing page: the introduction, one way in, and the full list. The
+     button opens the first exercise when the exercise pages are built
+     (drafts until the runner is deployed), and the repository otherwise. */ -}}
+{{- $all := hugo.Data.brokenbench.exercises -}}
+{{- $tracks := hugo.Data.brokenbench.tracks -}}
+{{- $walkmap := hugo.Data.brokenbench.walks | default dict -}}
+{{- $first := site.GetPage (printf "/projects/brokenbench/%s" (index $all 0).slug) -}}
+<div class="hx:mx-auto hx:flex hextra-max-page-width">
+  <article class="hx:w-full hx:break-words hx:flex hx:min-h-[calc(100vh-var(--navbar-height))] hx:min-w-0 hx:justify-center hx:pb-8">
+    <main id="content" class="hx:w-full hx:min-w-0 hextra-max-content-width hx:px-6 hx:pt-4 hx:md:px-12">
+      <section class="bb-landing">
+        <div class="chipdv-section-label">PROJECT</div>
+        <h1>{{ .Title }}</h1>
+        <div class="content">{{ .Content }}</div>
+        <div class="bb-landing-actions">
+          {{- with $first }}
+          <a class="bb-launch" href="{{ .RelPermalink }}">Launch exercises <span aria-hidden="true">&rarr;</span></a>
+          <a class="bb-landing-alt" href="{{ $.Params.github }}">Source on GitHub</a>
+          {{- else }}
+          <a class="bb-launch" href="{{ .Params.github }}">Get the exercises on GitHub <span aria-hidden="true">&rarr;</span></a>
+          {{- end }}
+        </div>
+        <p class="bb-landing-tracks">
+          {{- len $all }} exercises in {{ len $tracks }} tracks<span class="bb-landing-solved" hidden></span>
+        </p>
+        {{- /* Every exercise, by track. Without built exercise pages the
+             entries open the exercise's file on GitHub instead. */}}
+        <div class="bb-index">
+          {{- range $t := $tracks }}
+          {{- $in := where $all "track" $t.id }}
+          <h2 class="bb-t-{{ $t.id }}">{{ partial "brokenbench/chip.html" $t.id }} {{ $t.name }} <span class="bb-index-count">{{ len $in }}</span></h2>
+          <p class="bb-index-blurb">{{ $t.blurb }}</p>
+          <ol>
+            {{- range $in }}
+            {{- $page := site.GetPage (printf "/projects/brokenbench/%s" .slug) }}
+            <li><a href="{{ with $page }}{{ .RelPermalink }}{{ else }}{{ $.Params.github }}/blob/master/{{ .path }}{{ end }}" data-slug="{{ .slug }}">
+              <span class="bb-index-title">{{ .title | markdownify }}</span>
+              <span class="bb-index-tags">{{ with index $walkmap .slug }}<span class="bb-walk-mark">walk</span> {{ end }}{{ delimit .tags " / " }}</span>
+            </a></li>
+            {{- end }}
+          </ol>
+          {{- end }}
+        </div>
+      </section>
+    </main>
+    <script>
+      // Tick the exercises this browser has solved (set by the exercise pages).
+      (function () {
+        let solved = [];
+        try { solved = JSON.parse(localStorage.getItem("bb:solved") || "[]"); } catch (e) { return; }
+        const links = document.querySelectorAll(".bb-index a[data-slug]");
+        let n = 0;
+        links.forEach((a) => { if (solved.includes(a.dataset.slug)) { a.classList.add("bb-solved"); n++; } });
+        const note = document.querySelector(".bb-landing-solved");
+        if (n) { note.textContent = ` · ${n} solved in this browser`; note.hidden = false; }
+      })();
+    </script>
+  </article>
+</div>
+{{ end }}

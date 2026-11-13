@@ -1,0 +1,1572 @@
+[
+ {
+  "slug": "sv_mechanics_chain",
+  "track": "learn",
+  "order": 1,
+  "digest": "841754cc01926dba4274ac8f39321a8565a501dfe7aa868af09668d436a81dd9",
+  "tags": [
+   "write-from-scratch"
+  ],
+  "path": "learn/sv_mechanics_chain.sv",
+  "title": "Write a class, a compound constraint, and a factory function from scratch",
+  "spec": [
+   {
+    "p": "A handle declared but never assigned with `new()` is null, and using it fails at runtime, not at compile time. A factory function's one job is to construct the object before returning it."
+   },
+   {
+    "p": "Fix the class and function below."
+   },
+   {
+    "p": "Requirements:"
+   },
+   {
+    "items": [
+     "1. addr's low 2 bits are always 0 (addr[1:0] == 2'b00).",
+     "2. size stays between 1 and 8, inclusive.",
+     "3. make_item() returns a valid (non-null) handle."
+    ]
+   }
+  ],
+  "uvm": false,
+  "needs_patched_verilator": false,
+  "code": "class addr_item;\n  rand bit [15:0] addr;\n  rand bit [ 3:0] size;\n  // write constraints here\nendclass\n\nfunction addr_item make_item();\n  addr_item item;\n  // write this function so it returns a valid handle\n  return item;\nendfunction\n",
+  "support": [],
+  "solution": "class addr_item;\n  rand bit [15:0] addr;\n  rand bit [ 3:0] size;\n  constraint c_addr {\n    addr[1:0] == 2'b00;\n    size inside {[1 : 8]};\n  }\nendclass\n\nfunction addr_item make_item();\n  addr_item item;\n  item = new();\n  return item;\nendfunction\n",
+  "fix": "@@ -2,10 +2,13 @@\n   rand bit [15:0] addr;\n   rand bit [ 3:0] size;\n-  // write constraints here\n+  constraint c_addr {\n+    addr[1:0] == 2'b00;\n+    size inside {[1 : 8]};\n+  }\n endclass\n \n function addr_item make_item();\n   addr_item item;\n-  // write this function so it returns a valid handle\n+  item = new();\n   return item;\n endfunction\n"
+ },
+ {
+  "slug": "sv_constraint_chain",
+  "track": "learn",
+  "order": 2,
+  "digest": "377f0e2a929c6157ca28aae21ece09d0bc1f2032f1b0d58a6a1b25337305d8c7",
+  "tags": [
+   "write-from-scratch"
+  ],
+  "path": "learn/sv_constraint_chain.sv",
+  "title": "Write three constraints from scratch, each with its own name",
+  "spec": [
+   {
+    "p": "Each constraint block is a class member and needs its own name: two blocks with the same name are a redefinition error, not one combined constraint. A range needs `inside`; pinning a field to one value needs `==` (`=` isn't a constraint operator)."
+   },
+   {
+    "p": "Fix the class below."
+   },
+   {
+    "p": "Requirements, each in its own named constraint block:"
+   },
+   {
+    "items": [
+     "1. priority_lo stays in [0:3].",
+     "2. priority_hi stays in [4:7].",
+     "3. mode always equals 2'b01."
+    ]
+   }
+  ],
+  "uvm": false,
+  "needs_patched_verilator": false,
+  "code": "class sched_item;\n  rand bit [2:0] priority_lo;\n  rand bit [2:0] priority_hi;\n  rand bit [1:0] mode;\n  rand bit [7:0] delay;\n\n  // write constraints here\nendclass\n",
+  "support": [],
+  "solution": "class sched_item;\n  rand bit [2:0] priority_lo;\n  rand bit [2:0] priority_hi;\n  rand bit [1:0] mode;\n  rand bit [7:0] delay;\n\n  constraint c_lo {priority_lo inside {[0 : 3]};}\n  constraint c_hi {priority_hi inside {[4 : 7]};}\n  constraint c_mode {mode == 2'b01;}\nendclass\n",
+  "fix": "@@ -5,4 +5,6 @@\n   rand bit [7:0] delay;\n \n-  // write constraints here\n+  constraint c_lo {priority_lo inside {[0 : 3]};}\n+  constraint c_hi {priority_hi inside {[4 : 7]};}\n+  constraint c_mode {mode == 2'b01;}\n endclass\n"
+ },
+ {
+  "slug": "inside_operator_variants",
+  "track": "learn",
+  "order": 3,
+  "digest": "5b7460547848a8048e0588245958d75c3214c3b6a7c157f2d4ebd117ef5f335e",
+  "tags": [
+   "write-from-scratch"
+  ],
+  "path": "learn/inside_operator_variants.sv",
+  "title": "Write three `inside` constraints from scratch, three different set shapes",
+  "spec": [
+   {
+    "p": "`inside` takes a set in braces, and the set can take three shapes:"
+   },
+   {
+    "items": [
+     "a list of values            -- x inside {1, 2, 3}",
+     "a range mixed with values   -- x inside {[10:20], 255}",
+     "a range with variable ends  -- x inside {[lo:hi]}"
+    ]
+   },
+   {
+    "p": "Fix the class below."
+   },
+   {
+    "p": "Requirements, on every randomize() call:"
+   },
+   {
+    "items": [
+     "1. `mode` is exactly one of 0, 2, 4 or 8.",
+     "2. `address` is between 10 and 20 inclusive, or exactly 255.",
+     "3. `val` is between `low_bound` and `high_bound` inclusive, using those two variables, not the numbers they currently hold."
+    ]
+   }
+  ],
+  "uvm": false,
+  "needs_patched_verilator": false,
+  "code": "class cfg_item;\n  rand bit [3:0] mode;\n  rand bit [7:0] address;\n  rand bit [7:0] val;\n\n  bit [7:0] low_bound = 5;\n  bit [7:0] high_bound = 15;\n\n  // write constraints here\nendclass\n",
+  "support": [],
+  "solution": "class cfg_item;\n  rand bit [3:0] mode;\n  rand bit [7:0] address;\n  rand bit [7:0] val;\n\n  bit [7:0] low_bound = 5;\n  bit [7:0] high_bound = 15;\n\n  constraint mode_c {mode inside {0, 2, 4, 8};}\n  constraint addr_c {address inside {[10 : 20], 255};}\n  constraint dynamic_c {val inside {[low_bound : high_bound]};}\nendclass\n",
+  "fix": "@@ -7,4 +7,6 @@\n   bit [7:0] high_bound = 15;\n \n-  // write constraints here\n+  constraint mode_c {mode inside {0, 2, 4, 8};}\n+  constraint addr_c {address inside {[10 : 20], 255};}\n+  constraint dynamic_c {val inside {[low_bound : high_bound]};}\n endclass\n"
+ },
+ {
+  "slug": "dist_coin_and_die",
+  "track": "learn",
+  "order": 4,
+  "digest": "81ee4a1d091f53e9c2f033b915900b3865fbf61d86d1dd847b846df43c6f7190",
+  "tags": [
+   "write-from-scratch",
+   "statistical"
+  ],
+  "path": "learn/dist_coin_and_die.sv",
+  "title": "Write two `dist` clauses from scratch: a fair coin, and a loaded die",
+  "spec": [
+   {
+    "p": "`dist` has two weight operators, and they differ once an entry is a range:"
+   },
+   {
+    "items": [
+     "value   := weight   -- that value gets this weight.",
+     "[lo:hi] := weight   -- every value in the range gets this weight each, so a wider range gets more of the total.",
+     "[lo:hi] :/ weight   -- the range gets this weight in total, split evenly across its values."
+    ]
+   },
+   {
+    "p": "Fix the class below."
+   },
+   {
+    "p": "Requirements:"
+   },
+   {
+    "items": [
+     "1. `coin` is a fair coin: 0 and 1 come up about equally often.",
+     "2. `roll` is a loaded die, always 1 to 6. It lands on 6 about half the time; the other half is spread evenly over 1 to 5, so each of those comes up about a tenth of the time."
+    ]
+   }
+  ],
+  "uvm": false,
+  "needs_patched_verilator": false,
+  "code": "class dist_practice;\n  rand bit coin;\n  rand bit [2:0] roll;\n  // write constraints here\nendclass\n",
+  "support": [],
+  "solution": "class dist_practice;\n  rand bit coin;\n  rand bit [2:0] roll;\n\n  constraint c_coin {coin dist {0 := 1, 1 := 1};}\n  constraint c_roll {roll dist {[1 : 5] :/ 50, 6 := 50};}\nendclass\n",
+  "fix": "@@ -2,4 +2,6 @@\n   rand bit coin;\n   rand bit [2:0] roll;\n-  // write constraints here\n+\n+  constraint c_coin {coin dist {0 := 1, 1 := 1};}\n+  constraint c_roll {roll dist {[1 : 5] :/ 50, 6 := 50};}\n endclass\n"
+ },
+ {
+  "slug": "implies_basics",
+  "track": "learn",
+  "order": 5,
+  "digest": "2eebcec2b396b36da356a6411a21a602c726de3ad77b528d5451d572fcc4f33d",
+  "tags": [
+   "write-from-scratch"
+  ],
+  "path": "learn/implies_basics.sv",
+  "title": "Write two implication constraints from scratch",
+  "spec": [
+   {
+    "p": "`a -> b` means \"whenever a holds, b holds too\". It says nothing about the case where a doesn't hold, and it isn't symmetric: write the sides backwards and it still compiles, but enforces the opposite rule."
+   },
+   {
+    "p": "Fix the class below."
+   },
+   {
+    "p": "Requirements:"
+   },
+   {
+    "items": [
+     "1. alarm_active is only ever true when temp_reading is over 100. A high reading doesn't force the alarm on.",
+     "2. Whenever maint_mode is true, alarm_active is false."
+    ]
+   }
+  ],
+  "uvm": false,
+  "needs_patched_verilator": false,
+  "code": "class sensor_item;\n  rand bit alarm_active;\n  rand int temp_reading;\n  rand bit maint_mode;\n\n  constraint c_range {temp_reading inside {[0 : 200]};}\n\n  // write constraints here\nendclass\n",
+  "support": [],
+  "solution": "class sensor_item;\n  rand bit alarm_active;\n  rand int temp_reading;\n  rand bit maint_mode;\n\n  constraint c_range {temp_reading inside {[0 : 200]};}\n\n  constraint c_alarm {alarm_active -> (temp_reading > 100);}\n  constraint c_maint {maint_mode -> (alarm_active == 0);}\nendclass\n",
+  "fix": "@@ -6,4 +6,5 @@\n   constraint c_range {temp_reading inside {[0 : 200]};}\n \n-  // write constraints here\n+  constraint c_alarm {alarm_active -> (temp_reading > 100);}\n+  constraint c_maint {maint_mode -> (alarm_active == 0);}\n endclass\n"
+ },
+ {
+  "slug": "foreach_with_basics",
+  "track": "learn",
+  "order": 6,
+  "digest": "59599ca5b93d0690bb772c0ad616f5cd97407cd379ef599eed58cb9050351597",
+  "tags": [
+   "write-from-scratch"
+  ],
+  "path": "learn/foreach_with_basics.sv",
+  "title": "Write a foreach constraint, and an inline randomize() with {} constraint",
+  "spec": [
+   {
+    "p": "`foreach (arr[i])` gives the constraint a loop variable `i` to index the array with. `randomize() with { ... }` adds a constraint for one call only, without changing the class."
+   },
+   {
+    "p": "Fix the class and function below."
+   },
+   {
+    "p": "Requirements:"
+   },
+   {
+    "items": [
+     "1. Every element of lens stays in [1:100].",
+     "2. tag_item() randomizes item so that tag equals the target argument."
+    ]
+   }
+  ],
+  "uvm": false,
+  "needs_patched_verilator": false,
+  "code": "class pkt_item;\n  rand bit [7:0] lens[4];\n  rand bit [7:0] tag;\n  // write constraints here\nendclass\n\nfunction void tag_item(pkt_item it, bit [7:0] target);\n  // write this function so item.tag always ends up equal to target\nendfunction\n",
+  "support": [],
+  "solution": "class pkt_item;\n  rand bit [7:0] lens[4];\n  rand bit [7:0] tag;\n  constraint c_lens {\n    foreach (lens[i]) lens[i] inside {[1 : 100]};\n  }\nendclass\n\nfunction void tag_item(pkt_item it, bit [7:0] target);\n  void'(it.randomize() with {tag == target;});\nendfunction\n",
+  "fix": "@@ -2,8 +2,10 @@\n   rand bit [7:0] lens[4];\n   rand bit [7:0] tag;\n-  // write constraints here\n+  constraint c_lens {\n+    foreach (lens[i]) lens[i] inside {[1 : 100]};\n+  }\n endclass\n \n function void tag_item(pkt_item it, bit [7:0] target);\n-  // write this function so item.tag always ends up equal to target\n+  void'(it.randomize() with {tag == target;});\n endfunction\n"
+ },
+ {
+  "slug": "missing_seed_reproducibility",
+  "track": "learn",
+  "order": 7,
+  "digest": "a8e1fd64e758ea82e675830c77dc985d74f3a1e76e6d7ded9eb4248e9d44b685",
+  "tags": [
+   "write-from-scratch",
+   "best-practice"
+  ],
+  "path": "learn/missing_seed_reproducibility.sv",
+  "title": "Write a function that makes randomize() reproducible",
+  "spec": [
+   {
+    "p": "Two separate calls on a handle:"
+   },
+   {
+    "items": [
+     "handle.randomize()    -- rolls new values into the rand fields from the object's current PRNG state.",
+     "handle.srandom(seed)  -- randomizes nothing. It resets the object's PRNG from `seed`, so every later randomize() follows the same sequence for that seed."
+    ]
+   },
+   {
+    "p": "srandom() isn't an argument to randomize(); call it on the handle first."
+   },
+   {
+    "p": "Fix the function below."
+   },
+   {
+    "p": "Requirements for make_seeded_item():"
+   },
+   {
+    "items": [
+     "1. It returns a valid (non-null) handle.",
+     "2. Two calls with the same seed give objects whose later randomize() calls produce the same sequence.",
+     "3. Two calls with different seeds give sequences that diverge."
+    ]
+   }
+  ],
+  "uvm": false,
+  "needs_patched_verilator": false,
+  "code": "class data_item;\n  rand bit [31:0] data;\nendclass\n\nfunction data_item make_seeded_item(int seed);\n  data_item item;\n  // write this function so it returns a handle seeded from `seed`\n  return item;\nendfunction\n",
+  "support": [],
+  "solution": "class data_item;\n  rand bit [31:0] data;\nendclass\n\nfunction data_item make_seeded_item(int seed);\n  data_item item;\n  item = new();\n  item.srandom(seed);\n  return item;\nendfunction\n",
+  "fix": "@@ -5,5 +5,6 @@\n function data_item make_seeded_item(int seed);\n   data_item item;\n-  // write this function so it returns a handle seeded from `seed`\n+  item = new();\n+  item.srandom(seed);\n   return item;\n endfunction\n"
+ },
+ {
+  "slug": "rand_mode_leftover",
+  "track": "learn",
+  "order": 8,
+  "digest": "93a70725f90c325ad021ace5dda808707d9474fa3835cac5931ab6021926f19f",
+  "tags": [
+   "lifecycle-hook"
+  ],
+  "path": "learn/rand_mode_leftover.sv",
+  "title": "rand_mode(0) left on from a debug helper",
+  "spec": [
+   {
+    "p": "rand_mode() switches randomization of a field off or on without touching its declaration. That's handy for pinning a field while debugging, and easy to leave behind: the field is still declared `rand`, still compiles, and every other field keeps randomizing."
+   },
+   {
+    "p": "The constructor makes two rand_mode() calls: one turns randomization off for the whole object, the other turns it back on for one field. Which field is left pinned?"
+   },
+   {
+    "p": "Fix the class below."
+   },
+   {
+    "p": "Requirement: seq_num varies across repeated randomize() calls, as channel already does."
+   }
+  ],
+  "uvm": false,
+  "needs_patched_verilator": false,
+  "code": "class frame_item;\n  rand bit [7:0] seq_num;\n  rand bit [3:0] channel;\n\n  function new();\n    // left over from debugging a channel-0-only issue\n    this.rand_mode(0);\n    this.channel.rand_mode(1);\n  endfunction\nendclass\n",
+  "support": [],
+  "solution": "class frame_item;\n  rand bit [7:0] seq_num;\n  rand bit [3:0] channel;\n\n  function new();\n    // left over from debugging a channel-0-only issue\n    this.rand_mode(0);\n    this.channel.rand_mode(1);\n    this.seq_num.rand_mode(1);\n  endfunction\nendclass\n",
+  "fix": "@@ -7,4 +7,5 @@\n     this.rand_mode(0);\n     this.channel.rand_mode(1);\n+    this.seq_num.rand_mode(1);\n   endfunction\n endclass\n"
+ },
+ {
+  "slug": "inherited_constraints_stack",
+  "track": "learn",
+  "order": 9,
+  "digest": "9c4d47fecbaf2fc3c90cb949398a617ccafa02ce2fd7e883f56fba95ecf39a29",
+  "tags": [
+   "write-from-scratch",
+   "inheritance",
+   "lifecycle-hook"
+  ],
+  "path": "learn/inherited_constraints_stack.sv",
+  "title": "A subclass's new constraint doesn't replace the base class's",
+  "spec": [
+   {
+    "p": "Constraint blocks aren't virtual methods. A differently named constraint in a subclass doesn't override the base class's: every block in the inheritance chain is ANDed together, so adding [0:200] on top of [0:50] still leaves [0:50]."
+   },
+   {
+    "p": "`constraint_mode(0)` switches a named constraint block off, including an inherited one, without touching its declaration: `rand_mode()` for constraints instead of fields."
+   },
+   {
+    "p": "Fix the classes below."
+   },
+   {
+    "p": "Requirements, so that wide_item's value can reach above 50:"
+   },
+   {
+    "items": [
+     "1. Add a constraint in wide_item allowing value up to 200.",
+     "2. In wide_item's constructor, turn off base_item's c_range with constraint_mode(0)."
+    ]
+   }
+  ],
+  "uvm": false,
+  "needs_patched_verilator": false,
+  "code": "class base_item;\n  rand bit [7:0] value;\n  constraint c_range {value inside {[0 : 50]};}\nendclass\n\nclass wide_item extends base_item;\n  // write constraints here\nendclass\n",
+  "support": [],
+  "solution": "class base_item;\n  rand bit [7:0] value;\n  constraint c_range {value inside {[0 : 50]};}\nendclass\n\nclass wide_item extends base_item;\n  constraint c_wide {value inside {[0 : 200]};}\n\n  function new();\n    super.new();\n    c_range.constraint_mode(0);\n  endfunction\nendclass\n",
+  "fix": "@@ -5,4 +5,9 @@\n \n class wide_item extends base_item;\n-  // write constraints here\n+  constraint c_wide {value inside {[0 : 200]};}\n+\n+  function new();\n+    super.new();\n+    c_range.constraint_mode(0);\n+  endfunction\n endclass\n"
+ },
+ {
+  "slug": "rand_queue_of_objects",
+  "track": "learn",
+  "order": 10,
+  "digest": "844a421f7e9771260066657326eb8422978e966dae7bcef0e61180684acd9799",
+  "tags": [
+   "write-from-scratch",
+   "lifecycle-hook",
+   "array"
+  ],
+  "path": "learn/rand_queue_of_objects.sv",
+  "title": "Write post_randomize() so a queue of objects isn't full of nulls",
+  "spec": [
+   {
+    "p": "`rand Packet queue_of_pkts[$];` lets the solver pick the queue's size, but it can't construct the objects: `new()` is code, and the solver only picks values. The queue comes out the right size and full of null handles."
+   },
+   {
+    "p": "`post_randomize()` runs right after randomize() has picked every value, including the queue's size, so it knows how many objects to build."
+   },
+   {
+    "p": "Fix the class below."
+   },
+   {
+    "p": "Requirements for post_randomize(), for every element of queue_of_pkts:"
+   },
+   {
+    "items": [
+     "1. It is constructed (not null).",
+     "2. Its own fields are randomized, not left at their defaults."
+    ]
+   }
+  ],
+  "uvm": false,
+  "needs_patched_verilator": false,
+  "code": "class Packet;\n  rand bit [7:0] length;\n  rand bit       is_payload_valid;\nendclass\n\nclass PacketGenerator;\n  rand Packet queue_of_pkts[$];\n\n  constraint c_size {queue_of_pkts.size() == 5;}\n\n  // write post_randomize() here\nendclass\n",
+  "support": [],
+  "solution": "class Packet;\n  rand bit [7:0] length;\n  rand bit       is_payload_valid;\nendclass\n\nclass PacketGenerator;\n  rand Packet queue_of_pkts[$];\n\n  constraint c_size {queue_of_pkts.size() == 5;}\n\n  function void post_randomize();\n    foreach (queue_of_pkts[i]) begin\n      if (queue_of_pkts[i] == null) queue_of_pkts[i] = new();\n      void'(queue_of_pkts[i].randomize());\n    end\n  endfunction\nendclass\n",
+  "fix": "@@ -9,4 +9,9 @@\n   constraint c_size {queue_of_pkts.size() == 5;}\n \n-  // write post_randomize() here\n+  function void post_randomize();\n+    foreach (queue_of_pkts[i]) begin\n+      if (queue_of_pkts[i] == null) queue_of_pkts[i] = new();\n+      void'(queue_of_pkts[i].randomize());\n+    end\n+  endfunction\n endclass\n"
+ },
+ {
+  "slug": "array_reduction_with",
+  "track": "learn",
+  "order": 11,
+  "digest": "96e96b94afa78bd996cdd795a9b3b2fd4df5fc6f8af489d0852dff102d8700fe",
+  "tags": [
+   "write-from-scratch",
+   "array"
+  ],
+  "path": "learn/array_reduction_with.sv",
+  "title": "Write two `with`-transformed array reduction constraints from scratch",
+  "spec": [
+   {
+    "p": "Reduction methods (`sum()`, `product()`, `and()`, `or()`, `xor()`) collapse an array to one value. With `with (expr)`, they reduce the expression's result for each element instead of the element itself; `item` names the element inside the expression."
+   },
+   {
+    "p": "That makes `sum() with` a counter: `arr.sum() with (item == N ? 1 : 0)` is the number of elements equal to N."
+   },
+   {
+    "p": "Fix the class below."
+   },
+   {
+    "p": "Requirements, each a constraint using sum() with (...):"
+   },
+   {
+    "items": [
+     "1. Exactly 2 of the 8 elements in levels equal 3.",
+     "2. Exactly 3 of the 8 elements in levels equal 0."
+    ]
+   }
+  ],
+  "uvm": false,
+  "needs_patched_verilator": false,
+  "code": "class bucket_item;\n  rand bit [1:0] levels[8];\n  // write constraints here\nendclass\n",
+  "support": [],
+  "solution": "class bucket_item;\n  rand bit [1:0] levels[8];\n  constraint c_threes {levels.sum() with (item == 3 ? 1 : 0) == 2;}\n  constraint c_zeros {levels.sum() with (item == 0 ? 1 : 0) == 3;}\nendclass\n",
+  "fix": "@@ -1,4 +1,5 @@\n class bucket_item;\n   rand bit [1:0] levels[8];\n-  // write constraints here\n+  constraint c_threes {levels.sum() with (item == 3 ? 1 : 0) == 2;}\n+  constraint c_zeros {levels.sum() with (item == 0 ? 1 : 0) == 3;}\n endclass\n"
+ },
+ {
+  "slug": "uvm_config_db_never_set",
+  "track": "learn",
+  "order": 12,
+  "digest": "8ee2ab64d1c8bb3ba3df4486f85885aedf15327e036e7cc6065c9b74ec144031",
+  "tags": [
+   "config-db"
+  ],
+  "path": "learn/uvm_config_db_never_set.sv",
+  "title": "uvm_config_db::get() works fine -- nobody ever called set()",
+  "spec": [
+   {
+    "p": "`uvm_config_db` is a lookup table keyed by component path and field name: `set()` writes an entry, `get()` reads one. `get()` doesn't need a matching `set()`: with no entry it returns 0 and leaves its variable unchanged, with no error or warning."
+   },
+   {
+    "p": "`worker` reads its `mode` with `uvm_config_db#(int)::get()` in its `build_phase()`. That code is correct."
+   },
+   {
+    "p": "Right now: `w.mode` stays -1, `worker`'s default, instead of becoming 1."
+   },
+   {
+    "p": "Fix `test::build_phase()` so `w.mode` ends up 1. Don't touch `worker`."
+   }
+  ],
+  "uvm": true,
+  "needs_patched_verilator": false,
+  "code": "import uvm_pkg::*;\n\nclass worker extends uvm_component;\n  `uvm_component_utils(worker)\n\n  int mode = -1;\n\n  function new(string name, uvm_component parent = null);\n    super.new(name, parent);\n  endfunction\n\n  function void build_phase(uvm_phase phase);\n    super.build_phase(phase);\n    void'(uvm_config_db#(int)::get(this, \"\", \"mode\", mode));\n  endfunction\nendclass\n\nclass test extends uvm_test;\n  `uvm_component_utils(test)\n\n  worker w;\n\n  function new(string name, uvm_component parent = null);\n    super.new(name, parent);\n  endfunction\n\n  function void build_phase(uvm_phase phase);\n    super.build_phase(phase);\n    // ---------------------------------------------------------------------------------------------\n    // fix this: configure w's mode to 1 via uvm_config_db before it's created\n    // ---------------------------------------------------------------------------------------------\n    w = worker::type_id::create(\"w\", this);\n  endfunction\n\n  virtual task run_phase(uvm_phase phase);\n    phase.raise_objection(this);\n    #1;\n",
+  "support": [],
+  "solution": "import uvm_pkg::*;\n\nclass worker extends uvm_component;\n  `uvm_component_utils(worker)\n\n  int mode = -1;\n\n  function new(string name, uvm_component parent = null);\n    super.new(name, parent);\n  endfunction\n\n  function void build_phase(uvm_phase phase);\n    super.build_phase(phase);\n    void'(uvm_config_db#(int)::get(this, \"\", \"mode\", mode));\n  endfunction\nendclass\n\nclass test extends uvm_test;\n  `uvm_component_utils(test)\n\n  worker w;\n\n  function new(string name, uvm_component parent = null);\n    super.new(name, parent);\n  endfunction\n\n  function void build_phase(uvm_phase phase);\n    super.build_phase(phase);\n    // ---------------------------------------------------------------------------------------------\n    // fix this: configure w's mode to 1 via uvm_config_db before it's created\n    // ---------------------------------------------------------------------------------------------\n    uvm_config_db#(int)::set(this, \"w\", \"mode\", 1);\n    w = worker::type_id::create(\"w\", this);\n  endfunction\n\n  virtual task run_phase(uvm_phase phase);\n    phase.raise_objection(this);\n    #1;\n",
+  "fix": "@@ -30,4 +30,5 @@\n     // fix this: configure w's mode to 1 via uvm_config_db before it's created\n     // ---------------------------------------------------------------------------------------------\n+    uvm_config_db#(int)::set(this, \"w\", \"mode\", 1);\n     w = worker::type_id::create(\"w\", this);\n   endfunction\n"
+ },
+ {
+  "slug": "uvm_objection_never_raised",
+  "track": "learn",
+  "order": 13,
+  "digest": "dd176f69e744790ad65b6251c13ff41ff91714a5b895eb13b18ebb55f6f9ab6b",
+  "tags": [
+   "objections"
+  ],
+  "path": "learn/uvm_objection_never_raised.sv",
+  "title": "Dropping an objection that was never raised is a fatal, not a no-op",
+  "spec": [
+   {
+    "p": "`raise_objection()` and `drop_objection()` drive a counter that decides when a phase may end, so every raise needs exactly one drop. Drop more than you raised and UVM reports `UVM_FATAL` (`OBJTN_ZERO`) rather than clamping the count at zero."
+   },
+   {
+    "p": "`run_phase` does its work (`recorded = 42;`) correctly, then drops an objection it never raised."
+   },
+   {
+    "p": "Right now: `recorded` becomes 42, then a `UVM_FATAL` fires."
+   },
+   {
+    "p": "Fix `run_phase` so no `UVM_FATAL` occurs."
+   }
+  ],
+  "uvm": true,
+  "needs_patched_verilator": false,
+  "code": "import uvm_pkg::*;\n\nclass test extends uvm_test;\n  `uvm_component_utils(test)\n\n  int recorded = -1;\n\n  function new(string name, uvm_component parent = null);\n    super.new(name, parent);\n  endfunction\n\n  virtual task run_phase(uvm_phase phase);\n    // ---------------------------------------------------------------------------------------------\n    // fix this: drop_objection() below has no matching raise_objection()\n    // ---------------------------------------------------------------------------------------------\n    recorded = 42;\n    phase.drop_objection(this);\n\n    phase.raise_objection(this);\n    #1;\n",
+  "support": [],
+  "solution": "import uvm_pkg::*;\n\nclass test extends uvm_test;\n  `uvm_component_utils(test)\n\n  int recorded = -1;\n\n  function new(string name, uvm_component parent = null);\n    super.new(name, parent);\n  endfunction\n\n  virtual task run_phase(uvm_phase phase);\n    phase.raise_objection(this);\n    // ---------------------------------------------------------------------------------------------\n    // fix this: drop_objection() below has no matching raise_objection()\n    // ---------------------------------------------------------------------------------------------\n    recorded = 42;\n    phase.drop_objection(this);\n\n    phase.raise_objection(this);\n    #1;\n",
+  "fix": "@@ -11,4 +11,5 @@\n \n   virtual task run_phase(uvm_phase phase);\n+    phase.raise_objection(this);\n     // ---------------------------------------------------------------------------------------------\n     // fix this: drop_objection() below has no matching raise_objection()\n"
+ },
+ {
+  "slug": "uvm_sequence_never_started",
+  "track": "learn",
+  "order": 14,
+  "digest": "c17b6c4e50423b64e5efc2df69f9eeddd4510faa4920edb4f938dfbd551c2da5",
+  "tags": [
+   "sequence-start"
+  ],
+  "path": "learn/uvm_sequence_never_started.sv",
+  "title": "Creating a sequence isn't the same as running it",
+  "spec": [
+   {
+    "p": "`my_seq::type_id::create()` only allocates the sequence. Its `body()`, which builds and sends the item, runs once something calls `.start(sequencer)` on it. Created but never started, it does nothing, with no error."
+   },
+   {
+    "p": "`my_driver` (pulls items off `sqr` and records the last one) and `my_seq::body()` (sends one item with `value = 42`) are both correct."
+   },
+   {
+    "p": "Right now: `e.drv.received_count` stays 0."
+   },
+   {
+    "p": "Fix `test::run_phase()` so the driver receives the item. Don't touch `my_seq` or `my_driver`."
+   }
+  ],
+  "uvm": true,
+  "needs_patched_verilator": false,
+  "code": "import uvm_pkg::*;\n\nclass item extends uvm_sequence_item;\n  `uvm_object_utils(item)\n\n  int value;\n\n  function new(string name = \"item\");\n    super.new(name);\n  endfunction\nendclass\n\nclass my_sequencer extends uvm_sequencer #(item);\n  `uvm_component_utils(my_sequencer)\n\n  function new(string name, uvm_component parent = null);\n    super.new(name, parent);\n  endfunction\nendclass\n\nclass my_driver extends uvm_driver #(item);\n  `uvm_component_utils(my_driver)\n\n  int received_count = 0;\n  int last_value = -1;\n\n  function new(string name, uvm_component parent = null);\n    super.new(name, parent);\n  endfunction\n\n  virtual task run_phase(uvm_phase phase);\n    item it;\n    forever begin\n      seq_item_port.get_next_item(it);\n      received_count++;\n      last_value = it.value;\n      seq_item_port.item_done();\n    end\n  endtask\nendclass\n\nclass my_seq extends uvm_sequence #(item);\n  `uvm_object_utils(my_seq)\n\n  function new(string name = \"my_seq\");\n    super.new(name);\n  endfunction\n\n  virtual task body();\n    item it = item::type_id::create(\"it\");\n    start_item(it);\n    it.value = 42;\n    finish_item(it);\n  endtask\nendclass\n\nclass env extends uvm_component;\n  `uvm_component_utils(env)\n\n  my_sequencer sqr;\n  my_driver drv;\n\n  function new(string name, uvm_component parent = null);\n    super.new(name, parent);\n  endfunction\n\n  function void build_phase(uvm_phase phase);\n    super.build_phase(phase);\n    sqr = my_sequencer::type_id::create(\"sqr\", this);\n    drv = my_driver::type_id::create(\"drv\", this);\n  endfunction\n\n  function void connect_phase(uvm_phase phase);\n    super.connect_phase(phase);\n    drv.seq_item_port.connect(sqr.seq_item_export);\n  endfunction\nendclass\n\nclass test extends uvm_test;\n  `uvm_component_utils(test)\n\n  env e;\n\n  function new(string name, uvm_component parent = null);\n    super.new(name, parent);\n  endfunction\n\n  function void build_phase(uvm_phase phase);\n    super.build_phase(phase);\n    e = env::type_id::create(\"e\", this);\n  endfunction\n\n  virtual task run_phase(uvm_phase phase);\n    my_seq seq;\n    phase.raise_objection(this);\n    seq = my_seq::type_id::create(\"seq\");\n    // ---------------------------------------------------------------------------------------------\n    // fix this: seq is created but never started on e.sqr\n    // ---------------------------------------------------------------------------------------------\n    #1;\n",
+  "support": [],
+  "solution": "import uvm_pkg::*;\n\nclass item extends uvm_sequence_item;\n  `uvm_object_utils(item)\n\n  int value;\n\n  function new(string name = \"item\");\n    super.new(name);\n  endfunction\nendclass\n\nclass my_sequencer extends uvm_sequencer #(item);\n  `uvm_component_utils(my_sequencer)\n\n  function new(string name, uvm_component parent = null);\n    super.new(name, parent);\n  endfunction\nendclass\n\nclass my_driver extends uvm_driver #(item);\n  `uvm_component_utils(my_driver)\n\n  int received_count = 0;\n  int last_value = -1;\n\n  function new(string name, uvm_component parent = null);\n    super.new(name, parent);\n  endfunction\n\n  virtual task run_phase(uvm_phase phase);\n    item it;\n    forever begin\n      seq_item_port.get_next_item(it);\n      received_count++;\n      last_value = it.value;\n      seq_item_port.item_done();\n    end\n  endtask\nendclass\n\nclass my_seq extends uvm_sequence #(item);\n  `uvm_object_utils(my_seq)\n\n  function new(string name = \"my_seq\");\n    super.new(name);\n  endfunction\n\n  virtual task body();\n    item it = item::type_id::create(\"it\");\n    start_item(it);\n    it.value = 42;\n    finish_item(it);\n  endtask\nendclass\n\nclass env extends uvm_component;\n  `uvm_component_utils(env)\n\n  my_sequencer sqr;\n  my_driver drv;\n\n  function new(string name, uvm_component parent = null);\n    super.new(name, parent);\n  endfunction\n\n  function void build_phase(uvm_phase phase);\n    super.build_phase(phase);\n    sqr = my_sequencer::type_id::create(\"sqr\", this);\n    drv = my_driver::type_id::create(\"drv\", this);\n  endfunction\n\n  function void connect_phase(uvm_phase phase);\n    super.connect_phase(phase);\n    drv.seq_item_port.connect(sqr.seq_item_export);\n  endfunction\nendclass\n\nclass test extends uvm_test;\n  `uvm_component_utils(test)\n\n  env e;\n\n  function new(string name, uvm_component parent = null);\n    super.new(name, parent);\n  endfunction\n\n  function void build_phase(uvm_phase phase);\n    super.build_phase(phase);\n    e = env::type_id::create(\"e\", this);\n  endfunction\n\n  virtual task run_phase(uvm_phase phase);\n    my_seq seq;\n    phase.raise_objection(this);\n    seq = my_seq::type_id::create(\"seq\");\n    // ---------------------------------------------------------------------------------------------\n    // fix this: seq is created but never started on e.sqr\n    // ---------------------------------------------------------------------------------------------\n    seq.start(e.sqr);\n    #1;\n",
+  "fix": "@@ -98,3 +98,4 @@\n     // fix this: seq is created but never started on e.sqr\n     // ---------------------------------------------------------------------------------------------\n+    seq.start(e.sqr);\n     #1;\n"
+ },
+ {
+  "slug": "nonoverlapping_address_ranges",
+  "track": "sv",
+  "order": 1,
+  "digest": "629273d2d67c3a5f572ce5cea174113c38267273b6311ff845acf0ad17bf4c3e",
+  "tags": [
+   "write-from-scratch",
+   "multi-constraint",
+   "array"
+  ],
+  "path": "exercises/sv/nonoverlapping_address_ranges.sv",
+  "title": "Sorted isn't the same as non-overlapping -- unless you check the right pair",
+  "spec": [
+   {
+    "p": "Hand out N address ranges that don't overlap. Ordering the starts (`regions[0].base < regions[1].base < ...`) looks like enough, but says nothing about where each range ends: a large region reaches straight into the next one."
+   },
+   {
+    "p": "Once the array is sorted by base_addr, each region only needs checking against its immediate predecessor. That's the point of keeping it sorted: an all-pairs check becomes an adjacent-pairs check."
+   },
+   {
+    "p": "`regions[i-1]` only makes sense for `i > 0`, and a foreach index is unsigned: guard it with a real if/else, or index -1 wraps to the largest value instead of going negative."
+   },
+   {
+    "p": "Fix the class below."
+   },
+   {
+    "p": "Requirements:"
+   },
+   {
+    "items": [
+     "1. regions.size() is between 4 and 8, inclusive.",
+     "2. regions[] is in strictly ascending order by base_addr.",
+     "3. Every region's base_addr is strictly less than its limit_addr.",
+     "4. Every base_addr and limit_addr is within [32'h0000_0000 : 32'h7FFF_FFFF].",
+     "5. Every region's size (limit_addr - base_addr + 1; limit_addr is the last byte, inclusive) is a multiple of 4KB (32'h1000).",
+     "6. Every base_addr is 4KB-aligned.",
+     "7. No two regions overlap: with requirement 2 in place, check each base_addr against the previous region's limit_addr."
+    ]
+   }
+  ],
+  "uvm": false,
+  "needs_patched_verilator": false,
+  "code": "typedef struct {\n  rand bit [31:0] base_addr;\n  rand bit [31:0] limit_addr;\n} region_s;\n\nclass MemoryMap;\n  rand region_s regions[];\n\n  // write constraints here\nendclass\n",
+  "support": [],
+  "solution": "typedef struct {\n  rand bit [31:0] base_addr;\n  rand bit [31:0] limit_addr;\n} region_s;\n\nclass MemoryMap;\n  rand region_s regions[];\n\n  constraint c_size {regions.size() inside {[4 : 8]};}\n\n  constraint c_bounds {\n    foreach (regions[i]) {\n      regions[i].base_addr inside {[32'h0000_0000 : 32'h7FFF_FFFF]};\n      regions[i].limit_addr inside {[32'h0000_0000 : 32'h7FFF_FFFF]};\n    }\n  }\n\n  constraint c_span {foreach (regions[i]) regions[i].base_addr < regions[i].limit_addr;}\n\n  constraint c_align {\n    foreach (regions[i]) {\n      (regions[i].limit_addr - regions[i].base_addr + 1) % 32'h1000 == 0;\n      regions[i].base_addr % 32'h1000 == 0;\n    }\n  }\n\n  constraint c_order {\n    foreach (regions[i]) {\n      if (i == 0) {\n        regions[i].base_addr inside {[32'h0000_0000 : 32'h7FFF_FFFF]};\n      } else {\n        regions[i].base_addr > regions[i-1].limit_addr;\n      }\n    }\n  }\nendclass\n",
+  "fix": "@@ -7,4 +7,30 @@\n   rand region_s regions[];\n \n-  // write constraints here\n+  constraint c_size {regions.size() inside {[4 : 8]};}\n+\n+  constraint c_bounds {\n+    foreach (regions[i]) {\n+      regions[i].base_addr inside {[32'h0000_0000 : 32'h7FFF_FFFF]};\n+      regions[i].limit_addr inside {[32'h0000_0000 : 32'h7FFF_FFFF]};\n+    }\n+  }\n+\n+  constraint c_span {foreach (regions[i]) regions[i].base_addr < regions[i].limit_addr;}\n+\n+  constraint c_align {\n+    foreach (regions[i]) {\n+      (regions[i].limit_addr - regions[i].base_addr + 1) % 32'h1000 == 0;\n+      regions[i].base_addr % 32'h1000 == 0;\n+    }\n+  }\n+\n+  constraint c_order {\n+    foreach (regions[i]) {\n+      if (i == 0) {\n+        regions[i].base_addr inside {[32'h0000_0000 : 32'h7FFF_FFFF]};\n+      } else {\n+        regions[i].base_addr > regions[i-1].limit_addr;\n+      }\n+    }\n+  }\n endclass\n"
+ },
+ {
+  "slug": "n_bit_hamming_delta",
+  "track": "sv",
+  "order": 2,
+  "digest": "a202fe87febee270bfb3f5efdc9ca4c5eccf376c42a122e5dbb88247a9d5584f",
+  "tags": [
+   "write-from-scratch",
+   "multi-constraint",
+   "cross-call-state",
+   "array"
+  ],
+  "path": "exercises/sv/n_bit_hamming_delta.sv",
+  "title": "Counting flipped bits with sum() with(), not $countones()",
+  "spec": [
+   {
+    "p": "$countones() would make this trivial; the point is the array-reduction technique. `sum() with` needs an array, and `current_data ^ previous_data` is a single packed value. Two things that look like they should work and don't compile: chaining the streaming operator `{<<{...}}` into a method call, and comparing an unpacked array to a streaming expression with `==`."
+   },
+   {
+    "p": "What works: an array of `rand bit`, each element tied to one bit of the XOR by a foreach constraint, then reduced. Cast each element with `int'(item)`, or the count wraps at 1 bit."
+   },
+   {
+    "p": "Fix the class below."
+   },
+   {
+    "p": "Requirements:"
+   },
+   {
+    "items": [
+     "1. toggle_target is between 1 and 32, inclusive.",
+     "2. changed_bits[k] == current_data[k] ^ previous_data[k] for every k, via foreach.",
+     "3. changed_bits.sum() with (int'(item)) == toggle_target.",
+     "4. post_randomize() sets previous_data to current_data, so the next randomize() measures its distance from this one. previous_data is static, so this holds across objects too."
+    ]
+   }
+  ],
+  "uvm": false,
+  "needs_patched_verilator": false,
+  "code": "class PowerFuzzer;\n  static bit [31:0] previous_data       = 32'h0000_0000;\n\n  rand bit   [31:0] current_data;\n  rand bit   [ 5:0] toggle_target;\n  rand bit          changed_bits  [32];\n\n  // write constraints here\nendclass\n",
+  "support": [],
+  "solution": "class PowerFuzzer;\n  static bit [31:0] previous_data       = 32'h0000_0000;\n\n  rand bit   [31:0] current_data;\n  rand bit   [ 5:0] toggle_target;\n  rand bit          changed_bits  [32];\n\n  constraint target_bounds_c {toggle_target inside {[1 : 32]};}\n\n  constraint c_changed_bits {\n    foreach (changed_bits[k]) changed_bits[k] == (current_data[k] ^ previous_data[k]);\n  }\n\n  constraint hamming_distance_c {changed_bits.sum() with (int'(item)) == int'(toggle_target);}\n\n  function void post_randomize();\n    previous_data = current_data;\n  endfunction\nendclass\n",
+  "fix": "@@ -6,4 +6,14 @@\n   rand bit          changed_bits  [32];\n \n-  // write constraints here\n+  constraint target_bounds_c {toggle_target inside {[1 : 32]};}\n+\n+  constraint c_changed_bits {\n+    foreach (changed_bits[k]) changed_bits[k] == (current_data[k] ^ previous_data[k]);\n+  }\n+\n+  constraint hamming_distance_c {changed_bits.sum() with (int'(item)) == int'(toggle_target);}\n+\n+  function void post_randomize();\n+    previous_data = current_data;\n+  endfunction\n endclass\n"
+ },
+ {
+  "slug": "thermal_power_fuzzer",
+  "track": "sv",
+  "order": 3,
+  "digest": "28f60e507fe59e30fa0ba725d12ea6bedd72967a9126e16de14ffcd08554db2d",
+  "tags": [
+   "write-from-scratch",
+   "multi-constraint",
+   "array",
+   "tool-limitation"
+  ],
+  "path": "exercises/sv/thermal_power_fuzzer.sv",
+  "title": "Uniqueness scoped to the wrong dimension",
+  "spec": [
+   {
+    "p": "Making each row's cells differ leaves the columns free to repeat. Adding the same check per column still isn't grid-unique: two cells that share neither a row nor a column, such as the ends of a diagonal, are never compared. The only sure way is to compare every pair of cells."
+   },
+   {
+    "p": "`unique{}` isn't used on purpose: on the current toolchain, unique{} over a row of a 2D array crashes the compiler. Pairwise != works."
+   },
+   {
+    "p": "Fix the class below."
+   },
+   {
+    "p": "Requirements:"
+   },
+   {
+    "items": [
+     "1. Every core_power[i][j] is between 1 and 9, inclusive.",
+     "2. All 9 values are different from each other across the whole grid. Compare every pair.",
+     "3. Every row sums to exactly 15.",
+     "4. Every column sums to exactly 15.",
+     "5. Both main diagonals sum to exactly 15."
+    ]
+   },
+   {
+    "p": "No array-reduction methods (sum() with, find() with): plain expressions and index-based foreach only."
+   }
+  ],
+  "uvm": false,
+  "needs_patched_verilator": false,
+  "code": "class ThermalPowerFuzzer;\n  rand bit [3:0] core_power[3][3];\n\n  // write constraints here\nendclass\n",
+  "support": [],
+  "solution": "class ThermalPowerFuzzer;\n  rand bit [3:0] core_power[3][3];\n\n  constraint c_range {\n    foreach (core_power[i, j])\n    core_power[i][j] inside {[1 : 9]};\n  }\n\n  constraint c_unique_all {\n    foreach (core_power[i, j])\n    foreach (core_power[i2, j2])\n    if ((i * 3 + j) < (i2 * 3 + j2)) core_power[i][j] != core_power[i2][j2];\n  }\n\n  constraint c_rowsum {\n    foreach (core_power[i]) core_power[i][0] + core_power[i][1] + core_power[i][2] == 15;\n  }\n\n  constraint c_colsum {\n    core_power[0][0] + core_power[1][0] + core_power[2][0] == 15;\n    core_power[0][1] + core_power[1][1] + core_power[2][1] == 15;\n    core_power[0][2] + core_power[1][2] + core_power[2][2] == 15;\n  }\n\n  constraint c_diagsum {\n    core_power[0][0] + core_power[1][1] + core_power[2][2] == 15;\n    core_power[0][2] + core_power[1][1] + core_power[2][0] == 15;\n  }\nendclass\n",
+  "fix": "@@ -2,4 +2,28 @@\n   rand bit [3:0] core_power[3][3];\n \n-  // write constraints here\n+  constraint c_range {\n+    foreach (core_power[i, j])\n+    core_power[i][j] inside {[1 : 9]};\n+  }\n+\n+  constraint c_unique_all {\n+    foreach (core_power[i, j])\n+    foreach (core_power[i2, j2])\n+    if ((i * 3 + j) < (i2 * 3 + j2)) core_power[i][j] != core_power[i2][j2];\n+  }\n+\n+  constraint c_rowsum {\n+    foreach (core_power[i]) core_power[i][0] + core_power[i][1] + core_power[i][2] == 15;\n+  }\n+\n+  constraint c_colsum {\n+    core_power[0][0] + core_power[1][0] + core_power[2][0] == 15;\n+    core_power[0][1] + core_power[1][1] + core_power[2][1] == 15;\n+    core_power[0][2] + core_power[1][2] + core_power[2][2] == 15;\n+  }\n+\n+  constraint c_diagsum {\n+    core_power[0][0] + core_power[1][1] + core_power[2][2] == 15;\n+    core_power[0][2] + core_power[1][1] + core_power[2][0] == 15;\n+  }\n endclass\n"
+ },
+ {
+  "slug": "l2_frame_fuzzer",
+  "track": "sv",
+  "order": 4,
+  "digest": "11d7ecc05414cb76972cf2c2ad955b13ca7b2f91d9e6aa4412d93b26cb0a46c3",
+  "tags": [
+   "write-from-scratch",
+   "multi-constraint",
+   "lifecycle-hook",
+   "array"
+  ],
+  "path": "exercises/sv/l2_frame_fuzzer.sv",
+  "title": "Three lifecycle pieces, one class",
+  "spec": [
+   {
+    "p": "A NIC frame has an 8-bit header, a variable-length payload and an 8-bit CRC. The interesting part is where each piece is decided:"
+   },
+   {
+    "items": [
+     "- header's low 4 bits come from a global flag (jumbo_mode_en) before the solver runs. That's pre_randomize()'s job; header isn't rand.",
+     "- The payload size depends on that, through `->`. Constrain only the jumbo case and a non-jumbo frame can still roll a payload over 1500 bytes: each case needs its own `->`.",
+     "- crc is arithmetic over values the solver already picked, so it belongs in post_randomize()."
+    ]
+   },
+   {
+    "p": "Fix the class below."
+   },
+   {
+    "p": "Requirements:"
+   },
+   {
+    "items": [
+     "1. pre_randomize() sets header[3:0] to 4'b1111 if jumbo_mode_en is set, else 4'b0000.",
+     "2. When header[3:0] == 4'b1111, payload.size() is in [1501:2048]. When header[3:0] == 4'b0000, payload.size() is in [46:1500].",
+     "3. post_randomize() sets crc to the 8-bit sum (wrapping) of header and every payload byte, inverted if crc_corrupt came out set."
+    ]
+   }
+  ],
+  "uvm": false,
+  "needs_patched_verilator": false,
+  "code": "package test_pkg;\n  bit jumbo_mode_en = 0;\nendpackage\n\nimport test_pkg::*;\n\nclass L2FrameFuzzer;\n  bit       [7:0] header;  // set procedurally in pre_randomize -- not rand\n  rand byte       payload                                                  [];  // dynamic array\n  rand bit        crc_corrupt;  // 1 = deliberately invert the computed CRC\n  bit       [7:0] crc;  // set procedurally in post_randomize -- not rand\n\n  constraint c_payload_base_size {payload.size() inside {[46 : 2048]};}\n\n  // write pre_randomize(), the size-dependency constraint, and post_randomize() here\nendclass\n",
+  "support": [],
+  "solution": "package test_pkg;\n  bit jumbo_mode_en = 0;\nendpackage\n\nimport test_pkg::*;\n\nclass L2FrameFuzzer;\n  bit       [7:0] header;  // set procedurally in pre_randomize -- not rand\n  rand byte       payload                                                  [];  // dynamic array\n  rand bit        crc_corrupt;  // 1 = deliberately invert the computed CRC\n  bit       [7:0] crc;  // set procedurally in post_randomize -- not rand\n\n  constraint c_payload_base_size {payload.size() inside {[46 : 2048]};}\n\n  function void pre_randomize();\n    if (jumbo_mode_en) begin\n      header[3:0] = 4'b1111;\n    end else begin\n      header[3:0] = 4'b0000;\n    end\n  endfunction\n\n  constraint c_jumbo_implication {\n    (header[3:0] == 4'b1111) -> (payload.size() inside {[1501 : 2048]});\n    (header[3:0] == 4'b0000) -> (payload.size() inside {[46 : 1500]});\n  }\n\n  function void post_randomize();\n    int accumulator;\n    accumulator = header;\n    foreach (payload[i]) begin\n      accumulator += int'(payload[i]);\n    end\n    if (crc_corrupt) begin\n      crc = ~(accumulator[7:0]);\n    end else begin\n      crc = accumulator[7:0];\n    end\n  endfunction\nendclass\n",
+  "fix": "@@ -13,4 +13,28 @@\n   constraint c_payload_base_size {payload.size() inside {[46 : 2048]};}\n \n-  // write pre_randomize(), the size-dependency constraint, and post_randomize() here\n+  function void pre_randomize();\n+    if (jumbo_mode_en) begin\n+      header[3:0] = 4'b1111;\n+    end else begin\n+      header[3:0] = 4'b0000;\n+    end\n+  endfunction\n+\n+  constraint c_jumbo_implication {\n+    (header[3:0] == 4'b1111) -> (payload.size() inside {[1501 : 2048]});\n+    (header[3:0] == 4'b0000) -> (payload.size() inside {[46 : 1500]});\n+  }\n+\n+  function void post_randomize();\n+    int accumulator;\n+    accumulator = header;\n+    foreach (payload[i]) begin\n+      accumulator += int'(payload[i]);\n+    end\n+    if (crc_corrupt) begin\n+      crc = ~(accumulator[7:0]);\n+    end else begin\n+      crc = accumulator[7:0];\n+    end\n+  endfunction\n endclass\n"
+ },
+ {
+  "slug": "tagged_frame_sequence",
+  "track": "sv",
+  "order": 5,
+  "digest": "69341130e1a1e9758e81e92932dda8de6992b61ff65aafd38f72ab7cb8cb75c3",
+  "tags": [
+   "write-from-scratch",
+   "cross-call-state",
+   "lifecycle-hook",
+   "multi-constraint"
+  ],
+  "path": "exercises/sv/tagged_frame_sequence.sv",
+  "title": "One distinguished header, three different kinds of persistent state",
+  "spec": [
+   {
+    "p": "A frame stream where each frame has a header, an id, a payload and a size. The rules only bite for frames whose header is the distinguished value XYZ:"
+   },
+   {
+    "items": [
+     "- XYZ frames carry a payload counting up from 100. That count has to survive across freshly constructed objects, which is why next_xyz_payload and frames_since_last_xyz are already static.",
+     "- XYZ frames can't come too close together or too far apart. That's about when a frame may be XYZ, so constrain header itself against frames_since_last_xyz rather than checking afterward.",
+     "- ids are a separate rule: no frame reuses an earlier frame's id. randc looks right, but its cycling isn't reliable on this toolchain once you exclude more than the last value (see the README, \"Real, current tool limitations\"). Use a plain rand field and a queue of used ids with `inside {}`."
+    ]
+   },
+   {
+    "p": "Fix the class below."
+   },
+   {
+    "p": "Requirements, across many randomize() calls on freshly constructed objects:"
+   },
+   {
+    "items": [
+     "1. Every frame's id differs from every earlier frame's id.",
+     "2. header may equal XYZ (8'hAB) only if at least 5 frames have passed since the last XYZ frame (or there hasn't been one), and must equal XYZ once 9 have passed, so no run of 10 frames is XYZ-free.",
+     "3. When header == XYZ, payload is 100 for the first such frame, 101 for the second, and so on, counting only XYZ frames."
+    ]
+   }
+  ],
+  "uvm": false,
+  "needs_patched_verilator": false,
+  "code": "class TaggedFrameSequence;\n  localparam bit [7:0] XYZ = 8'hAB;\n\n  rand bit   [ 7:0] header;\n  rand bit   [ 7:0] id;\n  rand bit   [15:0] payload;\n  rand bit   [ 7:0] size;\n\n  static bit [15:0] next_xyz_payload          = 16'd100;\n  static int        frames_since_last_xyz     = 0;\n  static bit [ 7:0] used_ids_q           [$];\n\n  // write constraints and post_randomize() here\nendclass\n",
+  "support": [],
+  "solution": "class TaggedFrameSequence;\n  localparam bit [7:0] XYZ = 8'hAB;\n\n  rand bit   [ 7:0] header;\n  rand bit   [ 7:0] id;\n  rand bit   [15:0] payload;\n  rand bit   [ 7:0] size;\n\n  static bit [15:0] next_xyz_payload          = 16'd100;\n  static int        frames_since_last_xyz     = 0;\n  static bit [ 7:0] used_ids_q           [$];\n\n  constraint c_id_unique {!(id inside {used_ids_q});}\n\n  constraint c_xyz_frequency {\n    if (frames_since_last_xyz < 5) header != XYZ;\n    if (frames_since_last_xyz >= 9) header == XYZ;\n  }\n\n  constraint c_xyz_payload_sequence {(header == XYZ) -> payload == next_xyz_payload;}\n\n  function void post_randomize();\n    used_ids_q.push_back(id);\n    if (header == XYZ) begin\n      next_xyz_payload      = next_xyz_payload + 1;\n      frames_since_last_xyz = 0;\n    end else begin\n      frames_since_last_xyz = frames_since_last_xyz + 1;\n    end\n  endfunction\nendclass\n",
+  "fix": "@@ -11,4 +11,21 @@\n   static bit [ 7:0] used_ids_q           [$];\n \n-  // write constraints and post_randomize() here\n+  constraint c_id_unique {!(id inside {used_ids_q});}\n+\n+  constraint c_xyz_frequency {\n+    if (frames_since_last_xyz < 5) header != XYZ;\n+    if (frames_since_last_xyz >= 9) header == XYZ;\n+  }\n+\n+  constraint c_xyz_payload_sequence {(header == XYZ) -> payload == next_xyz_payload;}\n+\n+  function void post_randomize();\n+    used_ids_q.push_back(id);\n+    if (header == XYZ) begin\n+      next_xyz_payload      = next_xyz_payload + 1;\n+      frames_since_last_xyz = 0;\n+    end else begin\n+      frames_since_last_xyz = frames_since_last_xyz + 1;\n+    end\n+  endfunction\n endclass\n"
+ },
+ {
+  "slug": "risc_v_hazard_which_register",
+  "track": "sv",
+  "order": 6,
+  "digest": "7946a815b31f15b5f954cedc9a5c3e9598c330a3b9ac723695b50e7a5b6fe819",
+  "tags": [
+   "write-from-scratch",
+   "statistical",
+   "cross-call-state",
+   "multi-constraint"
+  ],
+  "path": "exercises/sv/risc_v_hazard_which_register.sv",
+  "title": "When a hazard happens, decide which register(s) it hits",
+  "spec": [
+   {
+    "p": "A read-after-write hazard: an instruction reads a register the instruction before it writes. gen_hazard decides whether this instruction hazards at all. Given that it does, the hazard lands on src_reg_0, src_reg_1 or both, and real pipelines don't split that evenly."
+   },
+   {
+    "p": "A sequence constructs a fresh instr_item per instruction, so \"what the previous instruction wrote\" can't live in an ordinary member that new() resets. It has to be shared by every instance."
+   },
+   {
+    "p": "Fix the class below."
+   },
+   {
+    "p": "Requirements, among instructions with gen_hazard set and a previous instruction:"
+   },
+   {
+    "items": [
+     "1. About 20% hazard on src_reg_0 only, 50% on src_reg_1 only, 30% on both; never neither.",
+     "2. A source register that isn't hazarding doesn't happen to match the previous dst_reg."
+    ]
+   }
+  ],
+  "uvm": false,
+  "needs_patched_verilator": false,
+  "code": "class instr_item;\n  rand bit [4:0] dst_reg;\n  rand bit [4:0] src_reg_0;\n  rand bit [4:0] src_reg_1;\n  rand bit       gen_hazard;\n  // write constraints here\nendclass\n",
+  "support": [],
+  "solution": "class instr_item;\n  rand bit   [4:0] dst_reg;\n  rand bit   [4:0] src_reg_0;\n  rand bit   [4:0] src_reg_1;\n  rand bit         gen_hazard;\n  rand bit   [1:0] hkind;  // 0 = src_reg_0 only, 1 = src_reg_1 only, 2 = both\n\n  static bit [4:0] prev_dst_reg;\n  static bit       has_prev;\n\n  constraint c_hazard_dist {\n    gen_hazard dist {\n      1 := 70,\n      0 := 30\n    };\n  }\n  constraint c_kind_dist {\n    hkind dist {\n      0 := 20,\n      1 := 50,\n      2 := 30\n    };\n  }\n\n  constraint c_link {\n    if (has_prev && gen_hazard) {\n      if (hkind == 0) {\n        src_reg_0 == prev_dst_reg;\n        src_reg_1 != prev_dst_reg;\n      } else\n      if (hkind == 1) {\n        src_reg_1 == prev_dst_reg;\n        src_reg_0 != prev_dst_reg;\n      } else {\n        src_reg_0 == prev_dst_reg;\n        src_reg_1 == prev_dst_reg;\n      }\n    }\n  }\n\n  function void post_randomize();\n    prev_dst_reg = dst_reg;\n    has_prev     = 1;\n  endfunction\nendclass\n",
+  "fix": "@@ -1,7 +1,45 @@\n class instr_item;\n-  rand bit [4:0] dst_reg;\n-  rand bit [4:0] src_reg_0;\n-  rand bit [4:0] src_reg_1;\n-  rand bit       gen_hazard;\n-  // write constraints here\n+  rand bit   [4:0] dst_reg;\n+  rand bit   [4:0] src_reg_0;\n+  rand bit   [4:0] src_reg_1;\n+  rand bit         gen_hazard;\n+  rand bit   [1:0] hkind;  // 0 = src_reg_0 only, 1 = src_reg_1 only, 2 = both\n+\n+  static bit [4:0] prev_dst_reg;\n+  static bit       has_prev;\n+\n+  constraint c_hazard_dist {\n+    gen_hazard dist {\n+      1 := 70,\n+      0 := 30\n+    };\n+  }\n+  constraint c_kind_dist {\n+    hkind dist {\n+      0 := 20,\n+      1 := 50,\n+      2 := 30\n+    };\n+  }\n+\n+  constraint c_link {\n+    if (has_prev && gen_hazard) {\n+      if (hkind == 0) {\n+        src_reg_0 == prev_dst_reg;\n+        src_reg_1 != prev_dst_reg;\n+      } else\n+      if (hkind == 1) {\n+        src_reg_1 == prev_dst_reg;\n+        src_reg_0 != prev_dst_reg;\n+      } else {\n+        src_reg_0 == prev_dst_reg;\n+        src_reg_1 == prev_dst_reg;\n+      }\n+    }\n+  }\n+\n+  function void post_randomize();\n+    prev_dst_reg = dst_reg;\n+    has_prev     = 1;\n+  endfunction\n endclass\n"
+ },
+ {
+  "slug": "risc_v_forwarding_window",
+  "track": "sv",
+  "order": 7,
+  "digest": "a70dbf4dd3a7f7d73a286c44b5d7d47f35f997409925c858f37c4e5edaed023f",
+  "tags": [
+   "write-from-scratch",
+   "statistical",
+   "cross-call-state",
+   "multi-constraint",
+   "tool-limitation"
+  ],
+  "path": "exercises/sv/risc_v_forwarding_window.sv",
+  "title": "Three forwarding paths deep, not one",
+  "spec": [
+   {
+    "p": "risc_v_hazard_which_register looked one instruction back: the EX forward. A real pipeline also forwards from MEM (2 back) and WB (3 back). Here a hazard targets one of those three slots, weighted EX 40%, MEM 40%, WB 20%."
+   },
+   {
+    "p": "The history of recent dst_regs is shared across instances again, now as a static 3-deep window that post_randomize() shifts on every call."
+   },
+   {
+    "p": "Two points of the spec need care:"
+   },
+   {
+    "items": [
+     "- x0 is hardwired to zero in RISC-V, so a slot holding x0 isn't a real hazard target. Rule such slots out of the choice in the constraint, not by skipping them afterward.",
+     "- If two slots hold the same nonzero value, hitting one also matches the other. That's the same register twice in the window, not a leak."
+    ]
+   },
+   {
+    "p": "`dist{}` directly on an enum-typed rand variable doesn't reproduce its weights reliably on this toolchain (README, \"Real, current tool limitations\"). Weight a plain rand field and map it onto the enum with an equality constraint."
+   },
+   {
+    "p": "Fix the class below."
+   },
+   {
+    "p": "Requirements:"
+   },
+   {
+    "items": [
+     "1. history is a static 3-deep window: history[0] is EX (1 back), history[1] MEM (2 back), history[2] WB (3 back). post_randomize() shifts it and puts the new dst_reg in history[0].",
+     "2. With gen_hazard set, the target is EX 40%, MEM 40%, WB 20%, except that a slot holding x0 (5'd0) is never targeted; its share drops out rather than being redistributed.",
+     "3. With a target, at least one of src_reg_0/src_reg_1 equals that slot's value, and neither matches a slot holding a different value.",
+     "4. With gen_hazard clear, neither source register matches any nonzero slot."
+    ]
+   }
+  ],
+  "uvm": false,
+  "needs_patched_verilator": false,
+  "code": "class advanced_instr_fuzzer;\n  static bit [4:0] history    [3] = '{5'd1, 5'd2, 5'd3};\n\n  rand bit   [4:0] dst_reg;\n  rand bit   [4:0] src_reg_0;\n  rand bit   [4:0] src_reg_1;\n  rand bit         gen_hazard;\n\n  typedef enum bit [1:0] {\n    HIT_EX,\n    HIT_MEM,\n    HIT_WB,\n    HIT_NONE\n  } stage_target_e;\n\n  // write constraints and post_randomize() here\nendclass\n",
+  "support": [],
+  "solution": "class advanced_instr_fuzzer;\n  static bit [4:0] history    [3] = '{5'd1, 5'd2, 5'd3};\n\n  rand bit   [4:0] dst_reg;\n  rand bit   [4:0] src_reg_0;\n  rand bit   [4:0] src_reg_1;\n  rand bit         gen_hazard;\n\n  typedef enum bit [1:0] {\n    HIT_EX,\n    HIT_MEM,\n    HIT_WB,\n    HIT_NONE\n  } stage_target_e;\n  rand bit            [1:0] target_pick;\n  rand stage_target_e       target;\n\n  constraint c_sliding_bypass_logic {\n    solve target_pick before target;\n    solve target before src_reg_0, src_reg_1;\n\n    target_pick dist {\n      0 := (history[0] == 0) ? 0 : 40,\n      1 := (history[1] == 0) ? 0 : 40,\n      2 := (history[2] == 0) ? 0 : 20,\n      3 := 100\n    };\n    target == stage_target_e'(target_pick);\n\n    gen_hazard == (target != HIT_NONE);\n\n    (target == HIT_EX) ->\n    (\n      ((src_reg_0 == history[0]) || (src_reg_1 == history[0])) &&\n      (history[0] != 0) &&\n      (src_reg_0 != history[1] || history[1] == 0 || history[1] == history[0]) &&\n      (src_reg_1 != history[1] || history[1] == 0 || history[1] == history[0]) &&\n      (src_reg_0 != history[2] || history[2] == 0 || history[2] == history[0]) &&\n      (src_reg_1 != history[2] || history[2] == 0 || history[2] == history[0])\n    );\n\n    (target == HIT_MEM) ->\n    (\n      ((src_reg_0 == history[1]) || (src_reg_1 == history[1])) &&\n      (history[1] != 0) &&\n      (src_reg_0 != history[0] || history[0] == 0 || history[0] == history[1]) &&\n      (src_reg_1 != history[0] || history[0] == 0 || history[0] == history[1]) &&\n      (src_reg_0 != history[2] || history[2] == 0 || history[2] == history[1]) &&\n      (src_reg_1 != history[2] || history[2] == 0 || history[2] == history[1])\n    );\n\n    (target == HIT_WB) ->\n    (\n      ((src_reg_0 == history[2]) || (src_reg_1 == history[2])) &&\n      (history[2] != 0) &&\n      (src_reg_0 != history[0] || history[0] == 0 || history[0] == history[2]) &&\n      (src_reg_1 != history[0] || history[0] == 0 || history[0] == history[2]) &&\n      (src_reg_0 != history[1] || history[1] == 0 || history[1] == history[2]) &&\n      (src_reg_1 != history[1] || history[1] == 0 || history[1] == history[2])\n    );\n\n    (target == HIT_NONE) ->\n    (\n      (src_reg_0 != history[0] || history[0] == 0) &&\n      (src_reg_1 != history[0] || history[0] == 0) &&\n      (src_reg_0 != history[1] || history[1] == 0) &&\n      (src_reg_1 != history[1] || history[1] == 0) &&\n      (src_reg_0 != history[2] || history[2] == 0) &&\n      (src_reg_1 != history[2] || history[2] == 0)\n    );\n  }\n\n  function void post_randomize();\n    history[2] = history[1];\n    history[1] = history[0];\n    history[0] = dst_reg;\n  endfunction\nendclass\n",
+  "fix": "@@ -13,5 +13,66 @@\n     HIT_NONE\n   } stage_target_e;\n+  rand bit            [1:0] target_pick;\n+  rand stage_target_e       target;\n \n-  // write constraints and post_randomize() here\n+  constraint c_sliding_bypass_logic {\n+    solve target_pick before target;\n+    solve target before src_reg_0, src_reg_1;\n+\n+    target_pick dist {\n+      0 := (history[0] == 0) ? 0 : 40,\n+      1 := (history[1] == 0) ? 0 : 40,\n+      2 := (history[2] == 0) ? 0 : 20,\n+      3 := 100\n+    };\n+    target == stage_target_e'(target_pick);\n+\n+    gen_hazard == (target != HIT_NONE);\n+\n+    (target == HIT_EX) ->\n+    (\n+      ((src_reg_0 == history[0]) || (src_reg_1 == history[0])) &&\n+      (history[0] != 0) &&\n+      (src_reg_0 != history[1] || history[1] == 0 || history[1] == history[0]) &&\n+      (src_reg_1 != history[1] || history[1] == 0 || history[1] == history[0]) &&\n+      (src_reg_0 != history[2] || history[2] == 0 || history[2] == history[0]) &&\n+      (src_reg_1 != history[2] || history[2] == 0 || history[2] == history[0])\n+    );\n+\n+    (target == HIT_MEM) ->\n+    (\n+      ((src_reg_0 == history[1]) || (src_reg_1 == history[1])) &&\n+      (history[1] != 0) &&\n+      (src_reg_0 != history[0] || history[0] == 0 || history[0] == history[1]) &&\n+      (src_reg_1 != history[0] || history[0] == 0 || history[0] == history[1]) &&\n+      (src_reg_0 != history[2] || history[2] == 0 || history[2] == history[1]) &&\n+      (src_reg_1 != history[2] || history[2] == 0 || history[2] == history[1])\n+    );\n+\n+    (target == HIT_WB) ->\n+    (\n+      ((src_reg_0 == history[2]) || (src_reg_1 == history[2])) &&\n+      (history[2] != 0) &&\n+      (src_reg_0 != history[0] || history[0] == 0 || history[0] == history[2]) &&\n+      (src_reg_1 != history[0] || history[0] == 0 || history[0] == history[2]) &&\n+      (src_reg_0 != history[1] || history[1] == 0 || history[1] == history[2]) &&\n+      (src_reg_1 != history[1] || history[1] == 0 || history[1] == history[2])\n+    );\n+\n+    (target == HIT_NONE) ->\n+    (\n+      (src_reg_0 != history[0] || history[0] == 0) &&\n+      (src_reg_1 != history[0] || history[0] == 0) &&\n+      (src_reg_0 != history[1] || history[1] == 0) &&\n+      (src_reg_1 != history[1] || history[1] == 0) &&\n+      (src_reg_0 != history[2] || history[2] == 0) &&\n+      (src_reg_1 != history[2] || history[2] == 0)\n+    );\n+  }\n+\n+  function void post_randomize();\n+    history[2] = history[1];\n+    history[1] = history[0];\n+    history[0] = dst_reg;\n+  endfunction\n endclass\n"
+ },
+ {
+  "slug": "command_stream_bandwidth_cap",
+  "track": "sv",
+  "order": 8,
+  "digest": "2be03e43b006d3fa684aada926db5e6b578b406ecc184baedf14fc8ea42b6f20",
+  "tags": [
+   "write-from-scratch",
+   "tool-limitation",
+   "multi-constraint",
+   "array",
+   "statistical"
+  ],
+  "path": "exercises/sv/command_stream_bandwidth_cap.sv",
+  "title": "Aggregate constraints on an array of structs: what with() can and can't do here",
+  "spec": [
+   {
+    "p": "Reduction and locator methods with `with (...)` are the usual tool for aggregate constraints (\"exactly N elements are X\", \"the total stays under a cap\"). On the current toolchain they don't work here, confirmed directly:"
+   },
+   {
+    "items": [
+     "- `find() with` in a constraint compiles but is dropped (CONSTRAINTIGN): randomize() succeeds and enforces nothing. True for any array.",
+     "- `sum() with` on any struct-typed array, even a one-field struct with no cast, produces a query the solver rejects (\"Sorts ... are incompatible\"), and randomize() returns 0. The same reduction on a plain array works.",
+     "- Comparing an enum field to an enum value (`item.cmd_type == WRITE`) inside any with (...) crashes the compiler, struct or not."
+    ]
+   },
+   {
+    "p": "What works is a prefix sum: a separate `rand int` array, one element per cmd_list entry, each tied to the one before it in a foreach (`running[i] == running[i-1] + (...)`). Its last element is the total to bound."
+   },
+   {
+    "p": "Fix the class below."
+   },
+   {
+    "p": "Requirements:"
+   },
+   {
+    "items": [
+     "1. cmd_list.size() is between 15 and 20, inclusive; hi_count and dma_running, the prefix-sum arrays, are the same length.",
+     "2. Every cmd_type is READ, WRITE or FLUSH, never INVALID.",
+     "3. Exactly 3 elements have prio == PRIO_HIGH, counted in hi_count: hi_count[0] is 1 or 0 from cmd_list[0].prio, each later hi_count[i] adds 1 or 0 to hi_count[i-1], and the last is 3.",
+     "4. Among PRIO_LOW elements, cmd_type favors READ and WRITE over FLUSH, about 3:3:1.",
+     "5. dma_running sums dma_size over WRITE elements only, the same way, and its last element (total WRITE bandwidth) is at most 4096. dma_size is 8 bits and would wrap; dma_running is an int so the total doesn't."
+    ]
+   }
+  ],
+  "uvm": false,
+  "needs_patched_verilator": false,
+  "code": "typedef enum bit [1:0] {\n  READ,\n  WRITE,\n  FLUSH,\n  INVALID\n} cmd_e;\n\ntypedef enum bit {\n  PRIO_LOW,\n  PRIO_HIGH\n} prio_e;\n\ntypedef struct {\n  rand cmd_e     cmd_type;\n  rand prio_e    prio;\n  rand bit [7:0] dma_size;\n} cmd_s;\n\nclass CommandStream;\n  rand cmd_s cmd_list   [];\n  rand int   hi_count   [];  // prefix-sum helper for requirement 3\n  rand int   dma_running[];  // prefix-sum helper for requirement 5\n\n  // write constraints here\nendclass\n",
+  "support": [],
+  "solution": "typedef enum bit [1:0] {\n  READ,\n  WRITE,\n  FLUSH,\n  INVALID\n} cmd_e;\n\ntypedef enum bit {\n  PRIO_LOW,\n  PRIO_HIGH\n} prio_e;\n\ntypedef struct {\n  rand cmd_e     cmd_type;\n  rand prio_e    prio;\n  rand bit [7:0] dma_size;\n} cmd_s;\n\nclass CommandStream;\n  rand cmd_s cmd_list   [];\n  rand int   hi_count   [];  // prefix-sum helper for requirement 3\n  rand int   dma_running[];  // prefix-sum helper for requirement 5\n\n  constraint c_size {\n    cmd_list.size() inside {[15 : 20]};\n    hi_count.size() == cmd_list.size();\n    dma_running.size() == cmd_list.size();\n  }\n\n  constraint c_type {\n    foreach (cmd_list[i])\n    cmd_list[i].cmd_type inside {READ, WRITE, FLUSH};\n  }\n\n  constraint c_dist {\n    foreach (cmd_list[i]) {\n      if (cmd_list[i].prio == PRIO_LOW) {\n        cmd_list[i].cmd_type dist {\n          READ  := 3,\n          WRITE := 3,\n          FLUSH := 1\n        };\n      }\n    }\n  }\n\n  constraint c_hi_prefix {\n    foreach (cmd_list[i]) {\n      if (i == 0)\n      hi_count[i] == (cmd_list[i].prio == PRIO_HIGH ? 1 : 0);\n      else\n      hi_count[i] == hi_count[i-1] + (cmd_list[i].prio == PRIO_HIGH ? 1 : 0);\n    }\n  }\n  constraint c_hi_quota {hi_count[cmd_list.size()-1] == 3;}\n\n  constraint c_dma_prefix {\n    foreach (cmd_list[i]) {\n      if (i == 0) {\n        dma_running[i] == (cmd_list[i].cmd_type == WRITE ? int'(cmd_list[i].dma_size) : 0);\n      } else {\n        dma_running[i] == dma_running[i-1]\n                           + (cmd_list[i].cmd_type == WRITE ? int'(cmd_list[i].dma_size) : 0);\n      }\n    }\n  }\n  constraint c_bandwidth {dma_running[cmd_list.size()-1] <= 4096;}\nendclass\n",
+  "fix": "@@ -22,4 +22,47 @@\n   rand int   dma_running[];  // prefix-sum helper for requirement 5\n \n-  // write constraints here\n+  constraint c_size {\n+    cmd_list.size() inside {[15 : 20]};\n+    hi_count.size() == cmd_list.size();\n+    dma_running.size() == cmd_list.size();\n+  }\n+\n+  constraint c_type {\n+    foreach (cmd_list[i])\n+    cmd_list[i].cmd_type inside {READ, WRITE, FLUSH};\n+  }\n+\n+  constraint c_dist {\n+    foreach (cmd_list[i]) {\n+      if (cmd_list[i].prio == PRIO_LOW) {\n+        cmd_list[i].cmd_type dist {\n+          READ  := 3,\n+          WRITE := 3,\n+          FLUSH := 1\n+        };\n+      }\n+    }\n+  }\n+\n+  constraint c_hi_prefix {\n+    foreach (cmd_list[i]) {\n+      if (i == 0)\n+      hi_count[i] == (cmd_list[i].prio == PRIO_HIGH ? 1 : 0);\n+      else\n+      hi_count[i] == hi_count[i-1] + (cmd_list[i].prio == PRIO_HIGH ? 1 : 0);\n+    }\n+  }\n+  constraint c_hi_quota {hi_count[cmd_list.size()-1] == 3;}\n+\n+  constraint c_dma_prefix {\n+    foreach (cmd_list[i]) {\n+      if (i == 0) {\n+        dma_running[i] == (cmd_list[i].cmd_type == WRITE ? int'(cmd_list[i].dma_size) : 0);\n+      } else {\n+        dma_running[i] == dma_running[i-1]\n+                           + (cmd_list[i].cmd_type == WRITE ? int'(cmd_list[i].dma_size) : 0);\n+      }\n+    }\n+  }\n+  constraint c_bandwidth {dma_running[cmd_list.size()-1] <= 4096;}\n endclass\n"
+ },
+ {
+  "slug": "iommu_scattered_page_table",
+  "track": "sv",
+  "order": 9,
+  "digest": "2c096314c5f89a5087d5779cfd1fa2e055ac220b084d407e4d729d1b2f435878",
+  "tags": [
+   "write-from-scratch",
+   "multi-constraint",
+   "array"
+  ],
+  "path": "exercises/sv/iommu_scattered_page_table.sv",
+  "title": "No sorting allowed: check every pair, not just neighbors",
+  "spec": [
+   {
+    "p": "nonoverlapping_address_ranges could check each region only against its predecessor because the array was sorted. Physical pages here are scattered in no order, so page 3 can overlap page 9 as easily as page 4. Every pair needs checking: a nested foreach over the same array, inside the constraint."
+   },
+   {
+    "p": "Fix the class below."
+   },
+   {
+    "p": "Requirements:"
+   },
+   {
+    "items": [
+     "1. page_table.size() is between 8 and 16, inclusive.",
+     "2. v_start_addr[0] is 32'h1000_0000, and each later v_start_addr[i] is v_start_addr[i-1] + page_size[i-1]: virtual space is contiguous, with no gaps or overlaps.",
+     "3. Every page_size is 4KB (32'h1000), 64KB (32'h10000) or 2MB (32'h200000).",
+     "4. Nothing orders p_start_addr by index: physical pages may land anywhere, in any order.",
+     "5. No two physical pages overlap, checked for every pair i != j.",
+     "6. No two physical pages are adjacent: p_start_addr[i] never equals p_start_addr[j] + page_size[j], for every pair i != j.",
+     "7. Every physical page fits inside [32'h0000_0000 : 32'hFFFF_FFFF]. A plain `p_start_addr + page_size <= 32'hFFFF_FFFF` wraps at 32 bits near the top and lets an out-of-range page through."
+    ]
+   }
+  ],
+  "uvm": false,
+  "needs_patched_verilator": false,
+  "code": "typedef struct {\n  rand bit [31:0] v_start_addr;\n  rand bit [31:0] p_start_addr;\n  rand bit [31:0] page_size;\n} map_entry_s;\n\nclass IommuTranslationTable;\n  rand map_entry_s page_table[];\n\n  // write constraints here\nendclass\n",
+  "support": [],
+  "solution": "typedef struct {\n  rand bit [31:0] v_start_addr;\n  rand bit [31:0] p_start_addr;\n  rand bit [31:0] page_size;\n} map_entry_s;\n\nclass IommuTranslationTable;\n  rand map_entry_s page_table[];\n\n  constraint c_size {page_table.size() inside {[8 : 16]};}\n\n  constraint c_vcontinuum {\n    foreach (page_table[i]) {\n      if (i == 0) {\n        page_table[i].v_start_addr == 32'h1000_0000;\n      } else {\n        page_table[i].v_start_addr == page_table[i-1].v_start_addr + page_table[i-1].page_size;\n      }\n    }\n  }\n\n  constraint c_page_size {\n    foreach (page_table[i])\n    page_table[i].page_size inside {32'h1000, 32'h10000, 32'h200000};\n  }\n\n  constraint c_phys_bounds {\n    foreach (page_table[i])\n    page_table[i].p_start_addr <= 32'hFFFF_FFFF - page_table[i].page_size + 1;\n  }\n\n  // no sorting -- explicit all-pairs check via nested foreach\n  constraint c_no_overlap_no_adjacency {\n    foreach (page_table[i]) {\n      foreach (page_table[j]) {\n        if (i != j) {\n          !(page_table[i].p_start_addr < page_table[j].p_start_addr + page_table[j].page_size\n            && page_table[j].p_start_addr < page_table[i].p_start_addr + page_table[i].page_size);\n          page_table[i].p_start_addr != page_table[j].p_start_addr + page_table[j].page_size;\n        }\n      }\n    }\n  }\nendclass\n",
+  "fix": "@@ -8,4 +8,37 @@\n   rand map_entry_s page_table[];\n \n-  // write constraints here\n+  constraint c_size {page_table.size() inside {[8 : 16]};}\n+\n+  constraint c_vcontinuum {\n+    foreach (page_table[i]) {\n+      if (i == 0) {\n+        page_table[i].v_start_addr == 32'h1000_0000;\n+      } else {\n+        page_table[i].v_start_addr == page_table[i-1].v_start_addr + page_table[i-1].page_size;\n+      }\n+    }\n+  }\n+\n+  constraint c_page_size {\n+    foreach (page_table[i])\n+    page_table[i].page_size inside {32'h1000, 32'h10000, 32'h200000};\n+  }\n+\n+  constraint c_phys_bounds {\n+    foreach (page_table[i])\n+    page_table[i].p_start_addr <= 32'hFFFF_FFFF - page_table[i].page_size + 1;\n+  }\n+\n+  // no sorting -- explicit all-pairs check via nested foreach\n+  constraint c_no_overlap_no_adjacency {\n+    foreach (page_table[i]) {\n+      foreach (page_table[j]) {\n+        if (i != j) {\n+          !(page_table[i].p_start_addr < page_table[j].p_start_addr + page_table[j].page_size\n+            && page_table[j].p_start_addr < page_table[i].p_start_addr + page_table[i].page_size);\n+          page_table[i].p_start_addr != page_table[j].p_start_addr + page_table[j].page_size;\n+        }\n+      }\n+    }\n+  }\n endclass\n"
+ },
+ {
+  "slug": "dma_ring_allocator",
+  "track": "sv",
+  "order": 10,
+  "digest": "faea46c09a10914e76e5ad29f79c8e02b02ea1d18ad98b5faeb52d4c0d66342f",
+  "tags": [
+   "tool-limitation",
+   "write-from-scratch",
+   "requires-patched-verilator",
+   "array",
+   "multi-constraint",
+   "statistical"
+  ],
+  "path": "exercises/sv/dma_ring_allocator.sv",
+  "title": "Three techniques, one class, all of them have to actually work together",
+  "spec": [
+   {
+    "p": "REQUIRES A PATCHED VERILATOR: see README.md first. `unique{}` on a foreach-indexed row of a 2D array crashes the compiler on every released Verilator as of this writing, the same bug thermal_power_fuzzer avoids with pairwise inequality. This exercise uses it at full scale:"
+   },
+   {
+    "items": [
+     "make run EX=dma_ring_allocator VERILATOR=/path/to/patched/verilator_bin"
+    ]
+   },
+   {
+    "p": "A DMA scheduler's allocation grid: 4 channels of 4 ring-buffer slots, each holding an 8-bit block pointer. Each requirement is ordinary; making them all hold in one randomize() is the hard part."
+   },
+   {
+    "items": [
+     "- Rows and columns must both be distinct. `grid[i]` is already an array, so `unique {grid[i]}` covers a row. There's no `grid[:][j]` column slice, so a column's elements have to be listed explicitly inside something that iterates the column index. IEEE 1800-2023 18.5.4 explains why a whole row and one cell inside a foreach over it differ.",
+     "- Which bound applies depends on qos_mode, so `solve ... before` has to settle qos_mode ahead of dma_grid.",
+     "- The BURST_MODE sum is over row 1 union column 3. They share dma_grid[1][3]; count it once. Counting it twice makes the >1000 bound easier to meet than intended."
+    ]
+   },
+   {
+    "p": "Fix the class below."
+   },
+   {
+    "p": "Requirements, on every randomize() call:"
+   },
+   {
+    "items": [
+     "1. Every dma_grid[ch][slot] is in [1:255].",
+     "2. Each row's 4 values are distinct, and each column's 4 values are distinct, using unique{} for both, not pairwise inequality.",
+     "3. qos_mode is BURST_MODE 70% of the time, SPARSE_MODE 30%.",
+     "4. In SPARSE_MODE, every cell is in [1:20].",
+     "5. In BURST_MODE, the 7 distinct cells of row 1 union column 3 sum to more than 1000."
+    ]
+   }
+  ],
+  "uvm": false,
+  "needs_patched_verilator": true,
+  "code": "class DmaRingAllocator;\n  rand bit [7:0] dma_grid[4][4];\n\n  typedef enum bit {\n    SPARSE_MODE,\n    BURST_MODE\n  } qos_mode_e;\n  rand qos_mode_e qos_mode;\n\n  constraint c_base_bounds {\n    foreach (dma_grid[ch, slot]) {\n      dma_grid[ch][slot] inside {[1 : 255]};\n    }\n  }\n\n  // write the rest of the constraints here\nendclass\n",
+  "support": [],
+  "solution": "class DmaRingAllocator;\n  rand bit [7:0] dma_grid[4][4];\n\n  typedef enum bit {\n    SPARSE_MODE,\n    BURST_MODE\n  } qos_mode_e;\n  rand qos_mode_e qos_mode;\n\n  constraint c_base_bounds {\n    foreach (dma_grid[ch, slot]) {\n      dma_grid[ch][slot] inside {[1 : 255]};\n    }\n  }\n\n  constraint c_dma_arbitration_logic {\n    solve qos_mode before dma_grid;\n\n    qos_mode dist {\n      BURST_MODE  := 70,\n      SPARSE_MODE := 30\n    };\n\n    foreach (dma_grid[ch]) unique {dma_grid[ch]};\n    foreach (dma_grid[0][slot])\n    unique {dma_grid[0][slot], dma_grid[1][slot], dma_grid[2][slot], dma_grid[3][slot]};\n\n    foreach (dma_grid[ch, slot]) (qos_mode == SPARSE_MODE) -> dma_grid[ch][slot] inside {[1 : 20]};\n\n    (qos_mode == BURST_MODE) ->\n    (\n      dma_grid[1][0] + dma_grid[1][1] + dma_grid[1][2] + dma_grid[1][3] +\n      dma_grid[0][3] + dma_grid[2][3] + dma_grid[3][3] > 1000\n    );\n  }\nendclass\n",
+  "fix": "@@ -14,4 +14,23 @@\n   }\n \n-  // write the rest of the constraints here\n+  constraint c_dma_arbitration_logic {\n+    solve qos_mode before dma_grid;\n+\n+    qos_mode dist {\n+      BURST_MODE  := 70,\n+      SPARSE_MODE := 30\n+    };\n+\n+    foreach (dma_grid[ch]) unique {dma_grid[ch]};\n+    foreach (dma_grid[0][slot])\n+    unique {dma_grid[0][slot], dma_grid[1][slot], dma_grid[2][slot], dma_grid[3][slot]};\n+\n+    foreach (dma_grid[ch, slot]) (qos_mode == SPARSE_MODE) -> dma_grid[ch][slot] inside {[1 : 20]};\n+\n+    (qos_mode == BURST_MODE) ->\n+    (\n+      dma_grid[1][0] + dma_grid[1][1] + dma_grid[1][2] + dma_grid[1][3] +\n+      dma_grid[0][3] + dma_grid[2][3] + dma_grid[3][3] > 1000\n+    );\n+  }\n endclass\n"
+ },
+ {
+  "slug": "unchecked_randomize_hides_unsat_conflict",
+  "track": "sv",
+  "order": 11,
+  "digest": "282a9bf8e04d88f54b7457c93607f4619c5a9b0fbd66440127d551fc534be541",
+  "tags": [
+   "best-practice",
+   "multi-constraint",
+   "plausible-pass"
+  ],
+  "path": "exercises/sv/unchecked_randomize_hides_unsat_conflict.sv",
+  "title": "Three sensible constraints that can never all hold -- and nobody checks randomize()",
+  "spec": [
+   {
+    "p": "SPEC, for a DMA descriptor (addr, len):"
+   },
+   {
+    "items": [
+     "- addr (descriptor start) lands in the start window [0x1000:0x1FFF].",
+     "- len (transfer length) is at least 4097 bytes, the current minimum burst.",
+     "- The buffer this window addresses is 8 KB (0x2000 bytes), based at 0x1000; a descriptor never reads past its end."
+    ]
+   },
+   {
+    "p": "desc_item is what a model writes with confidence from that spec: one constraint per bullet, each fine on its own. They only contradict each other together."
+   },
+   {
+    "p": "The loop that drives it is the usual create, randomize, use. Right now every descriptor comes back with addr == 0 and len == 0, and randomize()'s return value, which says so, is never read. Verilator prints an UNSATCONSTR warning each time, but a warning fails no regression."
+   },
+   {
+    "p": "Fix what's actually broken against the spec, not a leftover default."
+   }
+  ],
+  "uvm": false,
+  "needs_patched_verilator": false,
+  "code": "class desc_item;\n  rand bit [31:0] addr;\n  rand bit [15:0] len;\n\n  constraint c_region {addr inside {[32'h1000 : 32'h1FFF]};}\n  constraint c_no_wrap {\n    addr + len <= 32'h2000;\n  }  // must not run past the end of the underlying buffer\n  constraint c_min_len {len >= 16'd4097;}  // minimum burst granularity, per the latest spec rev\nendclass\n\nmodule top;\n  bit [31:0] addrs[20];\n  bit [15:0] lens [20];\n\n  initial begin\n    for (int i = 0; i < 20; i++) begin\n      automatic desc_item item = new();\n      item.randomize();\n      addrs[i] = item.addr;\n      lens[i]  = item.len;\n    end\n",
+  "support": [],
+  "solution": "class desc_item;\n  rand bit [31:0] addr;\n  rand bit [15:0] len;\n\n  constraint c_region {addr inside {[32'h1000 : 32'h1FFF]};}\n  constraint c_no_wrap {\n    addr + len <= 32'h3000;\n  }  // must not run past the end of the underlying buffer\n  constraint c_min_len {len >= 16'd4097;}  // minimum burst granularity, per the latest spec rev\nendclass\n\nmodule top;\n  bit [31:0] addrs[20];\n  bit [15:0] lens [20];\n\n  initial begin\n    for (int i = 0; i < 20; i++) begin\n      automatic desc_item item = new();\n      item.randomize();\n      addrs[i] = item.addr;\n      lens[i]  = item.len;\n    end\n",
+  "fix": "@@ -5,5 +5,5 @@\n   constraint c_region {addr inside {[32'h1000 : 32'h1FFF]};}\n   constraint c_no_wrap {\n-    addr + len <= 32'h2000;\n+    addr + len <= 32'h3000;\n   }  // must not run past the end of the underlying buffer\n   constraint c_min_len {len >= 16'd4097;}  // minimum burst granularity, per the latest spec rev\n"
+ },
+ {
+  "slug": "off_by_one_credit_deadlocks_a_full_depth_burst",
+  "track": "sv",
+  "order": 12,
+  "digest": "c13d7b2a77f68445310fc7ea4e14645854cbf2a85e90f4f8f495105b36e6d9cc",
+  "tags": [
+   "best-practice",
+   "plausible-pass"
+  ],
+  "path": "exercises/sv/off_by_one_credit_deadlocks_a_full_depth_burst.sv",
+  "title": "The link never deadlocks under everyday traffic -- only a full-depth burst finds it",
+  "spec": [
+   {
+    "p": "SPEC: at reset, credits equal DEPTH (16), the receive buffer's capacity, since nothing is in flight. A full-depth burst is one 16-flit transfer: the receiver returns no credit until all 16 flits land, then returns all 16. (Everyday traffic acks per flit and never nears the limit, so it isn't modeled.)"
+   },
+   {
+    "p": "link_model is what a model writes with confidence from that spec: `credits = DEPTH - 1` reads like the index idiom used everywhere else (`buf[DEPTH-1]` is the last slot). But credits is a count, not an index. Right now the burst never completes."
+   },
+   {
+    "p": "Fix link_model so a full-depth burst completes."
+   }
+  ],
+  "uvm": false,
+  "needs_patched_verilator": false,
+  "code": "class link_model;\n  localparam int DEPTH = 16;\n\n  int credits;\n  int flits_received;\n\n  function new();\n    credits        = DEPTH - 1;  // 15\n    flits_received = 0;\n  endfunction\n\n  // one flit of an atomic DEPTH-flit burst. Returns 1 if the flit was actually sent, 0 if blocked\n  // on credits. The receiver returns no credit at all until the whole burst has landed, then\n  // returns all DEPTH credits together.\n  function bit send_burst_flit();\n    if (credits <= 0) return 0;\n    credits--;\n    flits_received++;\n    if (flits_received == DEPTH) credits += DEPTH;\n    return 1;\n  endfunction\nendclass\n",
+  "support": [],
+  "solution": "class link_model;\n  localparam int DEPTH = 16;\n\n  int credits;\n  int flits_received;\n\n  function new();\n    credits        = DEPTH;  // 16\n    flits_received = 0;\n  endfunction\n\n  // one flit of an atomic DEPTH-flit burst. Returns 1 if the flit was actually sent, 0 if blocked\n  // on credits. The receiver returns no credit at all until the whole burst has landed, then\n  // returns all DEPTH credits together.\n  function bit send_burst_flit();\n    if (credits <= 0) return 0;\n    credits--;\n    flits_received++;\n    if (flits_received == DEPTH) credits += DEPTH;\n    return 1;\n  endfunction\nendclass\n",
+  "fix": "@@ -6,5 +6,5 @@\n \n   function new();\n-    credits        = DEPTH - 1;  // 15\n+    credits        = DEPTH;  // 16\n     flits_received = 0;\n   endfunction\n"
+ },
+ {
+  "slug": "factory_override",
+  "track": "uvm",
+  "order": 1,
+  "digest": "fd28ce08c4f264464e9e486939aa1ceaaee20a2cb36c80b2430120f0383adeef",
+  "tags": [
+   "factory-override",
+   "phase-ordering"
+  ],
+  "path": "exercises/uvm/factory_override.sv",
+  "title": "The factory override runs clean, but the DUT's parity checker never gets tested",
+  "spec": [
+   {
+    "p": "A register-write test wants an error-injecting driver, which corrupts one bit of every write so the DUT's write-parity checker gets exercised. It swaps drivers with a factory type override, `base_write_driver` -> `error_inject_write_driver`, so the env never needs to know the variant exists."
+   },
+   {
+    "p": "Right now: the test believes it configured the error-injecting driver, but `env.drv` is still a plain `base_write_driver`."
+   },
+   {
+    "p": "Fix the code so `env.drv` is an `error_inject_write_driver`."
+   }
+  ],
+  "uvm": true,
+  "needs_patched_verilator": false,
+  "code": "import uvm_pkg::*;\n\nclass base_write_driver extends uvm_component;\n  `uvm_component_utils(base_write_driver)\n\n  function new(string name, uvm_component parent = null);\n    super.new(name, parent);\n  endfunction\nendclass\n\nclass error_inject_write_driver extends base_write_driver;\n  `uvm_component_utils(error_inject_write_driver)\n\n  function new(string name, uvm_component parent = null);\n    super.new(name, parent);\n  endfunction\nendclass\n\nclass reg_env extends uvm_component;\n  `uvm_component_utils(reg_env)\n\n  base_write_driver drv;\n\n  function new(string name, uvm_component parent = null);\n    super.new(name, parent);\n  endfunction\n\n  function void build_phase(uvm_phase phase);\n    super.build_phase(phase);\n    drv = base_write_driver::type_id::create(\"drv\", this);\n  endfunction\nendclass\n\n// ---------------------------------------------------------------------------------------------\n// override the base_write_driver with error_inject_write_driver here.\n// ---------------------------------------------------------------------------------------------\nclass test extends uvm_test;\n  `uvm_component_utils(test)\n\n  reg_env env;\n\n  function new(string name, uvm_component parent = null);\n    super.new(name, parent);\n  endfunction\n\n  function void build_phase(uvm_phase phase);\n    super.build_phase(phase);\n    env = reg_env::type_id::create(\"env\", this);\n  endfunction\n\n  virtual function void connect_phase(uvm_phase phase);\n  endfunction\n\n  virtual task run_phase(uvm_phase phase);\n    phase.raise_objection(this);\n    #1;\n",
+  "support": [],
+  "solution": "import uvm_pkg::*;\n\nclass base_write_driver extends uvm_component;\n  `uvm_component_utils(base_write_driver)\n\n  function new(string name, uvm_component parent = null);\n    super.new(name, parent);\n  endfunction\nendclass\n\nclass error_inject_write_driver extends base_write_driver;\n  `uvm_component_utils(error_inject_write_driver)\n\n  function new(string name, uvm_component parent = null);\n    super.new(name, parent);\n  endfunction\nendclass\n\nclass reg_env extends uvm_component;\n  `uvm_component_utils(reg_env)\n\n  base_write_driver drv;\n\n  function new(string name, uvm_component parent = null);\n    super.new(name, parent);\n  endfunction\n\n  function void build_phase(uvm_phase phase);\n    super.build_phase(phase);\n    drv = base_write_driver::type_id::create(\"drv\", this);\n  endfunction\nendclass\n\nclass test extends uvm_test;\n  `uvm_component_utils(test)\n\n  reg_env env;\n\n  function new(string name, uvm_component parent = null);\n    super.new(name, parent);\n  endfunction\n\n  function void build_phase(uvm_phase phase);\n    uvm_factory factory = uvm_factory::get();\n    super.build_phase(phase);\n    factory.set_type_override_by_type(base_write_driver::get_type(),\n                                      error_inject_write_driver::get_type());\n    env = reg_env::type_id::create(\"env\", this);\n  endfunction\n\n  virtual task run_phase(uvm_phase phase);\n    phase.raise_objection(this);\n    #1;\n",
+  "fix": "@@ -32,7 +32,4 @@\n endclass\n \n-// ---------------------------------------------------------------------------------------------\n-// override the base_write_driver with error_inject_write_driver here.\n-// ---------------------------------------------------------------------------------------------\n class test extends uvm_test;\n   `uvm_component_utils(test)\n@@ -45,9 +42,9 @@\n \n   function void build_phase(uvm_phase phase);\n+    uvm_factory factory = uvm_factory::get();\n     super.build_phase(phase);\n+    factory.set_type_override_by_type(base_write_driver::get_type(),\n+                                      error_inject_write_driver::get_type());\n     env = reg_env::type_id::create(\"env\", this);\n-  endfunction\n-\n-  virtual function void connect_phase(uvm_phase phase);\n   endfunction\n \n"
+ },
+ {
+  "slug": "error_path_double_drops_objection",
+  "track": "uvm",
+  "order": 2,
+  "digest": "e6940b9b256903ff69ccce104a8448bfc24e2eb644967a9ef8fb50c6f19c9d0c",
+  "tags": [
+   "objections",
+   "phase-ending",
+   "error-path"
+  ],
+  "path": "exercises/uvm/error_path_double_drops_objection.sv",
+  "title": "Five items, one bad, and the run dies on it -- with a UVM_FATAL, not a check failure",
+  "spec": [
+   {
+    "p": "`run_phase` processes 5 items, each inside its own raise and drop of an objection. Item 2 fails validation. Its error-handling path works on its own; the trouble is how it combines with the rest of the loop body."
+   },
+   {
+    "p": "Right now: the test never gets past item 2."
+   },
+   {
+    "p": "Fix the code so all 5 items are processed, the bad one included, without the simulation dying."
+   }
+  ],
+  "uvm": true,
+  "needs_patched_verilator": false,
+  "code": "import uvm_pkg::*;\n\nclass test extends uvm_test;\n  `uvm_component_utils(test)\n\n  int unsigned processed_count = 0;\n  int unsigned bad_count = 0;\n\n  function new(string name, uvm_component parent = null);\n    super.new(name, parent);\n  endfunction\n\n  virtual task run_phase(uvm_phase phase);\n    for (int i = 0; i < 5; i++) begin\n      bit is_bad;\n      phase.raise_objection(this);\n      is_bad = (i == 2);\n\n      if (is_bad) begin\n        bad_count++;\n        phase.drop_objection(this);\n      end\n\n      processed_count++;\n      phase.drop_objection(this);\n    end\n    phase.raise_objection(this);\n    #1;\n",
+  "support": [],
+  "solution": "import uvm_pkg::*;\n\nclass test extends uvm_test;\n  `uvm_component_utils(test)\n\n  int unsigned processed_count = 0;\n  int unsigned bad_count = 0;\n\n  function new(string name, uvm_component parent = null);\n    super.new(name, parent);\n  endfunction\n\n  virtual task run_phase(uvm_phase phase);\n    for (int i = 0; i < 5; i++) begin\n      bit is_bad;\n      phase.raise_objection(this);\n      is_bad = (i == 2);\n\n      if (is_bad) begin\n        bad_count++;\n        phase.drop_objection(this);\n        processed_count++;\n        continue;\n      end\n\n      processed_count++;\n      phase.drop_objection(this);\n    end\n    phase.raise_objection(this);\n    #1;\n",
+  "fix": "@@ -20,4 +20,6 @@\n         bad_count++;\n         phase.drop_objection(this);\n+        processed_count++;\n+        continue;\n       end\n \n"
+ },
+ {
+  "slug": "agent_ids_via_config_db",
+  "track": "uvm",
+  "order": 3,
+  "digest": "c11208d6e9c64de64ebb18843e6be8a4d332ff4b16e9dfaf3503c5c7a2fe9fa3",
+  "tags": [
+   "config-db",
+   "multi-instance",
+   "fork-join"
+  ],
+  "path": "exercises/uvm/agent_ids_via_config_db.sv",
+  "title": "Four DMA channel agents, four configured ids, one wrong answer reported four times",
+  "spec": [
+   {
+    "p": "The env builds one agent per DMA channel (NUM_CHANNELS of them). Before the env is built, the test sets each agent's `channel_id` through `uvm_config_db`: channel 0 gets 10, channel 1 20, channel 2 30, channel 3 40."
+   },
+   {
+    "p": "Before any stimulus, `run_phase` queries every agent concurrently and checks each one owns the id it was given. That's much cheaper than finding one channel's traffic on another channel's monitor two hours into a regression."
+   },
+   {
+    "p": "Right now: the check fails, reporting the same id four times."
+   },
+   {
+    "p": "Fix the code so every agent reports its own configured id."
+   }
+  ],
+  "uvm": true,
+  "needs_patched_verilator": false,
+  "code": "import uvm_pkg::*;\n\nlocalparam int NUM_CHANNELS = 4;\n\nclass dma_channel_agent extends uvm_component;\n  `uvm_component_utils(dma_channel_agent)\n\n  int channel_id;\n\n  function new(string name, uvm_component parent = null);\n    super.new(name, parent);\n  endfunction\n\n  function void build_phase(uvm_phase phase);\n    super.build_phase(phase);\n    if (!uvm_config_db#(int)::get(this, \"\", \"channel_id\", channel_id)) channel_id = -1;\n  endfunction\nendclass\n\nclass dma_env extends uvm_component;\n  `uvm_component_utils(dma_env)\n\n  dma_channel_agent channels[NUM_CHANNELS];\n\n  function new(string name, uvm_component parent = null);\n    super.new(name, parent);\n  endfunction\n\n  function void build_phase(uvm_phase phase);\n    super.build_phase(phase);\n    foreach (channels[k]) begin\n      channels[k] = dma_channel_agent::type_id::create($sformatf(\"channels[%0d]\", k), this);\n    end\n  endfunction\nendclass\n\nclass test extends uvm_test;\n  `uvm_component_utils(test)\n\n  dma_env e;\n  int reported_ids[$];\n  int i;\n\n  function new(string name, uvm_component parent = null);\n    super.new(name, parent);\n  endfunction\n\n  function void build_phase(uvm_phase phase);\n    super.build_phase(phase);\n    // ---------------------------------------------------------------------------------------------\n    // fix this: give each channel agent its own id via uvm_config_db --\n    // channel 0 -> 10, channel 1 -> 20, channel 2 -> 30, channel 3 -> 40\n    // ---------------------------------------------------------------------------------------------\n    e = dma_env::type_id::create(\"e\", this);\n  endfunction\n\n  virtual task run_phase(uvm_phase phase);\n    int expected_ids[$];\n    int got_ids[$];\n\n    phase.raise_objection(this);\n\n    // ---------------------------------------------------------------------------------------------\n    // fix this: sanity-check every channel agent's own configured id, concurrently\n    // ---------------------------------------------------------------------------------------------\n    foreach (e.channels[k]) begin\n      i = k;\n      fork\n        begin\n          #1;\n          reported_ids.push_back(e.channels[i].channel_id);\n        end\n      join_none\n    end\n    wait fork;\n    // ---------------------------------------------------------------------------------------------\n",
+  "support": [],
+  "solution": "import uvm_pkg::*;\n\nlocalparam int NUM_CHANNELS = 4;\n\nclass dma_channel_agent extends uvm_component;\n  `uvm_component_utils(dma_channel_agent)\n\n  int channel_id;\n\n  function new(string name, uvm_component parent = null);\n    super.new(name, parent);\n  endfunction\n\n  function void build_phase(uvm_phase phase);\n    super.build_phase(phase);\n    if (!uvm_config_db#(int)::get(this, \"\", \"channel_id\", channel_id)) channel_id = -1;\n  endfunction\nendclass\n\nclass dma_env extends uvm_component;\n  `uvm_component_utils(dma_env)\n\n  dma_channel_agent channels[NUM_CHANNELS];\n\n  function new(string name, uvm_component parent = null);\n    super.new(name, parent);\n  endfunction\n\n  function void build_phase(uvm_phase phase);\n    super.build_phase(phase);\n    foreach (channels[k]) begin\n      channels[k] = dma_channel_agent::type_id::create($sformatf(\"channels[%0d]\", k), this);\n    end\n  endfunction\nendclass\n\nclass test extends uvm_test;\n  `uvm_component_utils(test)\n\n  dma_env e;\n  int reported_ids[$];\n  int i;\n\n  function new(string name, uvm_component parent = null);\n    super.new(name, parent);\n  endfunction\n\n  function void build_phase(uvm_phase phase);\n    super.build_phase(phase);\n    for (int k = 0; k < NUM_CHANNELS; k++) begin\n      uvm_config_db#(int)::set(this, $sformatf(\"e.channels[%0d]\", k), \"channel_id\", (k + 1) * 10);\n    end\n    e = dma_env::type_id::create(\"e\", this);\n  endfunction\n\n  virtual task run_phase(uvm_phase phase);\n    int expected_ids[$];\n    int got_ids[$];\n\n    phase.raise_objection(this);\n\n    // ---------------------------------------------------------------------------------------------\n    // fix this: sanity-check every channel agent's own configured id, concurrently\n    // ---------------------------------------------------------------------------------------------\n    foreach (e.channels[k]) begin\n      automatic int idx = k;\n      fork\n        begin\n          #1;\n          reported_ids.push_back(e.channels[idx].channel_id);\n        end\n      join_none\n    end\n    wait fork;\n    // ---------------------------------------------------------------------------------------------\n",
+  "fix": "@@ -48,8 +48,7 @@\n   function void build_phase(uvm_phase phase);\n     super.build_phase(phase);\n-    // ---------------------------------------------------------------------------------------------\n-    // fix this: give each channel agent its own id via uvm_config_db --\n-    // channel 0 -> 10, channel 1 -> 20, channel 2 -> 30, channel 3 -> 40\n-    // ---------------------------------------------------------------------------------------------\n+    for (int k = 0; k < NUM_CHANNELS; k++) begin\n+      uvm_config_db#(int)::set(this, $sformatf(\"e.channels[%0d]\", k), \"channel_id\", (k + 1) * 10);\n+    end\n     e = dma_env::type_id::create(\"e\", this);\n   endfunction\n@@ -65,9 +64,9 @@\n     // ---------------------------------------------------------------------------------------------\n     foreach (e.channels[k]) begin\n-      i = k;\n+      automatic int idx = k;\n       fork\n         begin\n           #1;\n-          reported_ids.push_back(e.channels[i].channel_id);\n+          reported_ids.push_back(e.channels[idx].channel_id);\n         end\n       join_none\n"
+ },
+ {
+  "slug": "config_override_loses_to_legacy_default",
+  "track": "uvm",
+  "order": 4,
+  "digest": "0028595afd005133041130559f23485d6460e9e7e167d34289405251207debb2",
+  "tags": [
+   "config-db",
+   "precedence"
+  ],
+  "path": "exercises/uvm/config_override_loses_to_legacy_default.sv",
+  "title": "The test's override compiles clean, runs clean, and still silently loses",
+  "spec": [
+   {
+    "p": "Early in `build_phase`, the test sets a hierarchy-wide default for everything under the agent. Further down, it sets this run's override, scoped through the agent handle it just created."
+   },
+   {
+    "p": "Right now: the override is 7, but `a.channel_id` comes out 999, the default."
+   },
+   {
+    "p": "`uvm_config_db::set()` takes its precedence from the depth of the component passed as its first argument, not from which call is more specific or runs last. A call scoped through a deeper component gets lower precedence than one through a shallower component."
+   },
+   {
+    "p": "Fix the test's override so `a.channel_id` ends up 7. Don't touch `chan_agent`."
+   }
+  ],
+  "uvm": true,
+  "needs_patched_verilator": false,
+  "code": "import uvm_pkg::*;\n\nclass chan_agent extends uvm_component;\n  `uvm_component_utils(chan_agent)\n\n  int channel_id = -1;\n\n  function new(string name, uvm_component parent = null);\n    super.new(name, parent);\n  endfunction\n\n  function void build_phase(uvm_phase phase);\n    super.build_phase(phase);\n    void'(uvm_config_db#(int)::get(this, \"\", \"channel_id\", channel_id));\n  endfunction\nendclass\n\nclass test extends uvm_test;\n  `uvm_component_utils(test)\n\n  chan_agent a;\n\n  function new(string name, uvm_component parent = null);\n    super.new(name, parent);\n  endfunction\n\n  function void build_phase(uvm_phase phase);\n    super.build_phase(phase);\n    a = chan_agent::type_id::create(\"a\", this);\n    // broad default for the whole agent subtree, predates this test\n    uvm_config_db#(int)::set(this, \"a\", \"channel_id\", 999);\n    uvm_config_db#(int)::set(a, \"\", \"channel_id\", 7);\n  endfunction\n\n  virtual task run_phase(uvm_phase phase);\n    phase.raise_objection(this);\n    #1;\n",
+  "support": [],
+  "solution": "import uvm_pkg::*;\n\nclass chan_agent extends uvm_component;\n  `uvm_component_utils(chan_agent)\n\n  int channel_id = -1;\n\n  function new(string name, uvm_component parent = null);\n    super.new(name, parent);\n  endfunction\n\n  function void build_phase(uvm_phase phase);\n    super.build_phase(phase);\n    void'(uvm_config_db#(int)::get(this, \"\", \"channel_id\", channel_id));\n  endfunction\nendclass\n\nclass test extends uvm_test;\n  `uvm_component_utils(test)\n\n  chan_agent a;\n\n  function new(string name, uvm_component parent = null);\n    super.new(name, parent);\n  endfunction\n\n  function void build_phase(uvm_phase phase);\n    super.build_phase(phase);\n    a = chan_agent::type_id::create(\"a\", this);\n    // broad default for the whole agent subtree, predates this test\n    uvm_config_db#(int)::set(this, \"a\", \"channel_id\", 999);\n    uvm_config_db#(int)::set(this, \"a\", \"channel_id\", 7);\n  endfunction\n\n  virtual task run_phase(uvm_phase phase);\n    phase.raise_objection(this);\n    #1;\n",
+  "fix": "@@ -30,5 +30,5 @@\n     // broad default for the whole agent subtree, predates this test\n     uvm_config_db#(int)::set(this, \"a\", \"channel_id\", 999);\n-    uvm_config_db#(int)::set(a, \"\", \"channel_id\", 7);\n+    uvm_config_db#(int)::set(this, \"a\", \"channel_id\", 7);\n   endfunction\n \n"
+ },
+ {
+  "slug": "deferred_subscriber_needs_clone",
+  "track": "uvm",
+  "order": 5,
+  "digest": "abbfea75ce216ba7180cac0c276c26d16f537d14c95cd1693958f4ab3c4ede07",
+  "tags": [
+   "analysis-port",
+   "clone",
+   "do_copy"
+  ],
+  "path": "exercises/uvm/deferred_subscriber_needs_clone.sv",
+  "title": "Every deferred transaction ends up showing the last one's data, not its own",
+  "spec": [
+   {
+    "p": "`producer` reuses one `xact` handle for every broadcast rather than allocating a new one, a common pattern for a monitor that samples every cycle. `imm_sub` handles each broadcast as it arrives and is correct. `batch_sub` defers its checking to the end of the test, which is fine on its own."
+   },
+   {
+    "p": "Right now: `imm_sub` reports every transaction correctly, but `batch_sub` reports the final transaction's `id`/`data` for every entry it collected."
+   },
+   {
+    "p": "Fix the code so `batch_sub` reports each transaction's `id`/`data` as they were when it arrived."
+   }
+  ],
+  "uvm": true,
+  "needs_patched_verilator": false,
+  "code": "import uvm_pkg::*;\n\nclass xact extends uvm_object;\n  `uvm_object_utils(xact)\n\n  int unsigned id;\n  int unsigned data;\n\n  function new(string name = \"xact\");\n    super.new(name);\n  endfunction\nendclass\n\nclass imm_sub extends uvm_component;\n  `uvm_component_utils(imm_sub)\n\n  uvm_analysis_imp #(xact, imm_sub) ap_imp;\n  int unsigned seen_id[$];\n  int unsigned seen_data[$];\n\n  function new(string name, uvm_component parent = null);\n    super.new(name, parent);\n  endfunction\n\n  function void build_phase(uvm_phase phase);\n    super.build_phase(phase);\n    ap_imp = new(\"ap_imp\", this);\n  endfunction\n\n  virtual function void write(xact t);\n    seen_id.push_back(t.id);\n    seen_data.push_back(t.data);\n  endfunction\nendclass\n\nclass batch_sub extends uvm_component;\n  `uvm_component_utils(batch_sub)\n\n  uvm_analysis_imp #(xact, batch_sub) ap_imp;\n  xact stored[$];\n\n  function new(string name, uvm_component parent = null);\n    super.new(name, parent);\n  endfunction\n\n  function void build_phase(uvm_phase phase);\n    super.build_phase(phase);\n    ap_imp = new(\"ap_imp\", this);\n  endfunction\n\n  virtual function void write(xact t);\n    stored.push_back(t);\n  endfunction\nendclass\n\nclass producer extends uvm_component;\n  `uvm_component_utils(producer)\n\n  uvm_analysis_port #(xact) ap;\n  xact cur;\n\n  function new(string name, uvm_component parent = null);\n    super.new(name, parent);\n  endfunction\n\n  function void build_phase(uvm_phase phase);\n    super.build_phase(phase);\n    ap  = new(\"ap\", this);\n    cur = xact::type_id::create(\"cur\");\n  endfunction\n\n  virtual task run_phase(uvm_phase phase);\n    for (int i = 0; i < 5; i++) begin\n      cur.id   = i;\n      cur.data = i * 111;\n      ap.write(cur);\n    end\n  endtask\nendclass\n\nclass env extends uvm_component;\n  `uvm_component_utils(env)\n\n  producer  prod;\n  imm_sub   imm;\n  batch_sub batch;\n\n  function new(string name, uvm_component parent = null);\n    super.new(name, parent);\n  endfunction\n\n  function void build_phase(uvm_phase phase);\n    super.build_phase(phase);\n    prod  = producer::type_id::create(\"prod\", this);\n    imm   = imm_sub::type_id::create(\"imm\", this);\n    batch = batch_sub::type_id::create(\"batch\", this);\n  endfunction\n\n  function void connect_phase(uvm_phase phase);\n    super.connect_phase(phase);\n    prod.ap.connect(imm.ap_imp);\n    prod.ap.connect(batch.ap_imp);\n  endfunction\nendclass\n",
+  "support": [],
+  "solution": "import uvm_pkg::*;\n\nclass xact extends uvm_object;\n  `uvm_object_utils(xact)\n\n  int unsigned id;\n  int unsigned data;\n\n  function new(string name = \"xact\");\n    super.new(name);\n  endfunction\n\n  virtual function void do_copy(uvm_object rhs);\n    xact rhs_;\n    super.do_copy(rhs);\n    $cast(rhs_, rhs);\n    id   = rhs_.id;\n    data = rhs_.data;\n  endfunction\nendclass\n\nclass imm_sub extends uvm_component;\n  `uvm_component_utils(imm_sub)\n\n  uvm_analysis_imp #(xact, imm_sub) ap_imp;\n  int unsigned seen_id[$];\n  int unsigned seen_data[$];\n\n  function new(string name, uvm_component parent = null);\n    super.new(name, parent);\n  endfunction\n\n  function void build_phase(uvm_phase phase);\n    super.build_phase(phase);\n    ap_imp = new(\"ap_imp\", this);\n  endfunction\n\n  virtual function void write(xact t);\n    seen_id.push_back(t.id);\n    seen_data.push_back(t.data);\n  endfunction\nendclass\n\nclass batch_sub extends uvm_component;\n  `uvm_component_utils(batch_sub)\n\n  uvm_analysis_imp #(xact, batch_sub) ap_imp;\n  xact stored[$];\n\n  function new(string name, uvm_component parent = null);\n    super.new(name, parent);\n  endfunction\n\n  function void build_phase(uvm_phase phase);\n    super.build_phase(phase);\n    ap_imp = new(\"ap_imp\", this);\n  endfunction\n\n  virtual function void write(xact t);\n    xact copy;\n    $cast(copy, t.clone());\n    stored.push_back(copy);\n  endfunction\nendclass\n\nclass producer extends uvm_component;\n  `uvm_component_utils(producer)\n\n  uvm_analysis_port #(xact) ap;\n  xact cur;\n\n  function new(string name, uvm_component parent = null);\n    super.new(name, parent);\n  endfunction\n\n  function void build_phase(uvm_phase phase);\n    super.build_phase(phase);\n    ap  = new(\"ap\", this);\n    cur = xact::type_id::create(\"cur\");\n  endfunction\n\n  virtual task run_phase(uvm_phase phase);\n    for (int i = 0; i < 5; i++) begin\n      cur.id   = i;\n      cur.data = i * 111;\n      ap.write(cur);\n    end\n  endtask\nendclass\n\nclass env extends uvm_component;\n  `uvm_component_utils(env)\n\n  producer  prod;\n  imm_sub   imm;\n  batch_sub batch;\n\n  function new(string name, uvm_component parent = null);\n    super.new(name, parent);\n  endfunction\n\n  function void build_phase(uvm_phase phase);\n    super.build_phase(phase);\n    prod  = producer::type_id::create(\"prod\", this);\n    imm   = imm_sub::type_id::create(\"imm\", this);\n    batch = batch_sub::type_id::create(\"batch\", this);\n  endfunction\n\n  function void connect_phase(uvm_phase phase);\n    super.connect_phase(phase);\n    prod.ap.connect(imm.ap_imp);\n    prod.ap.connect(batch.ap_imp);\n  endfunction\nendclass\n",
+  "fix": "@@ -9,4 +9,12 @@\n   function new(string name = \"xact\");\n     super.new(name);\n+  endfunction\n+\n+  virtual function void do_copy(uvm_object rhs);\n+    xact rhs_;\n+    super.do_copy(rhs);\n+    $cast(rhs_, rhs);\n+    id   = rhs_.id;\n+    data = rhs_.data;\n   endfunction\n endclass\n@@ -50,5 +58,7 @@\n \n   virtual function void write(xact t);\n-    stored.push_back(t);\n+    xact copy;\n+    $cast(copy, t.clone());\n+    stored.push_back(copy);\n   endfunction\n endclass\n"
+ },
+ {
+  "slug": "scoreboard_correlate_by_id",
+  "track": "uvm",
+  "order": 6,
+  "digest": "a16ebbd25056b540090ab9f8c87ced6d026cd4920fa324912adccb2b90aa24bd",
+  "tags": [
+   "write-from-scratch",
+   "scoreboard",
+   "analysis-port"
+  ],
+  "path": "exercises/uvm/scoreboard_correlate_by_id.sv",
+  "title": "Write a scoreboard that matches two transaction streams by id, not by arrival order",
+  "spec": [
+   {
+    "p": "A reference model publishes each transaction's expected result; a monitor publishes what the DUT returned. The DUT reorders responses, so comparing the Nth expected item with the Nth actual one reports correct traffic as mismatches."
+   },
+   {
+    "p": "Each `xaction` carries an `id`, the key both sides share, and `data`, the value checked. Write `sb`'s callbacks, and whatever state they need."
+   },
+   {
+    "p": "Requirements:"
+   },
+   {
+    "items": [
+     "1. `write_expected(t)` and `write_actual(t)` arrive in any order, interleaved with each other and with other ids. Each waits for its id to show up on the other side.",
+     "2. Once both sides have reported an `id`: matching `data` increments `match_count`, differing `data` increments `mismatch_count`. Either way the pair is resolved.",
+     "3. An `id` can recur. A resolved occurrence is consumed, so a later one starts fresh, and an unresolved one is never overwritten: if `id`=7 arrives twice on one side before the first is resolved, both are still owed a match.",
+     "4. `pending_count()` returns how many transactions, on either side, are still waiting for their other half."
+    ]
+   }
+  ],
+  "uvm": true,
+  "needs_patched_verilator": false,
+  "code": "import uvm_pkg::*;\n\nclass xaction extends uvm_object;\n  `uvm_object_utils(xaction)\n\n  int unsigned id;\n  int unsigned data;\n\n  function new(string name = \"xaction\");\n    super.new(name);\n  endfunction\nendclass\n\n`uvm_analysis_imp_decl(_expected)\n`uvm_analysis_imp_decl(_actual)\n\nclass sb extends uvm_component;\n  `uvm_component_utils(sb)\n\n  uvm_analysis_imp_expected #(xaction, sb) expected_export;\n  uvm_analysis_imp_actual #(xaction, sb) actual_export;\n\n  int match_count = 0;\n  int mismatch_count = 0;\n\n  function new(string name, uvm_component parent = null);\n    super.new(name, parent);\n  endfunction\n\n  function void build_phase(uvm_phase phase);\n    super.build_phase(phase);\n    expected_export = new(\"expected_export\", this);\n    actual_export   = new(\"actual_export\", this);\n  endfunction\n\n  // write write_expected(), write_actual(), pending_count(), and whatever internal state you need,\n  // below\n\nendclass\n\nclass env extends uvm_component;\n  `uvm_component_utils(env)\n\n  sb scoreboard;\n\n  function new(string name, uvm_component parent = null);\n    super.new(name, parent);\n  endfunction\n\n  function void build_phase(uvm_phase phase);\n    super.build_phase(phase);\n    scoreboard = sb::type_id::create(\"scoreboard\", this);\n  endfunction\nendclass\n",
+  "support": [],
+  "solution": "import uvm_pkg::*;\n\nclass xaction extends uvm_object;\n  `uvm_object_utils(xaction)\n\n  int unsigned id;\n  int unsigned data;\n\n  function new(string name = \"xaction\");\n    super.new(name);\n  endfunction\nendclass\n\n`uvm_analysis_imp_decl(_expected)\n`uvm_analysis_imp_decl(_actual)\n\nclass sb extends uvm_component;\n  `uvm_component_utils(sb)\n\n  uvm_analysis_imp_expected #(xaction, sb) expected_export;\n  uvm_analysis_imp_actual #(xaction, sb) actual_export;\n\n  int match_count = 0;\n  int mismatch_count = 0;\n\n  function new(string name, uvm_component parent = null);\n    super.new(name, parent);\n  endfunction\n\n  function void build_phase(uvm_phase phase);\n    super.build_phase(phase);\n    expected_export = new(\"expected_export\", this);\n    actual_export   = new(\"actual_export\", this);\n  endfunction\n\n  xaction pending_expected[int][$];\n  xaction pending_actual[int]  [$];\n\n  virtual function void write_expected(xaction t);\n    if (pending_actual.exists(t.id) && pending_actual[t.id].size() > 0) begin\n      xaction other = pending_actual[t.id].pop_front();\n      if (other.data == t.data) match_count++;\n      else mismatch_count++;\n    end else begin\n      pending_expected[t.id].push_back(t);\n    end\n  endfunction\n\n  virtual function void write_actual(xaction t);\n    if (pending_expected.exists(t.id) && pending_expected[t.id].size() > 0) begin\n      xaction other = pending_expected[t.id].pop_front();\n      if (other.data == t.data) match_count++;\n      else mismatch_count++;\n    end else begin\n      pending_actual[t.id].push_back(t);\n    end\n  endfunction\n\n  virtual function int pending_count();\n    int total;\n    foreach (pending_expected[id]) total += pending_expected[id].size();\n    foreach (pending_actual[id]) total += pending_actual[id].size();\n    return total;\n  endfunction\n\nendclass\n\nclass env extends uvm_component;\n  `uvm_component_utils(env)\n\n  sb scoreboard;\n\n  function new(string name, uvm_component parent = null);\n    super.new(name, parent);\n  endfunction\n\n  function void build_phase(uvm_phase phase);\n    super.build_phase(phase);\n    scoreboard = sb::type_id::create(\"scoreboard\", this);\n  endfunction\nendclass\n",
+  "fix": "@@ -34,6 +34,33 @@\n   endfunction\n \n-  // write write_expected(), write_actual(), pending_count(), and whatever internal state you need,\n-  // below\n+  xaction pending_expected[int][$];\n+  xaction pending_actual[int]  [$];\n+\n+  virtual function void write_expected(xaction t);\n+    if (pending_actual.exists(t.id) && pending_actual[t.id].size() > 0) begin\n+      xaction other = pending_actual[t.id].pop_front();\n+      if (other.data == t.data) match_count++;\n+      else mismatch_count++;\n+    end else begin\n+      pending_expected[t.id].push_back(t);\n+    end\n+  endfunction\n+\n+  virtual function void write_actual(xaction t);\n+    if (pending_expected.exists(t.id) && pending_expected[t.id].size() > 0) begin\n+      xaction other = pending_expected[t.id].pop_front();\n+      if (other.data == t.data) match_count++;\n+      else mismatch_count++;\n+    end else begin\n+      pending_actual[t.id].push_back(t);\n+    end\n+  endfunction\n+\n+  virtual function int pending_count();\n+    int total;\n+    foreach (pending_expected[id]) total += pending_expected[id].size();\n+    foreach (pending_actual[id]) total += pending_actual[id].size();\n+    return total;\n+  endfunction\n \n endclass\n"
+ },
+ {
+  "slug": "coordinated_channel_write",
+  "track": "uvm",
+  "order": 7,
+  "digest": "717e199e9ec2b9d8ff2cf51a49c08f89c66759e3e12987877a861431f53324db",
+  "tags": [
+   "write-from-scratch",
+   "virtual-sequencer",
+   "fork-join"
+  ],
+  "path": "exercises/uvm/coordinated_channel_write.sv",
+  "title": "Write coord_vseq::body() so channel B carries the tag channel A's driver actually saw",
+  "spec": [
+   {
+    "p": "coord_vseqr is already wired (see env) to `chan_a_sqr` and `chan_b_sqr`, the two channel sequencers, and to `chan_a_drv`, channel A's driver: the only place that learns the tag channel A's item carried, once it has been driven."
+   },
+   {
+    "p": "Requirements for `coord_vseq::body()`:"
+   },
+   {
+    "items": [
+     "1. Send one item on `p_sequencer.chan_a_sqr`, with any `tag` (e.g. `$urandom`).",
+     "2. Concurrently, with `fork`/`join`, send one item on `p_sequencer.chan_b_sqr` whose `tag` is the value `p_sequencer.chan_a_drv` recorded for channel A's item."
+    ]
+   },
+   {
+    "p": "`chan_a_drv.last_tag` is only right once channel A's driver has pulled and processed the item: not when you call `start_item` on channel A, and not because channel A's branch comes first in the `fork`. Reading it early doesn't error; it returns whatever was recorded last, which at the start of the test is nothing."
+   }
+  ],
+  "uvm": true,
+  "needs_patched_verilator": false,
+  "code": "import uvm_pkg::*;\n\nclass item extends uvm_sequence_item;\n  `uvm_object_utils(item)\n\n  int tag;\n\n  function new(string name = \"item\");\n    super.new(name);\n  endfunction\nendclass\n\nclass chan_sequencer extends uvm_sequencer #(item);\n  `uvm_component_utils(chan_sequencer)\n\n  function new(string name, uvm_component parent = null);\n    super.new(name, parent);\n  endfunction\nendclass\n\nclass chan_driver extends uvm_driver #(item);\n  `uvm_component_utils(chan_driver)\n\n  int received_count = 0;\n  int last_tag = -1;\n\n  function new(string name, uvm_component parent = null);\n    super.new(name, parent);\n  endfunction\n\n  virtual task run_phase(uvm_phase phase);\n    item it;\n    forever begin\n      seq_item_port.get_next_item(it);\n      received_count++;\n      last_tag = it.tag;\n      seq_item_port.item_done();\n    end\n  endtask\nendclass\n\nclass chan_agent extends uvm_component;\n  `uvm_component_utils(chan_agent)\n\n  chan_sequencer sqr;\n  chan_driver drv;\n\n  function new(string name, uvm_component parent = null);\n    super.new(name, parent);\n  endfunction\n\n  function void build_phase(uvm_phase phase);\n    super.build_phase(phase);\n    sqr = chan_sequencer::type_id::create(\"sqr\", this);\n    drv = chan_driver::type_id::create(\"drv\", this);\n  endfunction\n\n  function void connect_phase(uvm_phase phase);\n    super.connect_phase(phase);\n    drv.seq_item_port.connect(sqr.seq_item_export);\n  endfunction\nendclass\n\nclass coord_vseqr extends uvm_sequencer #(item);\n  `uvm_component_utils(coord_vseqr)\n\n  chan_sequencer chan_a_sqr;\n  chan_sequencer chan_b_sqr;\n  chan_driver chan_a_drv;\n\n  function new(string name, uvm_component parent = null);\n    super.new(name, parent);\n  endfunction\nendclass\n\nclass coord_vseq extends uvm_sequence #(item);\n  `uvm_object_utils(coord_vseq)\n  `uvm_declare_p_sequencer(coord_vseqr)\n\n  function new(string name = \"coord_vseq\");\n    super.new(name);\n  endfunction\n\n  virtual task body();\n    // write your virtual sequence body here\n  endtask\nendclass\n\nclass env extends uvm_component;\n  `uvm_component_utils(env)\n\n  chan_agent  chan_a;\n  chan_agent  chan_b;\n  coord_vseqr vseqr;\n\n  function new(string name, uvm_component parent = null);\n    super.new(name, parent);\n  endfunction\n\n  function void build_phase(uvm_phase phase);\n    super.build_phase(phase);\n    chan_a = chan_agent::type_id::create(\"chan_a\", this);\n    chan_b = chan_agent::type_id::create(\"chan_b\", this);\n    vseqr  = coord_vseqr::type_id::create(\"vseqr\", this);\n  endfunction\n\n  function void connect_phase(uvm_phase phase);\n    super.connect_phase(phase);\n    vseqr.chan_a_sqr = chan_a.sqr;\n    vseqr.chan_b_sqr = chan_b.sqr;\n    vseqr.chan_a_drv = chan_a.drv;\n  endfunction\nendclass\n",
+  "support": [],
+  "solution": "import uvm_pkg::*;\n\nclass item extends uvm_sequence_item;\n  `uvm_object_utils(item)\n\n  int tag;\n\n  function new(string name = \"item\");\n    super.new(name);\n  endfunction\nendclass\n\nclass chan_sequencer extends uvm_sequencer #(item);\n  `uvm_component_utils(chan_sequencer)\n\n  function new(string name, uvm_component parent = null);\n    super.new(name, parent);\n  endfunction\nendclass\n\nclass chan_driver extends uvm_driver #(item);\n  `uvm_component_utils(chan_driver)\n\n  int received_count = 0;\n  int last_tag = -1;\n\n  function new(string name, uvm_component parent = null);\n    super.new(name, parent);\n  endfunction\n\n  virtual task run_phase(uvm_phase phase);\n    item it;\n    forever begin\n      seq_item_port.get_next_item(it);\n      received_count++;\n      last_tag = it.tag;\n      seq_item_port.item_done();\n    end\n  endtask\nendclass\n\nclass chan_agent extends uvm_component;\n  `uvm_component_utils(chan_agent)\n\n  chan_sequencer sqr;\n  chan_driver drv;\n\n  function new(string name, uvm_component parent = null);\n    super.new(name, parent);\n  endfunction\n\n  function void build_phase(uvm_phase phase);\n    super.build_phase(phase);\n    sqr = chan_sequencer::type_id::create(\"sqr\", this);\n    drv = chan_driver::type_id::create(\"drv\", this);\n  endfunction\n\n  function void connect_phase(uvm_phase phase);\n    super.connect_phase(phase);\n    drv.seq_item_port.connect(sqr.seq_item_export);\n  endfunction\nendclass\n\nclass coord_vseqr extends uvm_sequencer #(item);\n  `uvm_component_utils(coord_vseqr)\n\n  chan_sequencer chan_a_sqr;\n  chan_sequencer chan_b_sqr;\n  chan_driver chan_a_drv;\n\n  function new(string name, uvm_component parent = null);\n    super.new(name, parent);\n  endfunction\nendclass\n\nclass coord_vseq extends uvm_sequence #(item);\n  `uvm_object_utils(coord_vseq)\n  `uvm_declare_p_sequencer(coord_vseqr)\n\n  function new(string name = \"coord_vseq\");\n    super.new(name);\n  endfunction\n\n  virtual task body();\n    item it_a, it_b;\n    event a_done;\n    fork\n      begin\n        it_a = item::type_id::create(\"it_a\");\n        it_a.tag = $urandom;\n        start_item(it_a, -1, p_sequencer.chan_a_sqr);\n        finish_item(it_a);\n        ->a_done;\n      end\n      begin\n        @a_done;\n        it_b = item::type_id::create(\"it_b\");\n        it_b.tag = p_sequencer.chan_a_drv.last_tag;\n        start_item(it_b, -1, p_sequencer.chan_b_sqr);\n        finish_item(it_b);\n      end\n    join\n  endtask\nendclass\n\nclass env extends uvm_component;\n  `uvm_component_utils(env)\n\n  chan_agent  chan_a;\n  chan_agent  chan_b;\n  coord_vseqr vseqr;\n\n  function new(string name, uvm_component parent = null);\n    super.new(name, parent);\n  endfunction\n\n  function void build_phase(uvm_phase phase);\n    super.build_phase(phase);\n    chan_a = chan_agent::type_id::create(\"chan_a\", this);\n    chan_b = chan_agent::type_id::create(\"chan_b\", this);\n    vseqr  = coord_vseqr::type_id::create(\"vseqr\", this);\n  endfunction\n\n  function void connect_phase(uvm_phase phase);\n    super.connect_phase(phase);\n    vseqr.chan_a_sqr = chan_a.sqr;\n    vseqr.chan_b_sqr = chan_b.sqr;\n    vseqr.chan_a_drv = chan_a.drv;\n  endfunction\nendclass\n",
+  "fix": "@@ -83,5 +83,22 @@\n \n   virtual task body();\n-    // write your virtual sequence body here\n+    item it_a, it_b;\n+    event a_done;\n+    fork\n+      begin\n+        it_a = item::type_id::create(\"it_a\");\n+        it_a.tag = $urandom;\n+        start_item(it_a, -1, p_sequencer.chan_a_sqr);\n+        finish_item(it_a);\n+        ->a_done;\n+      end\n+      begin\n+        @a_done;\n+        it_b = item::type_id::create(\"it_b\");\n+        it_b.tag = p_sequencer.chan_a_drv.last_tag;\n+        start_item(it_b, -1, p_sequencer.chan_b_sqr);\n+        finish_item(it_b);\n+      end\n+    join\n   endtask\n endclass\n"
+ },
+ {
+  "slug": "scoreboard_reuses_dut_checksum",
+  "track": "uvm",
+  "order": 8,
+  "digest": "4e03f09d510c64b1993eceb2eb499aca4c7ee7f86ebce3aff169c57a89157a1e",
+  "tags": [
+   "scoreboard",
+   "plausible-pass"
+  ],
+  "path": "exercises/uvm/scoreboard_reuses_dut_checksum.sv",
+  "title": "The scoreboard's predictor calls the same CRC-8 function the \"DUT\" does -- of course they agree",
+  "spec": [
+   {
+    "p": "SPEC: CRC-8/SMBUS over the packet payload."
+   },
+   {
+    "items": [
+     "- polynomial x^8 + x^2 + x + 1 (0x07)",
+     "- MSB-first bit processing",
+     "- initial value 0x00",
+     "- no input or output reflection, no final XOR",
+     "- catalog check value: CRC-8/SMBUS(ASCII \"123456789\") = 0xF4"
+    ]
+   },
+   {
+    "p": "sb::predict() is what a model writes with confidence from that spec: dut_pkg::crc8(), in a separate file compiled alongside, is already written and already named crc8. Right now every comparison matches."
+   },
+   {
+    "p": "A predictor that calls the DUT's own function can never disagree with it, whatever that function computes. The only way to know it's CRC-8/SMBUS is to implement the spec independently."
+   },
+   {
+    "p": "Fix sb::predict() so it's an independent CRC-8/SMBUS implementation, not a call to dut_pkg::crc8(). Check it against 0xF4 first."
+   }
+  ],
+  "uvm": true,
+  "needs_patched_verilator": false,
+  "code": "import uvm_pkg::*;\n\nclass sb extends uvm_component;\n  `uvm_component_utils(sb)\n\n  int unsigned match_count    = 0;\n  int unsigned mismatch_count = 0;\n\n  function new(string name, uvm_component parent = null);\n    super.new(name, parent);\n  endfunction\n\n  function bit [7:0] predict(bit [7:0] data[]);\n    return dut_pkg::crc8(data);\n  endfunction\n\n  function void check(bit [7:0] data[], bit [7:0] actual);\n    if (predict(data) == actual) match_count++;\n    else mismatch_count++;\n  endfunction\nendclass\n",
+  "support": [
+   {
+    "name": "dut_pkg.sv",
+    "code": "// Behavioral reference for this revision's CRC-8 hardware block. Ported directly from the\n// RTL team's own bit-serial implementation so the testbench wouldn't have to re-derive the\n// polynomial math from scratch -- compiled alongside the exercise file, never part of what\n// you're fixing.\npackage dut_pkg;\n  function automatic bit [7:0] crc8(bit [7:0] data[]);\n    automatic bit [7:0] crc = 8'h00;\n    foreach (data[i]) begin\n      crc ^= data[i];\n      for (int b = 0; b < 8; b++) begin\n        if (crc[0]) crc = (crc >> 1) ^ 8'hE0;\n        else crc = crc >> 1;\n      end\n    end\n    return crc;\n  endfunction\nendpackage\n"
+   }
+  ],
+  "solution": "import uvm_pkg::*;\n\nclass sb extends uvm_component;\n  `uvm_component_utils(sb)\n\n  int unsigned match_count    = 0;\n  int unsigned mismatch_count = 0;\n\n  function new(string name, uvm_component parent = null);\n    super.new(name, parent);\n  endfunction\n\n  function bit [7:0] predict(bit [7:0] data[]);\n    automatic bit [7:0] crc = 8'h00;\n    foreach (data[i]) begin\n      crc ^= data[i];\n      for (int b = 0; b < 8; b++) begin\n        if (crc[7]) crc = (crc << 1) ^ 8'h07;\n        else crc = crc << 1;\n      end\n    end\n    return crc;\n  endfunction\n\n  function void check(bit [7:0] data[], bit [7:0] actual);\n    if (predict(data) == actual) match_count++;\n    else mismatch_count++;\n  endfunction\nendclass\n",
+  "fix": "@@ -12,5 +12,13 @@\n \n   function bit [7:0] predict(bit [7:0] data[]);\n-    return dut_pkg::crc8(data);\n+    automatic bit [7:0] crc = 8'h00;\n+    foreach (data[i]) begin\n+      crc ^= data[i];\n+      for (int b = 0; b < 8; b++) begin\n+        if (crc[7]) crc = (crc << 1) ^ 8'h07;\n+        else crc = crc << 1;\n+      end\n+    end\n+    return crc;\n   endfunction\n \n"
+ },
+ {
+  "slug": "uvm_mem_needs_a_shadow_model",
+  "track": "csr",
+  "order": 1,
+  "digest": "b631b249530fb4011bac0e5ef800cb6e47e4445c6868b78043804eb253fcc5b8",
+  "tags": [
+   "write-from-scratch",
+   "mem-model"
+  ],
+  "path": "exercises/csr/uvm_mem_needs_a_shadow_model.sv",
+  "title": "Extend uvm_mem to catch an address-decode bug -- the base class remembers nothing",
+  "spec": [
+   {
+    "p": "uvm_reg has a mirror: ask a field what it should read, and the register layer answers from tracked state. uvm_mem has none. Each access moves data across the bus and nothing remembers what any address was last set to; to check reads, you build that state yourself, by address."
+   },
+   {
+    "p": "uvm_mem's hooks for it: `post_write(uvm_reg_item rw)` and `post_read(uvm_reg_item rw)` run from the base class's do_write()/do_read() after every access, frontdoor or back, through any map. `rw.get_offset()` is the address; `rw.get_value(0)` is the data written or read back."
+   },
+   {
+    "p": "Requirements, overriding both on `tracked_mem` with whatever member state you need:"
+   },
+   {
+    "items": [
+     "1. A write records what its address should read back. That survives writes to other addresses until a write lands on the same address again.",
+     "2. A read increments `match_count` if it returns the value last written to its address, and `mismatch_count` if it doesn't."
+    ]
+   },
+   {
+    "p": "Right now: `match_count=0, want 4`. The stub tracks nothing."
+   },
+   {
+    "p": "Done when: after the access sequence in the test, `match_count` is 4 and `mismatch_count` is"
+   },
+   {
+    "items": [
+     "1. One of the five reads hits data corrupted by an address-decode bug in the driver, and"
+    ]
+   },
+   {
+    "p": "your override is what catches it."
+   }
+  ],
+  "uvm": true,
+  "needs_patched_verilator": false,
+  "code": "import uvm_pkg::*;\n\nclass tracked_mem extends uvm_mem;\n\n  int unsigned match_count    = 0;\n  int unsigned mismatch_count = 0;\n\n  function new(string name, longint unsigned size, int unsigned n_bits, string access = \"RW\");\n    super.new(name, size, n_bits, access);\n  endfunction\n\n  // override post_write(uvm_reg_item rw) and post_read(uvm_reg_item rw), and whatever member\n  // state they need, below\n\nendclass\n",
+  "support": [],
+  "solution": "import uvm_pkg::*;\n\nclass tracked_mem extends uvm_mem;\n\n  int unsigned match_count    = 0;\n  int unsigned mismatch_count = 0;\n\n  uvm_reg_data_t expected[uvm_reg_addr_t];\n\n  function new(string name, longint unsigned size, int unsigned n_bits, string access = \"RW\");\n    super.new(name, size, n_bits, access);\n  endfunction\n\n  virtual task post_write(uvm_reg_item rw);\n    expected[rw.get_offset()] = rw.get_value(0);\n  endtask\n\n  virtual task post_read(uvm_reg_item rw);\n    uvm_reg_addr_t addr = rw.get_offset();\n    uvm_reg_data_t data = rw.get_value(0);\n    if (expected.exists(addr) && expected[addr] == data) match_count++;\n    else mismatch_count++;\n  endtask\nendclass\n",
+  "fix": "@@ -6,10 +6,19 @@\n   int unsigned mismatch_count = 0;\n \n+  uvm_reg_data_t expected[uvm_reg_addr_t];\n+\n   function new(string name, longint unsigned size, int unsigned n_bits, string access = \"RW\");\n     super.new(name, size, n_bits, access);\n   endfunction\n \n-  // override post_write(uvm_reg_item rw) and post_read(uvm_reg_item rw), and whatever member\n-  // state they need, below\n+  virtual task post_write(uvm_reg_item rw);\n+    expected[rw.get_offset()] = rw.get_value(0);\n+  endtask\n \n+  virtual task post_read(uvm_reg_item rw);\n+    uvm_reg_addr_t addr = rw.get_offset();\n+    uvm_reg_data_t data = rw.get_value(0);\n+    if (expected.exists(addr) && expected[addr] == data) match_count++;\n+    else mismatch_count++;\n+  endtask\n endclass\n"
+ },
+ {
+  "slug": "sample_fires_before_the_mirror_updates",
+  "track": "csr",
+  "order": 2,
+  "digest": "b5b42e65e08d6e3f687d6bd35b3c047de8d18547c17cd08c45a9ccc9bd9c60e3",
+  "tags": [
+   "write-from-scratch",
+   "coverage",
+   "mirror"
+  ],
+  "path": "exercises/csr/sample_fires_before_the_mirror_updates.sv",
+  "title": "Override uvm_reg's sample() hook -- it runs before the mirror updates",
+  "spec": [
+   {
+    "p": "uvm_reg::sample() is called from the base class's do_write()/do_read() once a map has auto- prediction on (`set_auto_predict(1)`, done in the test), and its default body is empty. A register-model generator normally wires it to a covergroup; by hand, nothing is sampled until you override it."
+   },
+   {
+    "p": "The obvious body asks the field for `val.get_mirrored_value()`. That's wrong: sample() gets the access's own `data` before do_predict() runs, on every access, so the mirror still holds what the previous access left."
+   },
+   {
+    "p": "Requirements, overriding `sample(uvm_reg_data_t data, uvm_reg_data_t byte_en, bit is_read, uvm_reg_map map)` on `cov_reg` with whatever state it needs:"
+   },
+   {
+    "items": [
+     "1. Every access to this register is recorded.",
+     "2. What's recorded is the value this access carried, not the field's mirror."
+    ]
+   },
+   {
+    "p": "`expected_q` holds what each access carries, in order, filled before each access fires. Compare sample()'s value with its front: `match_count++` if they agree, `mismatch_count++` if not."
+   },
+   {
+    "p": "Right now: `match_count=0, want 5`. The stub touches neither counter."
+   },
+   {
+    "p": "Done when: after the four writes and one read in the test, match_count is 5 and mismatch_count is 0. Reading the mirror gets every write wrong and the read right only by luck (match_count=1, mismatch_count=4)."
+   }
+  ],
+  "uvm": true,
+  "needs_patched_verilator": false,
+  "code": "import uvm_pkg::*;\n\nclass cov_reg extends uvm_reg;\n  `uvm_object_utils(cov_reg)\n\n  rand uvm_reg_field val;\n\n  int unsigned match_count    = 0;\n  int unsigned mismatch_count = 0;\n\n  uvm_reg_data_t expected_q[$];\n\n  function new(string name = \"cov_reg\");\n    super.new(name, 8, UVM_NO_COVERAGE);\n  endfunction\n\n  virtual function void build();\n    val = uvm_reg_field::type_id::create(\"val\");\n    val.configure(this, 8, 0, \"RW\", 0, 8'h0, 1, 0, 1);\n  endfunction\n\n  // override sample(uvm_reg_data_t data, uvm_reg_data_t byte_en, bit is_read, uvm_reg_map map)\n  // below\n\nendclass\n",
+  "support": [],
+  "solution": "import uvm_pkg::*;\n\nclass cov_reg extends uvm_reg;\n  `uvm_object_utils(cov_reg)\n\n  rand uvm_reg_field val;\n\n  int unsigned match_count    = 0;\n  int unsigned mismatch_count = 0;\n\n  uvm_reg_data_t expected_q[$];\n\n  function new(string name = \"cov_reg\");\n    super.new(name, 8, UVM_NO_COVERAGE);\n  endfunction\n\n  virtual function void build();\n    val = uvm_reg_field::type_id::create(\"val\");\n    val.configure(this, 8, 0, \"RW\", 0, 8'h0, 1, 0, 1);\n  endfunction\n\n  protected virtual function void sample (uvm_reg_data_t data, uvm_reg_data_t byte_en, bit is_read,\n                                          uvm_reg_map map);\n    uvm_reg_data_t want = expected_q.pop_front();\n    if (data == want) match_count++;\n    else mismatch_count++;\n  endfunction\nendclass\n",
+  "fix": "@@ -20,6 +20,9 @@\n   endfunction\n \n-  // override sample(uvm_reg_data_t data, uvm_reg_data_t byte_en, bit is_read, uvm_reg_map map)\n-  // below\n-\n+  protected virtual function void sample (uvm_reg_data_t data, uvm_reg_data_t byte_en, bit is_read,\n+                                          uvm_reg_map map);\n+    uvm_reg_data_t want = expected_q.pop_front();\n+    if (data == want) match_count++;\n+    else mismatch_count++;\n+  endfunction\n endclass\n"
+ },
+ {
+  "slug": "write_updates_the_mirror_even_when_dropped",
+  "track": "csr",
+  "order": 3,
+  "digest": "02d9a28eda8f3d736ff28b97b51ef6c53584e5c97556c50e1082c2a9b99296fe",
+  "tags": [
+   "write-from-scratch",
+   "mirror",
+   "best-practice"
+  ],
+  "path": "exercises/csr/write_updates_the_mirror_even_when_dropped.sv",
+  "title": "Catch a write that never reaches hardware -- write()'s status and the mirror both say it did",
+  "spec": [
+   {
+    "p": "With auto-prediction on (configured in the test), uvm_reg::write() calls do_predict() when the bus transaction completes, and do_predict() only checks the status was UVM_IS_OK. A write the hardware silently drops but completes cleanly (a stuck write-enable, say) is predicted as a success, and the mirror takes the value you meant to write."
+   },
+   {
+    "p": "Requirements for `write_verifier::verify_write(uvm_reg r, uvm_reg_map map, bit [7:0] data)`:"
+   },
+   {
+    "items": [
+     "1. It writes through the register layer, like any frontdoor access.",
+     "2. It confirms the write landed by reading the register back over the bus and comparing: not from write()'s status, and not from `r.get_mirrored_value()`, which already holds the intended value.",
+     "3. A matching read-back increments `confirmed_count`; a mismatch increments `dropped_count`."
+    ]
+   },
+   {
+    "p": "Right now: `confirmed_count=0, want 3`. The stub checks nothing."
+   },
+   {
+    "p": "Done when: of the four registers written in the test, register 2 has a stuck write-enable, so confirmed_count is 3 and dropped_count is 1. Checking the mirror instead gives confirmed_count=4, dropped_count=0."
+   }
+  ],
+  "uvm": true,
+  "needs_patched_verilator": false,
+  "code": "import uvm_pkg::*;\n\nclass write_verifier extends uvm_component;\n  `uvm_component_utils(write_verifier)\n\n  int unsigned confirmed_count = 0;\n  int unsigned dropped_count   = 0;\n\n  function new(string name, uvm_component parent = null);\n    super.new(name, parent);\n  endfunction\n\n  // write verify_write(uvm_reg r, uvm_reg_map map, bit [7:0] data) below\n\nendclass\n",
+  "support": [],
+  "solution": "import uvm_pkg::*;\n\nclass write_verifier extends uvm_component;\n  `uvm_component_utils(write_verifier)\n\n  int unsigned confirmed_count = 0;\n  int unsigned dropped_count   = 0;\n\n  function new(string name, uvm_component parent = null);\n    super.new(name, parent);\n  endfunction\n\n  task verify_write(uvm_reg r, uvm_reg_map map, bit [7:0] data);\n    uvm_status_e status;\n    bit [31:0] rdata;\n    r.write(status, data, UVM_FRONTDOOR, map, null);\n    r.read(status, rdata, UVM_FRONTDOOR, map, null);\n    if (rdata[7:0] == data) confirmed_count++;\n    else dropped_count++;\n  endtask\nendclass\n",
+  "fix": "@@ -11,5 +11,11 @@\n   endfunction\n \n-  // write verify_write(uvm_reg r, uvm_reg_map map, bit [7:0] data) below\n-\n+  task verify_write(uvm_reg r, uvm_reg_map map, bit [7:0] data);\n+    uvm_status_e status;\n+    bit [31:0] rdata;\n+    r.write(status, data, UVM_FRONTDOOR, map, null);\n+    r.read(status, rdata, UVM_FRONTDOOR, map, null);\n+    if (rdata[7:0] == data) confirmed_count++;\n+    else dropped_count++;\n+  endtask\n endclass\n"
+ },
+ {
+  "slug": "predictor_needs_the_monitor_wired_in",
+  "track": "csr",
+  "order": 4,
+  "digest": "556dc63a15c76394140d3d8dd2978c84b0d6b159643da07e7c829fbf7fac1186",
+  "tags": [
+   "predictor",
+   "mirror",
+   "analysis-port"
+  ],
+  "path": "exercises/csr/predictor_needs_the_monitor_wired_in.sv",
+  "title": "Wire up a uvm_reg_predictor -- with explicit prediction, nothing else updates the mirror",
+  "spec": [
+   {
+    "p": "`blk`'s map runs with auto-prediction off (`set_auto_predict(0)`, in the test), as real testbenches do when something besides the register model can touch the DUT and the mirror has to follow observed bus traffic. `blk.r.write(...)` still writes over the bus but leaves the mirror alone. Only a `uvm_reg_predictor` updates it, and only once it has `.map` and `.adapter` set and bus transactions arriving on `bus_in`."
+   },
+   {
+    "p": "`predictor` is already constructed in `env::build_phase` (in the test), but not configured or connected."
+   },
+   {
+    "p": "Requirements, in `env::connect_phase`:"
+   },
+   {
+    "items": [
+     "1. `predictor.map` and `predictor.adapter` are the map and adapter the bus uses.",
+     "2. `drv.ap`, where the driver broadcasts every access it completes, is connected to `predictor.bus_in`."
+    ]
+   },
+   {
+    "p": "Right now: `mirror=0 after first write, want aa`. Setting .map and .adapter alone isn't enough: the predictor's write() is never called until bus_in has a connection."
+   },
+   {
+    "p": "Done when: after each of the two writes in the test, blk.r.get_mirrored_value() equals what was just written. Missing either piece leaves the mirror at its reset value, 0."
+   }
+  ],
+  "uvm": true,
+  "needs_patched_verilator": false,
+  "code": "import uvm_pkg::*;\n\nclass plain_reg extends uvm_reg;\n  `uvm_object_utils(plain_reg)\n\n  rand uvm_reg_field val;\n\n  function new(string name = \"plain_reg\");\n    super.new(name, 8, UVM_NO_COVERAGE);\n  endfunction\n\n  virtual function void build();\n    val = uvm_reg_field::type_id::create(\"val\");\n    val.configure(this, 8, 0, \"RW\", 0, 8'h0, 1, 0, 1);\n  endfunction\nendclass\n\nclass reg_bus_item extends uvm_sequence_item;\n  `uvm_object_utils(reg_bus_item)\n\n  rand bit [31:0] addr;\n  rand bit [31:0] data;\n  bit is_read;\n\n  function new(string name = \"reg_bus_item\");\n    super.new(name);\n  endfunction\nendclass\n\nclass reg_bus_sequencer extends uvm_sequencer #(reg_bus_item);\n  `uvm_component_utils(reg_bus_sequencer)\n\n  function new(string name, uvm_component parent = null);\n    super.new(name, parent);\n  endfunction\nendclass\n\nclass reg_bus_driver extends uvm_driver #(reg_bus_item);\n  `uvm_component_utils(reg_bus_driver)\n\n  uvm_analysis_port #(reg_bus_item) ap;\n  bit [31:0] storage;\n\n  function new(string name, uvm_component parent = null);\n    super.new(name, parent);\n  endfunction\n\n  function void build_phase(uvm_phase phase);\n    super.build_phase(phase);\n    ap = new(\"ap\", this);\n  endfunction\n\n  virtual task run_phase(uvm_phase phase);\n    reg_bus_item it;\n    forever begin\n      seq_item_port.get_next_item(it);\n      if (it.is_read) it.data = storage;\n      else storage = it.data;\n      ap.write(it);\n      seq_item_port.item_done();\n    end\n  endtask\nendclass\n\nclass reg_bus_adapter extends uvm_reg_adapter;\n  `uvm_object_utils(reg_bus_adapter)\n\n  function new(string name = \"reg_bus_adapter\");\n    super.new(name);\n    supports_byte_enable = 0;\n    provides_responses   = 0;\n  endfunction\n\n  virtual function uvm_sequence_item reg2bus(const ref uvm_reg_bus_op rw);\n    reg_bus_item it = reg_bus_item::type_id::create(\"it\");\n    it.addr    = rw.addr[31:0];\n    it.data    = rw.data[31:0];\n    it.is_read = (rw.kind == UVM_READ);\n    return it;\n  endfunction\n\n  virtual function void bus2reg(uvm_sequence_item bus_item, ref uvm_reg_bus_op rw);\n    reg_bus_item it;\n    if (!$cast(it, bus_item)) `uvm_fatal(\"reg_bus_adapter\", \"bad cast\")\n    rw.kind   = it.is_read ? UVM_READ : UVM_WRITE;\n    rw.addr   = it.addr;\n    rw.data   = it.data;\n    rw.status = UVM_IS_OK;\n  endfunction\nendclass\n\nclass reg_blk extends uvm_reg_block;\n  `uvm_object_utils(reg_blk)\n\n  plain_reg r;\n\n  function new(string name = \"reg_blk\");\n    super.new(name, UVM_NO_COVERAGE);\n  endfunction\n\n  virtual function void build();\n    uvm_reg_map map;\n    r = plain_reg::type_id::create(\"r\");\n    r.configure(this, null, \"\");\n    r.build();\n    map = create_map(\"map\", 0, 4, UVM_LITTLE_ENDIAN);\n    map.add_reg(r, 0, \"RW\");\n    map.set_auto_predict(0);  // explicit prediction -- the predictor is the only path in\n  endfunction\nendclass\n\nclass env extends uvm_component;\n  `uvm_component_utils(env)\n\n  reg_blk                           blk;\n  reg_bus_sequencer                 sqr;\n  reg_bus_driver                    drv;\n  reg_bus_adapter                   adapter;\n  uvm_reg_predictor #(reg_bus_item) predictor;\n\n  function new(string name, uvm_component parent = null);\n    super.new(name, parent);\n  endfunction\n\n  function void build_phase(uvm_phase phase);\n    super.build_phase(phase);\n    blk = reg_blk::type_id::create(\"blk\");\n    blk.build();\n    blk.lock_model();\n    sqr       = reg_bus_sequencer::type_id::create(\"sqr\", this);\n    drv       = reg_bus_driver::type_id::create(\"drv\", this);\n    adapter   = reg_bus_adapter::type_id::create(\"adapter\");\n    predictor = uvm_reg_predictor#(reg_bus_item)::type_id::create(\"predictor\", this);\n  endfunction\n\n  function void connect_phase(uvm_phase phase);\n    super.connect_phase(phase);\n    drv.seq_item_port.connect(sqr.seq_item_export);\n    blk.default_map.set_sequencer(sqr, adapter);\n\n    // wire predictor.map, predictor.adapter, and drv.ap -> predictor.bus_in below\n\n  endfunction\nendclass\n",
+  "support": [],
+  "solution": "import uvm_pkg::*;\n\nclass plain_reg extends uvm_reg;\n  `uvm_object_utils(plain_reg)\n\n  rand uvm_reg_field val;\n\n  function new(string name = \"plain_reg\");\n    super.new(name, 8, UVM_NO_COVERAGE);\n  endfunction\n\n  virtual function void build();\n    val = uvm_reg_field::type_id::create(\"val\");\n    val.configure(this, 8, 0, \"RW\", 0, 8'h0, 1, 0, 1);\n  endfunction\nendclass\n\nclass reg_bus_item extends uvm_sequence_item;\n  `uvm_object_utils(reg_bus_item)\n\n  rand bit [31:0] addr;\n  rand bit [31:0] data;\n  bit is_read;\n\n  function new(string name = \"reg_bus_item\");\n    super.new(name);\n  endfunction\nendclass\n\nclass reg_bus_sequencer extends uvm_sequencer #(reg_bus_item);\n  `uvm_component_utils(reg_bus_sequencer)\n\n  function new(string name, uvm_component parent = null);\n    super.new(name, parent);\n  endfunction\nendclass\n\nclass reg_bus_driver extends uvm_driver #(reg_bus_item);\n  `uvm_component_utils(reg_bus_driver)\n\n  uvm_analysis_port #(reg_bus_item) ap;\n  bit [31:0] storage;\n\n  function new(string name, uvm_component parent = null);\n    super.new(name, parent);\n  endfunction\n\n  function void build_phase(uvm_phase phase);\n    super.build_phase(phase);\n    ap = new(\"ap\", this);\n  endfunction\n\n  virtual task run_phase(uvm_phase phase);\n    reg_bus_item it;\n    forever begin\n      seq_item_port.get_next_item(it);\n      if (it.is_read) it.data = storage;\n      else storage = it.data;\n      ap.write(it);\n      seq_item_port.item_done();\n    end\n  endtask\nendclass\n\nclass reg_bus_adapter extends uvm_reg_adapter;\n  `uvm_object_utils(reg_bus_adapter)\n\n  function new(string name = \"reg_bus_adapter\");\n    super.new(name);\n    supports_byte_enable = 0;\n    provides_responses   = 0;\n  endfunction\n\n  virtual function uvm_sequence_item reg2bus(const ref uvm_reg_bus_op rw);\n    reg_bus_item it = reg_bus_item::type_id::create(\"it\");\n    it.addr    = rw.addr[31:0];\n    it.data    = rw.data[31:0];\n    it.is_read = (rw.kind == UVM_READ);\n    return it;\n  endfunction\n\n  virtual function void bus2reg(uvm_sequence_item bus_item, ref uvm_reg_bus_op rw);\n    reg_bus_item it;\n    if (!$cast(it, bus_item)) `uvm_fatal(\"reg_bus_adapter\", \"bad cast\")\n    rw.kind   = it.is_read ? UVM_READ : UVM_WRITE;\n    rw.addr   = it.addr;\n    rw.data   = it.data;\n    rw.status = UVM_IS_OK;\n  endfunction\nendclass\n\nclass reg_blk extends uvm_reg_block;\n  `uvm_object_utils(reg_blk)\n\n  plain_reg r;\n\n  function new(string name = \"reg_blk\");\n    super.new(name, UVM_NO_COVERAGE);\n  endfunction\n\n  virtual function void build();\n    uvm_reg_map map;\n    r = plain_reg::type_id::create(\"r\");\n    r.configure(this, null, \"\");\n    r.build();\n    map = create_map(\"map\", 0, 4, UVM_LITTLE_ENDIAN);\n    map.add_reg(r, 0, \"RW\");\n    map.set_auto_predict(0);  // explicit prediction -- the predictor is the only path in\n  endfunction\nendclass\n\nclass env extends uvm_component;\n  `uvm_component_utils(env)\n\n  reg_blk                           blk;\n  reg_bus_sequencer                 sqr;\n  reg_bus_driver                    drv;\n  reg_bus_adapter                   adapter;\n  uvm_reg_predictor #(reg_bus_item) predictor;\n\n  function new(string name, uvm_component parent = null);\n    super.new(name, parent);\n  endfunction\n\n  function void build_phase(uvm_phase phase);\n    super.build_phase(phase);\n    blk = reg_blk::type_id::create(\"blk\");\n    blk.build();\n    blk.lock_model();\n    sqr       = reg_bus_sequencer::type_id::create(\"sqr\", this);\n    drv       = reg_bus_driver::type_id::create(\"drv\", this);\n    adapter   = reg_bus_adapter::type_id::create(\"adapter\");\n    predictor = uvm_reg_predictor#(reg_bus_item)::type_id::create(\"predictor\", this);\n  endfunction\n\n  function void connect_phase(uvm_phase phase);\n    super.connect_phase(phase);\n    drv.seq_item_port.connect(sqr.seq_item_export);\n    blk.default_map.set_sequencer(sqr, adapter);\n\n    predictor.map     = blk.default_map;\n    predictor.adapter = adapter;\n    drv.ap.connect(predictor.bus_in);\n  endfunction\nendclass\n",
+  "fix": "@@ -139,6 +139,7 @@\n     blk.default_map.set_sequencer(sqr, adapter);\n \n-    // wire predictor.map, predictor.adapter, and drv.ap -> predictor.bus_in below\n-\n+    predictor.map     = blk.default_map;\n+    predictor.adapter = adapter;\n+    drv.ap.connect(predictor.bus_in);\n   endfunction\n endclass\n"
+ },
+ {
+  "slug": "update_can_silently_clear_a_w1c_field",
+  "track": "csr",
+  "order": 5,
+  "digest": "e4bbafd261f355da56087cac303b2b55a75f28603b2d60a0de1e522de3b51504",
+  "tags": [
+   "write-from-scratch",
+   "w1c",
+   "access-policy"
+  ],
+  "path": "exercises/csr/update_can_silently_clear_a_w1c_field.sv",
+  "title": "Enable a device through update() without clearing a pending interrupt in the same register",
+  "spec": [
+   {
+    "p": "`ctrl_reg` has two fields: `enable` (RW) and `irq_pending` (W1C: writing 1 clears the pending flag in hardware). `uvm_reg::update()` writes the whole register, computing a value for every field. For a W1C field it inverts `desired`, so `desired=0` becomes a write of 1. If `irq_pending` was never read, its `desired` is still the reset default 0, and update() clears a real pending interrupt nobody asked it to touch."
+   },
+   {
+    "p": "Requirement: write `enabler::enable_device(uvm_reg r, uvm_reg_field enable, uvm_reg_map map)` so it sets `enable` without disturbing what `irq_pending` holds in hardware. It takes one extra call, first: what has to happen before `desired` can mean \"leave this alone\"?"
+   },
+   {
+    "p": "Right now: `enable=0, want 1`. The stub does nothing."
+   },
+   {
+    "p": "Done when: a frontdoor read-back after `enable_device` (in the test) shows enable=1 and irq_pending=1. `enable.set(1)` then `r.update(...)` with no read first gives enable=1 but irq_pending=0."
+   }
+  ],
+  "uvm": true,
+  "needs_patched_verilator": false,
+  "code": "import uvm_pkg::*;\n\nclass enabler extends uvm_component;\n  `uvm_component_utils(enabler)\n\n  function new(string name, uvm_component parent = null);\n    super.new(name, parent);\n  endfunction\n\n  // write enable_device(uvm_reg r, uvm_reg_field enable, uvm_reg_map map) below\n\nendclass\n",
+  "support": [],
+  "solution": "import uvm_pkg::*;\n\nclass enabler extends uvm_component;\n  `uvm_component_utils(enabler)\n\n  function new(string name, uvm_component parent = null);\n    super.new(name, parent);\n  endfunction\n\n  task enable_device(uvm_reg r, uvm_reg_field enable, uvm_reg_map map);\n    uvm_status_e status;\n    bit [31:0] rdata;\n    r.read(status, rdata, UVM_FRONTDOOR, map, null);\n    enable.set(1);\n    r.update(status, UVM_FRONTDOOR, map, null);\n  endtask\nendclass\n",
+  "fix": "@@ -8,5 +8,10 @@\n   endfunction\n \n-  // write enable_device(uvm_reg r, uvm_reg_field enable, uvm_reg_map map) below\n-\n+  task enable_device(uvm_reg r, uvm_reg_field enable, uvm_reg_map map);\n+    uvm_status_e status;\n+    bit [31:0] rdata;\n+    r.read(status, rdata, UVM_FRONTDOOR, map, null);\n+    enable.set(1);\n+    r.update(status, UVM_FRONTDOOR, map, null);\n+  endtask\n endclass\n"
+ },
+ {
+  "slug": "confirm_write_trusts_the_mirror_not_the_bus",
+  "track": "csr",
+  "order": 6,
+  "digest": "e7fab06219f3e114a7930425305f6364fa56a5591ccd724b27692b6a477fc82a",
+  "tags": [
+   "predictor",
+   "access-policy",
+   "plausible-pass"
+  ],
+  "path": "exercises/csr/confirm_write_trusts_the_mirror_not_the_bus.sv",
+  "title": "confirm_write() checks the mirror right after the write that set it -- of course it agrees",
+  "spec": [
+   {
+    "p": "SPEC, per the register map doc, status_reg packs one byte into two fields:"
+   },
+   {
+    "items": [
+     "- cfg: bits [6:0], configuration, RW.",
+     "- lock: bit [7]. \"Write 1 to lock permanently prevents further configuration changes until the next reset.\"",
+     "- Not settled by that sentence: does locking veto a cfg change in the same write that sets the lock bit, or only later writes? reg_bus_driver, in the support file compiled alongside, is the actual hardware behavior."
+    ]
+   },
+   {
+    "p": "confirmer::confirm_write() is what a model writes with confidence to prove a write landed. With auto-prediction on, as the env sets it, r.write() sets the mirror from the data you passed, whatever the hardware did, so reading the mirror back always agrees. Right now it reports confirmed_count=3, flagged_count=0, including the writes that set cfg and lock together and left cfg unchanged."
+   },
+   {
+    "p": "Fix confirm_write() so it compares `expected` with a frontdoor read, not the mirror."
+   }
+  ],
+  "uvm": true,
+  "needs_patched_verilator": false,
+  "code": "import uvm_pkg::*;\n\nclass status_reg extends uvm_reg;\n  `uvm_object_utils(status_reg)\n\n  rand uvm_reg_field val;\n\n  function new(string name = \"status_reg\");\n    super.new(name, 8, UVM_NO_COVERAGE);\n  endfunction\n\n  virtual function void build();\n    val = uvm_reg_field::type_id::create(\"val\");\n    val.configure(this, 8, 0, \"RW\", 0, 8'h0, 1, 0, 1);\n  endfunction\nendclass\n\nclass reg_bus_sequencer extends uvm_sequencer #(reg_bus_item);\n  `uvm_component_utils(reg_bus_sequencer)\n\n  function new(string name, uvm_component parent = null);\n    super.new(name, parent);\n  endfunction\nendclass\n\nclass reg_bus_adapter extends uvm_reg_adapter;\n  `uvm_object_utils(reg_bus_adapter)\n\n  function new(string name = \"reg_bus_adapter\");\n    super.new(name);\n    supports_byte_enable = 0;\n    provides_responses   = 0;\n  endfunction\n\n  virtual function uvm_sequence_item reg2bus(const ref uvm_reg_bus_op rw);\n    reg_bus_item it = reg_bus_item::type_id::create(\"it\");\n    it.addr    = rw.addr[31:0];\n    it.data    = rw.data[31:0];\n    it.is_read = (rw.kind == UVM_READ);\n    return it;\n  endfunction\n\n  virtual function void bus2reg(uvm_sequence_item bus_item, ref uvm_reg_bus_op rw);\n    reg_bus_item it;\n    if (!$cast(it, bus_item)) `uvm_fatal(\"reg_bus_adapter\", \"bad cast\")\n    rw.kind   = it.is_read ? UVM_READ : UVM_WRITE;\n    rw.addr   = it.addr;\n    rw.data   = it.data;\n    rw.status = UVM_IS_OK;\n  endfunction\nendclass\n\nclass reg_blk extends uvm_reg_block;\n  `uvm_object_utils(reg_blk)\n\n  status_reg r;\n\n  function new(string name = \"reg_blk\");\n    super.new(name, UVM_NO_COVERAGE);\n  endfunction\n\n  virtual function void build();\n    uvm_reg_map map;\n    r = status_reg::type_id::create(\"r\");\n    r.configure(this, null, \"\");\n    r.build();\n    map = create_map(\"map\", 0, 4, UVM_LITTLE_ENDIAN);\n    map.add_reg(r, 0, \"RW\");\n    map.set_auto_predict(1);\n  endfunction\nendclass\n\nclass confirmer;\n  int unsigned confirmed_count = 0;\n  int unsigned flagged_count   = 0;\n\n  task confirm_write(uvm_reg r, uvm_reg_map map, bit [7:0] expected);\n    if (r.get_mirrored_value() == expected) confirmed_count++;\n    else flagged_count++;\n  endtask\nendclass\n",
+  "support": [
+   {
+    "name": "ctrl_reg_model.sv",
+    "code": "// Behavioral reference for this revision's control-register hardware. Compiled alongside the\n// exercise file, never part of what you're fixing -- read it if the register-map doc in the\n// exercise file doesn't settle what a given write actually does.\nimport uvm_pkg::*;\n\nclass reg_bus_item extends uvm_sequence_item;\n  `uvm_object_utils(reg_bus_item)\n\n  rand bit [31:0] addr;\n  rand bit [31:0] data;\n  bit is_read;\n\n  function new(string name = \"reg_bus_item\");\n    super.new(name);\n  endfunction\nendclass\n\nclass reg_bus_driver extends uvm_driver #(reg_bus_item);\n  `uvm_component_utils(reg_bus_driver)\n\n  bit [7:0] storage = 8'h00;\n  bit locked = 1'b0;\n\n  function new(string name, uvm_component parent = null);\n    super.new(name, parent);\n  endfunction\n\n  virtual task run_phase(uvm_phase phase);\n    reg_bus_item it;\n    forever begin\n      seq_item_port.get_next_item(it);\n      if (it.is_read) begin\n        it.data = storage;\n      end else begin\n        automatic bit new_lock = it.data[7];\n        if (!locked && !new_lock) storage[6:0] = it.data[6:0];\n        storage[7] |= new_lock;\n        if (new_lock) locked = 1'b1;\n      end\n      seq_item_port.item_done();\n    end\n  endtask\nendclass\n"
+   }
+  ],
+  "solution": "import uvm_pkg::*;\n\nclass status_reg extends uvm_reg;\n  `uvm_object_utils(status_reg)\n\n  rand uvm_reg_field val;\n\n  function new(string name = \"status_reg\");\n    super.new(name, 8, UVM_NO_COVERAGE);\n  endfunction\n\n  virtual function void build();\n    val = uvm_reg_field::type_id::create(\"val\");\n    val.configure(this, 8, 0, \"RW\", 0, 8'h0, 1, 0, 1);\n  endfunction\nendclass\n\nclass reg_bus_sequencer extends uvm_sequencer #(reg_bus_item);\n  `uvm_component_utils(reg_bus_sequencer)\n\n  function new(string name, uvm_component parent = null);\n    super.new(name, parent);\n  endfunction\nendclass\n\nclass reg_bus_adapter extends uvm_reg_adapter;\n  `uvm_object_utils(reg_bus_adapter)\n\n  function new(string name = \"reg_bus_adapter\");\n    super.new(name);\n    supports_byte_enable = 0;\n    provides_responses   = 0;\n  endfunction\n\n  virtual function uvm_sequence_item reg2bus(const ref uvm_reg_bus_op rw);\n    reg_bus_item it = reg_bus_item::type_id::create(\"it\");\n    it.addr    = rw.addr[31:0];\n    it.data    = rw.data[31:0];\n    it.is_read = (rw.kind == UVM_READ);\n    return it;\n  endfunction\n\n  virtual function void bus2reg(uvm_sequence_item bus_item, ref uvm_reg_bus_op rw);\n    reg_bus_item it;\n    if (!$cast(it, bus_item)) `uvm_fatal(\"reg_bus_adapter\", \"bad cast\")\n    rw.kind   = it.is_read ? UVM_READ : UVM_WRITE;\n    rw.addr   = it.addr;\n    rw.data   = it.data;\n    rw.status = UVM_IS_OK;\n  endfunction\nendclass\n\nclass reg_blk extends uvm_reg_block;\n  `uvm_object_utils(reg_blk)\n\n  status_reg r;\n\n  function new(string name = \"reg_blk\");\n    super.new(name, UVM_NO_COVERAGE);\n  endfunction\n\n  virtual function void build();\n    uvm_reg_map map;\n    r = status_reg::type_id::create(\"r\");\n    r.configure(this, null, \"\");\n    r.build();\n    map = create_map(\"map\", 0, 4, UVM_LITTLE_ENDIAN);\n    map.add_reg(r, 0, \"RW\");\n    map.set_auto_predict(1);\n  endfunction\nendclass\n\nclass confirmer;\n  int unsigned confirmed_count = 0;\n  int unsigned flagged_count   = 0;\n\n  task confirm_write(uvm_reg r, uvm_reg_map map, bit [7:0] expected);\n    uvm_status_e status;\n    bit [31:0] rdata;\n    r.read(status, rdata, UVM_FRONTDOOR, map, null);\n    if (rdata[7:0] == expected) confirmed_count++;\n    else flagged_count++;\n  endtask\nendclass\n",
+  "fix": "@@ -76,5 +76,8 @@\n \n   task confirm_write(uvm_reg r, uvm_reg_map map, bit [7:0] expected);\n-    if (r.get_mirrored_value() == expected) confirmed_count++;\n+    uvm_status_e status;\n+    bit [31:0] rdata;\n+    r.read(status, rdata, UVM_FRONTDOOR, map, null);\n+    if (rdata[7:0] == expected) confirmed_count++;\n     else flagged_count++;\n   endtask\n"
+ }
+]

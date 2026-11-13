@@ -1,0 +1,8 @@
+# Walks shown beside an exercise: slug -> data/flows ids. Each one should
+# show the mechanism the exercise's bug lives in, not just the same topic:
+# write_updates_the_mirror_even_when_dropped and
+# confirm_write_trusts_the_mirror_not_the_bus need an auto-prediction walk,
+# which doesn't exist yet (csr-write runs with auto-predict off).
+predictor_needs_the_monitor_wired_in: [csr-write]
+sample_fires_before_the_mirror_updates: [csr-write-timing]
+update_can_silently_clear_a_w1c_field: [csr-mirror]

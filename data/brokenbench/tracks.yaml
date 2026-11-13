@@ -1,0 +1,17 @@
+# Track order and how each is shown on the brokenbench pages.
+- id: learn
+  name: Learn
+  short: LEARN
+  blurb: Start here. One language feature at a time, mostly written from scratch.
+- id: sv
+  name: SystemVerilog
+  short: SV
+  blurb: Constraints, classes and state across calls, with several pieces working at once.
+- id: uvm
+  name: UVM
+  short: UVM
+  blurb: "Testbench bugs: the factory, config_db, objections, analysis ports and sequencers."
+- id: csr
+  name: Register model
+  short: CSR
+  blurb: "The UVM register model: mirrors, predictors, hooks and access policies."

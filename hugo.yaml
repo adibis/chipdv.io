@@ -47,6 +47,11 @@ params:
     text: "Buy me a coffee"
     color: "#df8e1d"
 
+  # brokenbench's run service. Pages served from localhost use a runner on
+  # 127.0.0.1:8787 instead (see assets/js/brokenbench.js).
+  brokenbench:
+    api: "https://run.chipdv.io"
+
   displayUpdatedDate: true
   dateFormat: "January 2, 2006"
 

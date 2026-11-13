@@ -24,9 +24,27 @@
 <link rel="stylesheet" href="{{ $css.RelPermalink }}" integrity="{{ $css.Data.Integrity }}">
 {{- end }}
 {{- end }}
-{{- if .HasShortcode "flow" }}
+{{- if or (.HasShortcode "flow") (eq .Type "exercise") }}
 {{- with resources.Get "js/flow-player.js" }}
 {{- $js := . | minify | fingerprint }}
 <script src="{{ $js.RelPermalink }}" integrity="{{ $js.Data.Integrity }}" defer></script>
+{{- end }}
+{{- end }}
+
+{{- /* brokenbench exercise pages: CodeMirror 5 (no build step, has a
+     SystemVerilog mode), then the page script; all deferred, in order. */ -}}
+{{- if eq .Type "exercise" }}
+{{- $cm := "https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/" }}
+<link rel="stylesheet" href="{{ $cm }}codemirror.min.css" integrity="sha384-zaeBlB/vwYsDRSlFajnDd7OydJ0cWk+c2OWybl3eSUf6hW2EbhlCsQPqKr3gkznT" crossorigin="anonymous">
+<script defer src="{{ $cm }}codemirror.min.js" integrity="sha384-ZYmwuq4n2gOcNxMSiJ6jyTj+BbIrilr7p6dlq6q5nmSWKmsH9UU4K1qqjycMkfmR" crossorigin="anonymous"></script>
+<script defer src="{{ $cm }}mode/verilog/verilog.min.js" integrity="sha384-3gqlCdX1yEH/BoQKZ3KXODsyKBNgWSZ7wFtnk7jxLO+iCzwRjYxpbq1fT62vxc+Z" crossorigin="anonymous"></script>
+<script defer src="{{ $cm }}addon/edit/matchbrackets.min.js" integrity="sha384-LjCI3E8qhhxXZvu7+FCvqx9eZYSowFvuJ7z54KsgI/BDPGKEuysqCg/vYiKHvC4Y" crossorigin="anonymous"></script>
+{{- with resources.Get "css/brokenbench.css" }}
+{{- $css := . | minify | fingerprint }}
+<link rel="stylesheet" href="{{ $css.RelPermalink }}" integrity="{{ $css.Data.Integrity }}">
+{{- end }}
+{{- with resources.Get "js/brokenbench.js" }}
+{{- $js := . | minify | fingerprint }}
+<script defer src="{{ $js.RelPermalink }}" integrity="{{ $js.Data.Integrity }}"></script>
 {{- end }}
 {{- end }}

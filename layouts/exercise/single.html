@@ -1,0 +1,197 @@
+{{ define "main" }}
+{{- /* A brokenbench exercise: the brief on the left (spec, support files,
+     solution), the editor and its output on the right, with the walks
+     there too behind a Code / Walk switch. Data comes
+     from data/brokenbench/exercises.json; runs go to the brokenbench runner,
+     which adds the exercise's checker itself, so the page never shows it. */ -}}
+{{- $all := hugo.Data.brokenbench.exercises -}}
+{{- $ex := index (where $all "slug" .Params.exercise) 0 -}}
+{{- $track := where $all "track" $ex.track -}}
+{{- $tracks := hugo.Data.brokenbench.tracks -}}
+{{- $walkmap := hugo.Data.brokenbench.walks | default dict -}}
+{{- $pos := 0 }}{{ $at := 0 }}{{ $prev := "" }}{{ $next := "" }}{{ $nextURL := "" -}}
+{{- range $i, $e := $track }}{{ if eq $e.slug $ex.slug }}{{ $pos = add $i 1 }}{{ end }}{{ end -}}
+{{- /* Previous and next run through every exercise, across tracks. */ -}}
+{{- range $i, $e := $all }}{{ if eq $e.slug $ex.slug }}{{ $at = $i }}{{ end }}{{ end -}}
+{{- if gt $at 0 }}{{ $prev = index $all (sub $at 1) }}{{ end -}}
+{{- if lt (add $at 1) (len $all) }}{{ $next = index $all (add $at 1) }}{{ $nextURL = printf "../%s/" $next.slug }}{{ end -}}
+{{- $home := site.GetPage "/projects/brokenbench" -}}
+{{- $walks := index $walkmap $ex.slug -}}
+<div class="bb bb-t-{{ $ex.track }}">
+  <section class="bb-brief">
+    <div class="bb-bar" role="navigation" aria-label="Exercises">
+      <a class="bb-bar-home" href="{{ $home.RelPermalink }}">brokenbench</a>
+      <details class="bb-menu">
+        <summary class="bb-bar-btn">{{ partial "brokenbench/chip.html" $ex.track }} {{ $pos }} of {{ len $track }} <span aria-hidden="true">&#9662;</span></summary>
+        <div class="bb-menu-list">
+          {{- range $t := $tracks }}
+          <div class="bb-menu-track">{{ partial "brokenbench/chip.html" $t.id }} {{ $t.name }}</div>
+          <ol>
+            {{- range where $all "track" $t.id }}
+            <li{{ if eq .slug $ex.slug }} aria-current="page"{{ end }}><a href="../{{ .slug }}/" data-slug="{{ .slug }}"><span>{{ .title | markdownify }}{{ with index $walkmap .slug }} <span class="bb-walk-mark">walk</span>{{ end }}</span></a></li>
+            {{- end }}
+          </ol>
+          {{- end }}
+        </div>
+      </details>
+      <span class="bb-bar-step">
+        {{- with $prev }}<a class="bb-bar-btn" href="../{{ .slug }}/" title="{{ .title }}" rel="prev">&larr; Previous</a>{{ end -}}
+        {{- with $next }}<a class="bb-bar-btn" href="../{{ .slug }}/" title="{{ .title }}" rel="next">Next &rarr;</a>{{ end -}}
+      </span>
+    </div>
+    <h1>{{ $ex.title | markdownify }}</h1>
+    <div class="bb-tags">{{ range $i, $t := $ex.tags }}{{ if $i }} / {{ end }}{{ $t }}{{ end }}
+      {{- if and $ex.uvm (not $ex.needs_patched_verilator) }}<span class="bb-wait" title="Each run compiles the UVM library along with your code: about 2 minutes on chipdv.io, under 30 s on a fast laptop">UVM &middot; runs take about 2 minutes</span>{{ end }}</div>
+    {{- if $ex.needs_patched_verilator }}
+    <p class="bb-note">This one needs a Verilator fix that's still under review upstream (<a href="https://github.com/verilator/verilator/pull/8100">verilator#8100</a>): without it the compiler crashes on <code>unique{}</code> over a row of a 2D array. Run is off until it merges.</p>
+    {{- end }}
+
+    {{- with $walks }}
+    <div class="bb-walk-callout">
+      <p><strong>{{ cond (eq (len .) 1) "This exercise has a walk" "This exercise has walks" }}:</strong>
+        {{ range $i, $w := . }}{{ if $i }}, {{ end }}{{ (index site.Data.flows $w).title }}{{ end }}. It plays step by step beside the code.</p>
+      <button type="button" class="bb-btn" data-action="show-walk">Show the walk &rarr;</button>
+    </div>
+    {{- end }}
+
+    <div class="bb-tabs" role="tablist">
+      <button type="button" role="tab" aria-selected="true" data-tab="spec">Spec</button>
+      {{- with $ex.support }}<button type="button" role="tab" aria-selected="false" data-tab="files">{{ cond (eq (len .) 1) "File" "Files" }}</button>{{ end }}
+      {{- with $ex.fix }}<button type="button" role="tab" aria-selected="false" data-tab="solution">Solution</button>{{ end }}
+    </div>
+
+    <div class="bb-panel" data-panel="spec">
+      {{- range $ex.spec }}
+        {{- with .p }}
+          {{- /* "Requirements", "Right now", "Done when" and "SPEC" lead
+               paragraphs get their keyword as a label. */}}
+          {{- with findRESubmatch `^(Requirements?|Right now|Done when|SPEC)[:,]?\s*(.*)$` . 1 }}
+            {{- $k := index (index . 0) 1 }}{{ $rest := index (index . 0) 2 }}
+            {{- $kind := cond (eq $k "Right now") "now" (cond (eq $k "Done when") "done" "req") }}
+          <p class="bb-lead bb-lead-{{ $kind }}"><span class="bb-label">{{ cond (eq $k "SPEC") "Spec" $k }}</span>
+            {{- with $rest }}{{ $t := strings.TrimSuffix ":" . }}{{ if $t }}{{ (printf "%s%s" (substr $t 0 1 | upper) (substr $t 1)) | markdownify }}{{ end }}{{ end }}</p>
+          {{- else }}<p>{{ . | markdownify }}</p>
+          {{- end }}
+        {{- end }}
+        {{- with .items }}
+          {{- if findRE `^\d+\.\s` (index . 0) }}
+          <ol class="bb-list bb-ol">{{ range . }}<li>{{ replaceRE `^\d+\.\s+` "" . | markdownify }}</li>{{ end }}</ol>
+          {{- else if findRE `^[-*]\s` (index . 0) }}
+          <ul class="bb-list">{{ range . }}<li>{{ replaceRE `^[-*]\s+` "" . | markdownify }}</li>{{ end }}</ul>
+          {{- else }}
+          <pre class="bb-block">{{ delimit . "\n" }}</pre>
+          {{- end }}
+        {{- end }}
+      {{- end }}
+      <p class="bb-more"><a href="https://github.com/adibis/brokenBench/blob/master/{{ $ex.path }}">Source on GitHub</a></p>
+    </div>
+
+    {{- with $ex.support }}
+    <div class="bb-panel" data-panel="files" hidden>
+      <p>Compiled along with your code. Read it, but don't change it: the run uses this copy.</p>
+      {{- range . }}
+      <div class="bb-code">
+        <div class="bb-code-name">{{ .name }}</div>
+        <pre>{{ .code }}</pre>
+      </div>
+      {{- end }}
+    </div>
+    {{- end }}
+
+    {{- with $ex.fix }}
+    <div class="bb-panel" data-panel="solution" hidden>
+      <div class="bb-reveal">
+        <p>One working answer: brokenbench's own fix for this exercise. Try a few runs first.</p>
+        <button type="button" class="bb-btn" data-action="reveal">Show the solution</button>
+      </div>
+      <div class="bb-solution" hidden>
+        <p>What changes, against the code you started with:</p>
+        <div class="bb-code bb-diff">
+          {{- range split (strings.TrimRight "\n" .) "\n" }}
+            {{- $c := substr . 0 1 }}
+            {{- if eq $c "@" }}<div class="bb-d-hunk">{{ with findRESubmatch `\+(\d+)` . 1 }}line {{ index (index . 0) 1 }}{{ end }}</div>
+            {{- else if in . "---8<---" }}
+            {{- else }}<div class="bb-d-{{ cond (eq $c "+") "add" (cond (eq $c "-") "del" "ctx") }}"><span>{{ cond (or (eq $c "+") (eq $c "-")) $c " " }}</span>{{ substr . 1 }}</div>
+            {{- end }}
+          {{- end }}
+        </div>
+        <button type="button" class="bb-btn" data-action="load-solution">Load into the editor</button>
+      </div>
+    </div>
+    {{- end }}
+
+    <div class="bb-pager" role="navigation" aria-label="Previous and next exercise">
+      {{- with $prev }}<a href="../{{ .slug }}/" rel="prev"><span>&larr; Previous {{ partial "brokenbench/chip.html" .track }}</span>{{ .title | markdownify }}</a>{{ else }}<span></span>{{ end }}
+      {{- with $next }}<a href="../{{ .slug }}/" rel="next" class="bb-pager-next"><span>{{ partial "brokenbench/chip.html" .track }} Next &rarr;</span>{{ .title | markdownify }}</a>{{ end }}
+    </div>
+  </section>
+
+  <section class="bb-work">
+    <div class="bb-toolbar">
+      <span class="bb-file">{{ path.Base $ex.path }}</span>
+      <span class="bb-saved" aria-live="polite"></span>
+      {{- with $walks }}
+      <span class="bb-view" role="group" aria-label="Show">
+        <button type="button" data-view="code" aria-pressed="true">Code</button>
+        <button type="button" data-view="walk" aria-pressed="false">{{ cond (eq (len .) 1) "Walk" "Walks" }}</button>
+      </span>
+      {{- end }}
+      <label class="bb-theme"><span class="bb-sr">Where runs build</span>
+        <select data-change="where" title="Where your code is compiled and run">
+          <option value="server">Run on chipdv.io</option>
+          <option value="local">Run on my machine</option>
+        </select>
+      </label>
+      <label class="bb-theme"><span class="bb-sr">Editor theme</span>
+        <select data-change="theme">
+          <option value="site">Match the site</option>
+          <option value="solarized-light">Solarized Light</option>
+          <option value="solarized-dark">Solarized Dark</option>
+          <option value="gruvbox-light">Gruvbox Light</option>
+          <option value="gruvbox-dark">Gruvbox Dark</option>
+          <option value="catppuccin-latte">Catppuccin Latte</option>
+          <option value="catppuccin-mocha">Catppuccin Mocha</option>
+        </select>
+      </label>
+      <button type="button" class="bb-btn bb-btn-reset" data-action="reset" title="Start again from the original code">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5V2L7 6l5 4V7a5 5 0 1 1-5 5H5a7 7 0 1 0 7-7z"/></svg>Reset</button>
+      <button type="button" class="bb-btn bb-btn-run" data-action="run"{{ if $ex.needs_patched_verilator }} disabled{{ end }}>
+        <svg class="bb-ic-play" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4.5v15l12.5-7.5z"/></svg><span class="bb-spin" aria-hidden="true"></span>
+        Run<kbd>Ctrl&nbsp;&crarr;</kbd></button>
+    </div>
+    {{- with $walks }}
+    <div class="bb-walkview" hidden>
+      {{- range . }}{{ partial "flow.html" (dict "id" . "where" (printf "data/brokenbench/walks.yaml: %s" $ex.slug) "inline" true) }}{{ end }}
+    </div>
+    {{- end }}
+    <div class="bb-setup" hidden>
+      <h3 class="bb-setup-title"></h3>
+      <p class="bb-setup-why"></p>
+      <ol class="bb-setup-steps">
+        <li data-step="install">Install <a href="https://docs.docker.com/get-started/get-docker/">Docker</a> and start it: Docker Desktop on macOS and Windows, Docker Engine on Linux.</li>
+        <li>Run this in a terminal:
+          <div class="bb-setup-cmd"><code>docker run --pull always --rm -p 127.0.0.1:8787:8787 ghcr.io/adibis/brokenbench-runner</code><button type="button" class="bb-btn" data-action="copy-setup">Copy</button></div>
+        </li>
+        <li>Leave it running. This page connects to it by itself.</li>
+      </ol>
+      <p class="bb-setup-wait"><span class="bb-setup-dot" aria-hidden="true"></span>Looking for a runner on this computer&hellip;</p>
+      <p class="bb-setup-foot">The first start downloads about 250&nbsp;MB; after that it starts in seconds and only downloads again when there's an update. Your code goes to the runner on your computer, not to chipdv.io.</p>
+      <button type="button" class="bb-btn" data-action="use-server">Run on chipdv.io instead</button>
+    </div>
+    <div class="bb-editor"><textarea aria-label="Your code" spellcheck="false">{{ $ex.code }}</textarea></div>
+    <div class="bb-output" aria-live="polite" hidden>
+      <div class="bb-status"></div>
+      <div class="bb-progress" hidden>
+        <ol class="bb-steps"></ol>
+        <div class="bb-meter"><div></div></div>
+        <p class="bb-progress-note"></p>
+      </div>
+      <pre></pre>
+    </div>
+  </section>
+</div>
+<script type="application/json" id="bb-data">{{ dict
+  "slug" $ex.slug "digest" $ex.digest "code" $ex.code "solution" ($ex.solution | default "")
+  "api" (site.Params.brokenbench.api | default "") "next" $nextURL
+  | jsonify | safeJS }}</script>
+{{ end }}

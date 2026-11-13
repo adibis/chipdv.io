@@ -1,0 +1,11 @@
+{{- /* One page per exercise, from data/brokenbench/exercises.json (written by
+     brokenbench's web/export.py). */ -}}
+{{- range hugo.Data.brokenbench.exercises }}
+  {{- $.AddPage (dict
+    "path" .slug
+    "title" (replace .title "`" "")
+    "kind" "page"
+    "type" "exercise"
+    "params" (dict "exercise" .slug "sidebar" (dict "exclude" true) "toc" false)
+    "content" (dict "mediaType" "text/markdown" "value" "")) }}
+{{- end }}

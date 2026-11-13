@@ -1,7 +1,8 @@
 // Full-screen player for playable diagrams (layouts/_shortcodes/flow.html).
 // The page holds a static figure; Play opens a <dialog> "theater" with the
 // diagram on a stage, the caption and header fields in a side rail, and the
-// transport along the bottom. Each step's look is derived from its index
+// transport along the bottom. A figure marked data-inline plays in place
+// instead, in the same theater laid out as a column. Each step's look is derived from its index
 // alone, so Prev, Next, the scrubber, and deep links all render the same
 // state; animation only covers the move into a step.
 (function () {
@@ -24,6 +25,7 @@
     pause: '<path d="M7 5h4v14H7zM13 5h4v14h-4z"/>',
     close: '<path d="M6.4 5 5 6.4 10.6 12 5 17.6 6.4 19l5.6-5.6 5.6 5.6 1.4-1.4-5.6-5.6L19 6.4 17.6 5 12 10.6z"/>',
     fit: '<path d="M4 4h6v2H6v4H4zM14 4h6v6h-2V6h-4zM4 14h2v4h4v2H4zM18 14h2v6h-6v-2h4z"/>',
+    expand: '<path d="M14 3h7v7h-2V6.4l-5.3 5.3-1.4-1.4L17.6 5H14zM3 14h2v3.6l5.3-5.3 1.4 1.4L6.4 19H10v2H3z"/>',
     follow: '<path d="M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8zm9 3h-2.1A7 7 0 0 0 13 5.1V3h-2v2.1A7 7 0 0 0 5.1 11H3v2h2.1a7 7 0 0 0 5.9 5.9V21h2v-2.1a7 7 0 0 0 5.9-5.9H21z"/>',
   };
 
@@ -86,14 +88,18 @@
 
   // --------------------------------------------------------------- theater
 
-  function Theater() {
-    var d = el("dialog", "dv-theater");
+  // With a host element the theater is built inline in it, already open, and
+  // never touches the page's history or scroll; otherwise it's a dialog.
+  function Theater(host) {
+    this.inline = !!host;
+    var d = el(host ? "div" : "dialog", host ? "dv-theater dv-theater-inline" : "dv-theater");
     d.setAttribute("aria-label", "Playable diagram");
     d.innerHTML =
       '<div class="th-shell">' +
       '<header class="th-head"><div class="th-title"></div><div class="th-tools">' +
       '<button type="button" class="th-tool" data-act="follow" aria-pressed="false" title="Follow the action (F)">' + icon("follow") + "<span>Follow</span></button>" +
       '<button type="button" class="th-tool" data-act="fit" title="Show the whole diagram (0)">' + icon("fit") + "<span>Fit</span></button>" +
+      (host ? '<button type="button" class="th-tool" data-act="expand" title="Full screen">' + icon("expand") + "<span>Full screen</span></button>" : "") +
       '<button type="button" class="th-tool th-close" data-act="close" aria-label="Close" title="Close (Esc)">' + icon("close") + "</button>" +
       "</div></header>" +
       '<div class="th-stage"><div class="th-role" hidden></div><div class="th-canvas dv-themed-svg"></div>' +
@@ -117,7 +123,8 @@
       "</div>" +
       '<div class="th-scrubber" role="group" aria-label="Steps"></div>' +
       "</footer></div>";
-    document.body.appendChild(d);
+    (host || document.body).appendChild(d);
+    if (host) d.tabIndex = 0;
     this.d = d;
     var q = function (s) { return d.querySelector(s); };
     this.titleEl = q(".th-title");
@@ -164,14 +171,18 @@
     }.bind(this));
     d.addEventListener("keydown", this.onKey.bind(this));
     window.addEventListener("resize", function () {
-      if (d.open) this.camera(false);
+      if (this.isOpen()) this.camera(false);
     }.bind(this));
     window.addEventListener("popstate", function () {
-      if (d.open && !this.hashMatches()) this.close(true);
+      if (!this.inline && d.open && !this.hashMatches()) this.close(true);
     }.bind(this));
     this.bindPanZoom();
     this.bindSwipe();
   }
+
+  Theater.prototype.isOpen = function () {
+    return this.inline ? !!this.flow : this.d.open;
+  };
 
   Theater.prototype.hashMatches = function () {
     return this.flow && location.hash.indexOf("#flow-" + this.flow.id + "=") === 0;
@@ -179,16 +190,20 @@
 
   Theater.prototype.open = function (flow, step, fromHash) {
     this.flow = flow;
-    this.follow = null;
+    this.follow = this.inline ? false : null;  // an inline pane is too small to follow in
     this.manual = false;
     this.titleEl.textContent = flow.data.title;
     this.d.setAttribute("aria-label", "Playable diagram: " + flow.data.title);
     this.mountSvg(flow);
     this.buildScrubber(flow);
-    document.documentElement.classList.add("dv-theater-open");
-    if (!this.d.open) this.d.showModal();
     this.insp.open = window.innerWidth >= 760;
     this.index = Math.max(0, Math.min(step, flow.steps.length - 1));
+    if (this.inline) {
+      this.render(false, true);
+      return;
+    }
+    document.documentElement.classList.add("dv-theater-open");
+    if (!this.d.open) this.d.showModal();
     var hash = "#flow-" + flow.id + "=" + (this.index + 1);
     if (fromHash) {
       this.pushed = false;
@@ -202,7 +217,7 @@
 
   // popped: the browser already left the flow's history entry (Back button).
   Theater.prototype.close = function (popped) {
-    if (!this.d.open) return;
+    if (this.inline || !this.d.open) return;
     this.pause();
     cancelAnimationFrame(this.tokenFrame);
     cancelAnimationFrame(this.camFrame);
@@ -266,6 +281,9 @@
   Theater.prototype.act = function (what) {
     switch (what) {
       case "close": return this.close();
+      case "expand":
+        this.pause();
+        return getTheater().open(this.flow, this.index, false);
       case "play": return this.playing ? this.pause() : this.play();
       case "speed":
         this.speed = this.speed === 1 ? 2 : this.speed === 2 ? 0.5 : 1;
@@ -416,6 +434,7 @@
     this.index = i;
     this.manual = false;
     this.render(animate, false);
+    if (this.inline) return;
     var hash = "#flow-" + this.flow.id + "=" + (i + 1);
     history.replaceState(history.state, "", location.pathname + location.search + hash);
   };
@@ -794,12 +813,29 @@
     return theater || (theater = new Theater());
   }
 
+  // A figure marked data-inline plays where it stands, in its own theater.
+  // It waits until it's visible, since the camera needs the stage's size.
+  function mountInline(f) {
+    var host = el("div", "dv-flow-inline");
+    f.fig.after(host);
+    f.fig.hidden = true;
+    var t = null;
+    var start = function () {
+      if (!host.offsetWidth) return;
+      if (!t) { t = new Theater(host); t.open(f, 0, true); }
+      else t.camera(false);
+    };
+    if (window.ResizeObserver) new ResizeObserver(start).observe(host);
+    start();
+  }
+
   function boot() {
     if (typeof HTMLDialogElement !== "function") return; // the static figure stays
     var flows = {};
     document.querySelectorAll(".dv-flow").forEach(function (fig) {
       try {
         var f = new Flow(fig);
+        if (fig.hasAttribute("data-inline")) return mountInline(f);
         flows[f.id] = f;
         var btn = fig.querySelector(".dv-flow-open");
         fig.querySelector(".dv-flow-bar").hidden = false;
