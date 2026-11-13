@@ -1,6 +1,6 @@
 {{- /*
   Auto-generated grid of every project under content/projects/ (each .md
-  file besides _index.md itself), sorted by weight. Same self-updating
+  file or subsection besides _index.md itself), sorted by weight. Same self-updating
   pattern as series-cards.html: adding a new project means adding
   content/projects/<slug>.md with title, weight, and description -- this
   shortcode picks it up automatically, nothing on the homepage needs
@@ -17,7 +17,8 @@
 {{- $projectsSection := .Page.Site.GetPage "/projects" -}}
 {{- $projects := slice -}}
 {{- if $projectsSection -}}
-  {{- $projects = $projectsSection.RegularPages.ByWeight -}}
+  {{- /* .Pages, not .RegularPages: a project with its own pages is a section. */ -}}
+  {{- $projects = $projectsSection.Pages.ByWeight -}}
 {{- end -}}
 
 <div class="chipdv-series-grid">

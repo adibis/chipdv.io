@@ -92,6 +92,11 @@ menu:
     - name: About
       pageRef: /about
       weight: 8
+    - name: brokenbench
+      pageRef: /projects/brokenbench
+      weight: 9
+      params:
+        highlight: true
     - name: search
       weight: 9
       params:
