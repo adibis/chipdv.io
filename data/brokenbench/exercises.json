@@ -3,7 +3,7 @@
   "slug": "sv_mechanics_chain",
   "track": "learn",
   "order": 1,
-  "digest": "841754cc01926dba4274ac8f39321a8565a501dfe7aa868af09668d436a81dd9",
+  "digest": "5148066cb9d6832ce60808b908dfcaeb2c8698bc58be4bee6fd63f5d39b12533",
   "tags": [
    "write-from-scratch"
   ],
@@ -775,7 +775,7 @@
   "slug": "risc_v_forwarding_window",
   "track": "sv",
   "order": 7,
-  "digest": "a70dbf4dd3a7f7d73a286c44b5d7d47f35f997409925c858f37c4e5edaed023f",
+  "digest": "0d62a47769649be6bcf26066fc3effea6c1db9e6b6a7772158fa4bcd92bf1aa8",
   "tags": [
    "write-from-scratch",
    "statistical",
